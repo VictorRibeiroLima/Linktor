@@ -42,7 +42,7 @@ public final class Parser {
 
 
     public SyntaxTree parse() {
-        ExpressionSyntax expression = parseTerm();
+        ExpressionSyntax expression = parseExpression();
         SyntaxToken endOfFileToken = matchToken(SyntaxType.END_OF_FILE_TOKEN);
         return new SyntaxTree(expression, endOfFileToken, diagnostics);
     }
