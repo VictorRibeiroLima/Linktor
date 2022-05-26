@@ -35,9 +35,9 @@ public final class Evaluator {
                     return left + right;
                 case MINUS_TOKEN:
                     return left - right;
-                case DIVISION_TOKEN:
+                case SLASH_TOKEN:
                     return left / right;
-                case MULTIPLICATION_TOKEN:
+                case STAR_TOKEN:
                     return left * right;
                 default:
                     throw new Exception("Unexpected binary operation " + b.getOperatorToken().getKind().toString());

@@ -17,8 +17,8 @@ public final class SyntaxFacts {
 
     public static int getBinaryOperatorPrecedence(SyntaxKind kind) {
         switch (kind) {
-            case MULTIPLICATION_TOKEN:
-            case DIVISION_TOKEN:
+            case STAR_TOKEN:
+            case SLASH_TOKEN:
                 return 2;
             case PLUS_TOKEN:
             case MINUS_TOKEN:

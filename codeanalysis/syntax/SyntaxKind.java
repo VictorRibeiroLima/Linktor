@@ -8,8 +8,8 @@ public enum SyntaxKind {
     PLUS_TOKEN,
     NUMBER_TOKEN,
     MINUS_TOKEN,
-    DIVISION_TOKEN,
-    MULTIPLICATION_TOKEN,
+    SLASH_TOKEN,
+    STAR_TOKEN,
     OPEN_PARENTHESIS_TOKEN,
     CLOSE_PARENTHESIS_TOKEN,
     EQUAL_TOKEN,
@@ -26,9 +26,9 @@ public enum SyntaxKind {
         else if (representation == '-')
             return MINUS_TOKEN;
         else if (representation == '/') {
-            return DIVISION_TOKEN;
+            return SLASH_TOKEN;
         } else if (representation == '*') {
-            return MULTIPLICATION_TOKEN;
+            return STAR_TOKEN;
         } else if (representation == '(') {
             return OPEN_PARENTHESIS_TOKEN;
         } else if (representation == ')') {
