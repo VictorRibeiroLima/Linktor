@@ -1,6 +1,7 @@
 package codeanalysis.parser;
 
 import codeanalysis.lexer.Lexer;
+import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.SyntaxType;
@@ -55,7 +56,7 @@ public final class Parser {
     private ExpressionSyntax parseExpression(int parentPrecedence) {
         ExpressionSyntax left = parsePrimaryExpression();
         while (true) {
-            int precedence = getBinaryOperatorPrecedence(getCurrent().getType());
+            int precedence = SyntaxFacts.getBinaryOperatorPrecedence(getCurrent().getType());
             if (precedence <= parentPrecedence)
                 break;
 
@@ -76,19 +77,6 @@ public final class Parser {
         }
         SyntaxToken token = matchToken(SyntaxType.NUMBER_TOKEN);
         return new LiteralExpressionSyntax(token);
-    }
-
-    private int getBinaryOperatorPrecedence(SyntaxType type) {
-        switch (type) {
-            case MULTIPLICATION_TOKEN:
-            case DIVISION_TOKEN:
-                return 2;
-            case PLUS_TOKEN:
-            case MINUS_TOKEN:
-                return 1;
-            default:
-                return 0;
-        }
     }
 
     private SyntaxToken peek(int offset) {
