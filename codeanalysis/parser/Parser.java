@@ -6,7 +6,7 @@ import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.SyntaxType;
 import codeanalysis.syntax.expression.BinaryExpressionSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
-import codeanalysis.syntax.expression.NumberExpressionSyntax;
+import codeanalysis.syntax.expression.LiteralExpressionSyntax;
 import codeanalysis.syntax.expression.ParenthesizedExpressionSyntax;
 
 import java.util.ArrayList;
@@ -109,6 +109,6 @@ public final class Parser {
 
         }
         SyntaxToken token = matchToken(SyntaxType.NUMBER_TOKEN);
-        return new NumberExpressionSyntax(token);
+        return new LiteralExpressionSyntax(token);
     }
 }

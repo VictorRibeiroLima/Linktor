@@ -3,7 +3,7 @@ package codeanalysis.evaluator;
 import codeanalysis.syntax.SyntaxType;
 import codeanalysis.syntax.expression.BinaryExpressionSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
-import codeanalysis.syntax.expression.NumberExpressionSyntax;
+import codeanalysis.syntax.expression.LiteralExpressionSyntax;
 import codeanalysis.syntax.expression.ParenthesizedExpressionSyntax;
 
 public final class Evaluator {
@@ -18,7 +18,7 @@ public final class Evaluator {
     }
 
     private int evaluateExpression(ExpressionSyntax node) throws Exception {
-        if (node instanceof NumberExpressionSyntax n)
+        if (node instanceof LiteralExpressionSyntax n)
             return (int) n.getToken().getValue();
         if (node instanceof BinaryExpressionSyntax b) {
             int left = evaluateExpression(b.getLeft());
