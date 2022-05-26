@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Lexer {
+public final class Lexer {
     private final String text;
     private int position;
 

@@ -6,7 +6,7 @@ import codeanalysis.syntax.expression.ExpressionSyntax;
 import codeanalysis.syntax.expression.NumberExpressionSyntax;
 import codeanalysis.syntax.expression.ParenthesizedExpressionSyntax;
 
-public class Evaluator {
+public final class Evaluator {
     private final ExpressionSyntax root;
 
     public Evaluator(ExpressionSyntax root) {

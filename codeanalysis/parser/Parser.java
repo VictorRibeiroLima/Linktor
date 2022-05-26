@@ -12,7 +12,7 @@ import codeanalysis.syntax.expression.ParenthesizedExpressionSyntax;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Parser {
+public final class Parser {
 
     private final List<SyntaxToken> tokens;
     private int position;
