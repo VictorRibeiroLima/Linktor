@@ -38,13 +38,13 @@ public class Binder {
     }
 
     private BoundExpression bindLiteralExpression(LiteralExpressionSyntax syntax) {
-        Object value = syntax.getToken().getValue() == null ? syntax.getToken().getValue() : 0;
+        Object value = syntax.getToken().getValue() != null ? syntax.getToken().getValue() : 0;
         return new BoundLiteralExpression(value);
     }
 
     private BoundExpression bindUnaryExpression(UnaryExpressionSyntax syntax) throws Exception {
         BoundExpression right = bindExpression(syntax.getRight());
-        BoundUnaryOperatorKind kind = binUnaryOperatorKind(syntax.getKind(), right.getType());
+        BoundUnaryOperatorKind kind = binUnaryOperatorKind(syntax.getOperatorToken().getKind(), right.getType());
         if (kind == null) {
             diagnostics.add(
                     "ERROR: Unary operator " + syntax.getOperatorToken().getText() +
@@ -58,7 +58,7 @@ public class Binder {
     private BoundExpression bindBinaryExpression(BinaryExpressionSyntax syntax) throws Exception {
         BoundExpression left = bindExpression(syntax.getLeft());
         BoundExpression right = bindExpression(syntax.getRight());
-        BoundBinaryOperatorKind kind = binBinaryOperatorKind(syntax.getKind(), left.getType(), right.getType());
+        BoundBinaryOperatorKind kind = binBinaryOperatorKind(syntax.getOperatorToken().getKind(), left.getType(), right.getType());
         if (kind == null) {
             diagnostics.add(
                     "ERROR: Binary operator " + syntax.getOperatorToken().getText() +

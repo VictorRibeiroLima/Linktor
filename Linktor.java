@@ -1,42 +1,49 @@
+import codeanalysis.binding.Binder;
+import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.SyntaxTree;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Linktor {
     public static void main(String[] args) {
-        boolean showTree = false;
-        Scanner console = new Scanner(System.in);
-        while (true) {
-            String input = console.nextLine();
-            if (input.equals("#showTree")) {
-                showTree = true;
-                console.nextLine();
-                continue;
-            }
-            SyntaxTree tree = SyntaxTree.parse(input);
-            if (showTree) {
-                printTree(tree.getRoot());
-            }
-            if (!tree.getDiagnostics().isEmpty()) {
-                for (String error : tree.getDiagnostics()) {
-                    System.out.println("\033[0;31m" + error);
+        try {
+            boolean showTree = false;
+            Scanner console = new Scanner(System.in);
+            while (true) {
+                String input = console.nextLine();
+                if (input.equals("#showTree")) {
+                    showTree = true;
+                    console.nextLine();
+                    continue;
                 }
-            } else {
-                Evaluator evaluator = new Evaluator(tree.getRoot());
-                try {
+                SyntaxTree tree = SyntaxTree.parse(input);
+                List<String> diagnostics = tree.getDiagnostics();
+                Binder binder = new Binder();
+
+                BoundExpression bound = binder.bindExpression(tree.getRoot());
+                diagnostics.addAll(binder.getDiagnostics());
+                if (showTree) {
+                    printTree(tree.getRoot());
+                }
+                if (!tree.getDiagnostics().isEmpty()) {
+                    for (String error : tree.getDiagnostics()) {
+                        System.out.println("\033[0;31m" + error);
+                    }
+                } else {
+                    Evaluator evaluator = new Evaluator(bound);
                     int result = evaluator.evaluate();
                     System.out.println("Result: " + result);
-                } catch (Exception e) {
-                    System.out.println("\033[0;31m" + e.getMessage());
+
                 }
-
+                System.out.println("\033[0m" + "-------");
             }
-            System.out.println("\033[0m" + "-------");
+        } catch (Exception e) {
+            System.out.println("\033[0;31m" + e.getMessage());
         }
-
     }
 
     private static void printTree(SyntaxNode node) {
