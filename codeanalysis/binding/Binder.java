@@ -62,7 +62,7 @@ public class Binder {
         if (kind == null) {
             diagnostics.add(
                     "ERROR: Binary operator " + syntax.getOperatorToken().getText() +
-                            " is not defined for type " + left.getType() + " or " + right.getType() + "."
+                            " is not defined for type " + left.getType() + " and " + right.getType() + "."
             );
             return left;
         }

@@ -47,7 +47,7 @@ public final class Lexer {
             try {
                 return new SyntaxToken(SyntaxKind.NUMBER_TOKEN, start, text, Integer.parseInt(text));
             } catch (NumberFormatException e) {
-                diagnostics.add("ERROR: The number " + text + "is not a valid representation of Int32");
+                diagnostics.add("ERROR: The number " + text + "is not a valid representation of Integer");
                 return new SyntaxToken(SyntaxKind.NUMBER_TOKEN, start, text, null);
             }
 
