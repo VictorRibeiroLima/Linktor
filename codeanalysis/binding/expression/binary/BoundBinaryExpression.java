@@ -6,7 +6,7 @@ import codeanalysis.binding.expression.BoundExpression;
 import java.lang.reflect.Type;
 
 public class BoundBinaryExpression extends BoundExpression {
-    private final BoundBinaryOperatorKind operatorToken;
+    private final BoundBinaryOperatorKind operatorKind;
     private final BoundExpression left;
     private final BoundExpression right;
 
@@ -16,14 +16,14 @@ public class BoundBinaryExpression extends BoundExpression {
 
     public BoundBinaryExpression(BoundExpression left, BoundBinaryOperatorKind operatorKind, BoundExpression right) {
         this.left = left;
-        this.operatorToken = operatorKind;
+        this.operatorKind = operatorKind;
         this.right = right;
         this.kind = BoundNodeKind.BINARY_EXPRESSION;
         this.type = this.left.getType();
     }
 
-    public BoundBinaryOperatorKind getOperatorToken() {
-        return operatorToken;
+    public BoundBinaryOperatorKind getOperatorKind() {
+        return operatorKind;
     }
 
     public BoundExpression getLeft() {

@@ -1,5 +1,5 @@
 package codeanalysis.binding;
 
 public enum BoundNodeKind {
-    BINARY_EXPRESSION
+    LITERAL_EXPRESSION, UNARY_EXPRESSION, BINARY_EXPRESSION
 }
