@@ -13,7 +13,7 @@ public enum SyntaxType {
     OPEN_PARENTHESIS_TOKEN,
     CLOSE_PARENTHESIS_TOKEN,
     EQUAL_TOKEN,
-    NUMBER_EXPRESSION,
+    LITERAL_EXPRESSION,
     BINARY_EXPRESSION, PARENTHESIZED_EXPRESSION;
 
     public static SyntaxType get(char representation) {

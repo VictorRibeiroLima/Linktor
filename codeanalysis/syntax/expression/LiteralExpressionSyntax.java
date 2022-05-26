@@ -7,16 +7,16 @@ import codeanalysis.syntax.SyntaxType;
 import java.util.Arrays;
 import java.util.List;
 
-public class NumberExpressionSyntax extends ExpressionSyntax {
+public class LiteralExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken token;
 
-    public NumberExpressionSyntax(SyntaxToken token) {
+    public LiteralExpressionSyntax(SyntaxToken token) {
         this.token = token;
     }
 
     @Override
     public SyntaxType getType() {
-        return SyntaxType.NUMBER_EXPRESSION;
+        return SyntaxType.LITERAL_EXPRESSION;
     }
 
 
