@@ -48,31 +48,47 @@ public final class Parser {
     }
 
     private ExpressionSyntax parseExpression() {
-        return parseTerm();
+        return parseExpression(0);
     }
 
-    private ExpressionSyntax parseTerm() {
-        ExpressionSyntax left = parseFactor();
-        while (
-                getCurrent().getType() == SyntaxType.PLUS_TOKEN ||
-                        getCurrent().getType() == SyntaxType.MINUS_TOKEN
-        ) {
-            SyntaxToken operatorToken = nextToken();
-            ExpressionSyntax right = parseFactor();
-            left = new BinaryExpressionSyntax(left, operatorToken, right);
-        }
-        return left;
-    }
 
-    private ExpressionSyntax parseFactor() {
+    private ExpressionSyntax parseExpression(int parentPrecedence) {
         ExpressionSyntax left = parsePrimaryExpression();
-        while (getCurrent().getType() == SyntaxType.MULTIPLICATION_TOKEN ||
-                getCurrent().getType() == SyntaxType.DIVISION_TOKEN) {
+        while (true) {
+            int precedence = getBinaryOperatorPrecedence(getCurrent().getType());
+            if (precedence <= parentPrecedence)
+                break;
+
             SyntaxToken operatorToken = nextToken();
-            ExpressionSyntax right = parsePrimaryExpression();
+            ExpressionSyntax right = parseExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
         return left;
+    }
+
+    private ExpressionSyntax parsePrimaryExpression() {
+        if (getCurrent().getType() == SyntaxType.OPEN_PARENTHESIS_TOKEN) {
+            SyntaxToken left = nextToken();
+            ExpressionSyntax expression = parseExpression();
+            SyntaxToken right = matchToken(SyntaxType.CLOSE_PARENTHESIS_TOKEN);
+            return new ParenthesizedExpressionSyntax(left, expression, right);
+
+        }
+        SyntaxToken token = matchToken(SyntaxType.NUMBER_TOKEN);
+        return new LiteralExpressionSyntax(token);
+    }
+
+    private int getBinaryOperatorPrecedence(SyntaxType type) {
+        switch (type) {
+            case MULTIPLICATION_TOKEN:
+            case DIVISION_TOKEN:
+                return 2;
+            case PLUS_TOKEN:
+            case MINUS_TOKEN:
+                return 1;
+            default:
+                return 0;
+        }
     }
 
     private SyntaxToken peek(int offset) {
@@ -98,17 +114,5 @@ public final class Parser {
 
         diagnostics.add("ERROR: unexpected token '" + getCurrent().getType() + "' expected '" + type + "'");
         return new SyntaxToken(type, getCurrent().getPosition(), null, null);
-    }
-
-    private ExpressionSyntax parsePrimaryExpression() {
-        if (getCurrent().getType() == SyntaxType.OPEN_PARENTHESIS_TOKEN) {
-            SyntaxToken left = nextToken();
-            ExpressionSyntax expression = parseExpression();
-            SyntaxToken right = matchToken(SyntaxType.CLOSE_PARENTHESIS_TOKEN);
-            return new ParenthesizedExpressionSyntax(left, expression, right);
-
-        }
-        SyntaxToken token = matchToken(SyntaxType.NUMBER_TOKEN);
-        return new LiteralExpressionSyntax(token);
     }
 }
