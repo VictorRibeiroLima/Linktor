@@ -73,15 +73,25 @@ public final class Parser {
     }
 
     private ExpressionSyntax parsePrimaryExpression() {
-        if (getCurrent().getKind() == SyntaxKind.OPEN_PARENTHESIS_TOKEN) {
-            SyntaxToken left = nextToken();
-            ExpressionSyntax expression = parseExpression();
-            SyntaxToken right = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-            return new ParenthesizedExpressionSyntax(left, expression, right);
-
+        switch (getCurrent().getKind()) {
+            case OPEN_PARENTHESIS_TOKEN: {
+                SyntaxToken left = nextToken();
+                ExpressionSyntax expression = parseExpression();
+                SyntaxToken right = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
+                return new ParenthesizedExpressionSyntax(left, expression, right);
+            }
+            case TRUE_KEYWORD:
+            case FALSE_KEYWORD: {
+                SyntaxToken token = nextToken();
+                boolean value = token.getKind() == SyntaxKind.TRUE_KEYWORD;
+                return new LiteralExpressionSyntax(token, value);
+            }
+            default: {
+                SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
+                return new LiteralExpressionSyntax(token);
+            }
         }
-        SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
-        return new LiteralExpressionSyntax(token);
+
     }
 
     private SyntaxToken peek(int offset) {

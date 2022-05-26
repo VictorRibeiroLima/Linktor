@@ -12,9 +12,18 @@ public class LiteralExpressionSyntax extends ExpressionSyntax {
 
     private final SyntaxKind kind;
 
+    private final Object value;
+
+    public LiteralExpressionSyntax(SyntaxToken token, Object value) {
+        this.token = token;
+        this.kind = SyntaxKind.LITERAL_EXPRESSION;
+        this.value = value;
+    }
+
     public LiteralExpressionSyntax(SyntaxToken token) {
         this.token = token;
         this.kind = SyntaxKind.LITERAL_EXPRESSION;
+        this.value = this.token.getValue();
     }
 
     @Override
@@ -25,6 +34,10 @@ public class LiteralExpressionSyntax extends ExpressionSyntax {
 
     public SyntaxToken getToken() {
         return token;
+    }
+
+    public Object getValue() {
+        return value;
     }
 
     public List<SyntaxNode> getChildren() {

@@ -35,7 +35,7 @@ public class Linktor {
                     }
                 } else {
                     Evaluator evaluator = new Evaluator(bound);
-                    int result = evaluator.evaluate();
+                    Object result = evaluator.evaluate();
                     System.out.println("Result: " + result);
 
                 }

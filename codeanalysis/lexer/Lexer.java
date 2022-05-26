@@ -1,5 +1,6 @@
 package codeanalysis.lexer;
 
+import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 
@@ -60,6 +61,17 @@ public final class Lexer {
 
             String text = this.text.substring(start, position);
             return new SyntaxToken(SyntaxKind.WHITESPACE_TOKEN, start, text, null);
+        }
+        if (Character.isLetter(getCurrent())) {
+            int start = position;
+
+            while (Character.isLetter(getCurrent()))
+                next();
+
+            String text = this.text.substring(start, position);
+            SyntaxKind kind = SyntaxFacts.getKeywordKind(text);
+            return new SyntaxToken(kind, start, text, null);
+
         }
 
         return new SyntaxToken(SyntaxKind.get(getCurrent()), position++, text.substring(position - 1, position), null);

@@ -12,15 +12,15 @@ public final class Evaluator {
         this.root = root;
     }
 
-    public int evaluate() throws Exception {
+    public Object evaluate() throws Exception {
         return evaluateExpression(root);
     }
 
-    private int evaluateExpression(BoundExpression node) throws Exception {
+    private Object evaluateExpression(BoundExpression node) throws Exception {
         if (node instanceof BoundLiteralExpression l)
-            return (int) l.getValue();
+            return l.getValue();
         if (node instanceof BoundUnaryExpression u) {
-            int value = evaluateExpression(u.getRight());
+            int value = (int) evaluateExpression(u.getRight());
             switch (u.getOperatorKind()) {
                 case IDENTITY:
                     return value;
@@ -31,8 +31,8 @@ public final class Evaluator {
             }
         }
         if (node instanceof BoundBinaryExpression b) {
-            int left = evaluateExpression(b.getLeft());
-            int right = evaluateExpression(b.getRight());
+            int left = (int) evaluateExpression(b.getLeft());
+            int right = (int) evaluateExpression(b.getRight());
             switch (b.getOperatorKind()) {
                 case ADDITION:
                     return left + right;

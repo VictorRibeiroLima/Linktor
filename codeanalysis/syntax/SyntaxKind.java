@@ -13,10 +13,15 @@ public enum SyntaxKind {
     OPEN_PARENTHESIS_TOKEN,
     CLOSE_PARENTHESIS_TOKEN,
     EQUAL_TOKEN,
+    IDENTIFIER_TOKEN,
+
     LITERAL_EXPRESSION,
     BINARY_EXPRESSION,
     PARENTHESIZED_EXPRESSION,
-    UNARY_EXPRESSION;
+    UNARY_EXPRESSION,
+    TRUE_KEYWORD,
+    FALSE_KEYWORD;
+
 
     public static SyntaxKind get(char representation) {
         if (Character.isDigit(representation)) {
