@@ -43,7 +43,7 @@ public final class Parser {
 
     public SyntaxTree parse() {
         ExpressionSyntax expression = parseTerm();
-        SyntaxToken endOfFileToken = match(SyntaxType.END_OF_FILE_TOKEN);
+        SyntaxToken endOfFileToken = matchToken(SyntaxType.END_OF_FILE_TOKEN);
         return new SyntaxTree(expression, endOfFileToken, diagnostics);
     }
 
@@ -92,7 +92,7 @@ public final class Parser {
         return token;
     }
 
-    private SyntaxToken match(SyntaxType type) {
+    private SyntaxToken matchToken(SyntaxType type) {
         if (current().getType() == type)
             return nextToken();
 
@@ -104,11 +104,11 @@ public final class Parser {
         if (current().getType() == SyntaxType.OPEN_PARENTHESIS_TOKEN) {
             SyntaxToken left = nextToken();
             ExpressionSyntax expression = parseExpression();
-            SyntaxToken right = match(SyntaxType.CLOSE_PARENTHESIS_TOKEN);
+            SyntaxToken right = matchToken(SyntaxType.CLOSE_PARENTHESIS_TOKEN);
             return new ParenthesizedExpressionSyntax(left, expression, right);
 
         }
-        SyntaxToken token = match(SyntaxType.NUMBER_TOKEN);
+        SyntaxToken token = matchToken(SyntaxType.NUMBER_TOKEN);
         return new NumberExpressionSyntax(token);
     }
 }
