@@ -25,7 +25,7 @@ public final class Parser {
         List<SyntaxToken> tokens = new ArrayList<>();
         Lexer lexer = new Lexer(text);
         do {
-            token = lexer.nextToken();
+            token = lexer.lex();
             if (token.getType() != SyntaxType.WHITESPACE_TOKEN && token.getType() != SyntaxType.BAD_TOKEN)
                 tokens.add(token);
             else if (token.getType() == SyntaxType.BAD_TOKEN) {

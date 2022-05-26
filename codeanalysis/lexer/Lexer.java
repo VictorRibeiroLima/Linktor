@@ -33,7 +33,7 @@ public final class Lexer {
         this.position++;
     }
 
-    public SyntaxToken nextToken() {
+    public SyntaxToken lex() {
         if (getCurrent() == '\0')
             return new SyntaxToken(SyntaxType.END_OF_FILE_TOKEN, position, String.valueOf(getCurrent()), null);
         if (Character.isDigit(getCurrent())) {
