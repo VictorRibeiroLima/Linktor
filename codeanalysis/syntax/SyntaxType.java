@@ -2,11 +2,11 @@ package codeanalysis.syntax;
 
 public enum SyntaxType {
 
+    BAD_TOKEN,
     WHITESPACE_TOKEN,
+    END_OF_FILE_TOKEN,
     PLUS_TOKEN,
     NUMBER_TOKEN,
-    END_OF_FILE_TOKEN,
-    BAD_TOKEN,
     MINUS_TOKEN,
     DIVISION_TOKEN,
     MULTIPLICATION_TOKEN,
@@ -14,7 +14,9 @@ public enum SyntaxType {
     CLOSE_PARENTHESIS_TOKEN,
     EQUAL_TOKEN,
     LITERAL_EXPRESSION,
-    BINARY_EXPRESSION, PARENTHESIZED_EXPRESSION;
+    BINARY_EXPRESSION,
+    PARENTHESIZED_EXPRESSION,
+    UNARY_EXPRESSION;
 
     public static SyntaxType get(char representation) {
         if (Character.isDigit(representation)) {
