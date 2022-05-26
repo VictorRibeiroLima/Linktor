@@ -54,8 +54,8 @@ public final class Parser {
     private ExpressionSyntax parseTerm() {
         ExpressionSyntax left = parseFactor();
         while (
-                current().getType() == SyntaxType.PLUS_TOKEN ||
-                        current().getType() == SyntaxType.MINUS_TOKEN
+                getCurrent().getType() == SyntaxType.PLUS_TOKEN ||
+                        getCurrent().getType() == SyntaxType.MINUS_TOKEN
         ) {
             SyntaxToken operatorToken = nextToken();
             ExpressionSyntax right = parseFactor();
@@ -66,8 +66,8 @@ public final class Parser {
 
     private ExpressionSyntax parseFactor() {
         ExpressionSyntax left = parsePrimaryExpression();
-        while (current().getType() == SyntaxType.MULTIPLICATION_TOKEN ||
-                current().getType() == SyntaxType.DIVISION_TOKEN) {
+        while (getCurrent().getType() == SyntaxType.MULTIPLICATION_TOKEN ||
+                getCurrent().getType() == SyntaxType.DIVISION_TOKEN) {
             SyntaxToken operatorToken = nextToken();
             ExpressionSyntax right = parsePrimaryExpression();
             left = new BinaryExpressionSyntax(left, operatorToken, right);
@@ -82,26 +82,26 @@ public final class Parser {
         return tokens.get(index);
     }
 
-    private SyntaxToken current() {
+    private SyntaxToken getCurrent() {
         return peek(0);
     }
 
     private SyntaxToken nextToken() {
-        SyntaxToken token = current();
+        SyntaxToken token = getCurrent();
         position++;
         return token;
     }
 
     private SyntaxToken matchToken(SyntaxType type) {
-        if (current().getType() == type)
+        if (getCurrent().getType() == type)
             return nextToken();
 
-        diagnostics.add("ERROR: unexpected token '" + current().getType() + "' expected '" + type + "'");
-        return new SyntaxToken(type, current().getPosition(), null, null);
+        diagnostics.add("ERROR: unexpected token '" + getCurrent().getType() + "' expected '" + type + "'");
+        return new SyntaxToken(type, getCurrent().getPosition(), null, null);
     }
 
     private ExpressionSyntax parsePrimaryExpression() {
-        if (current().getType() == SyntaxType.OPEN_PARENTHESIS_TOKEN) {
+        if (getCurrent().getType() == SyntaxType.OPEN_PARENTHESIS_TOKEN) {
             SyntaxToken left = nextToken();
             ExpressionSyntax expression = parseExpression();
             SyntaxToken right = matchToken(SyntaxType.CLOSE_PARENTHESIS_TOKEN);
