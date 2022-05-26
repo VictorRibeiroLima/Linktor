@@ -1,8 +1,8 @@
 package codeanalysis.syntax.expression;
 
+import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,10 +12,13 @@ public class BinaryExpressionSyntax extends ExpressionSyntax {
     private final ExpressionSyntax left;
     private final ExpressionSyntax right;
 
+    private final SyntaxKind kind;
+
     public BinaryExpressionSyntax(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right) {
         this.left = left;
         this.operatorToken = operatorToken;
         this.right = right;
+        this.kind = SyntaxKind.BINARY_EXPRESSION;
     }
 
     public SyntaxToken getOperatorToken() {
@@ -31,8 +34,8 @@ public class BinaryExpressionSyntax extends ExpressionSyntax {
     }
 
     @Override
-    public SyntaxType getType() {
-        return SyntaxType.BINARY_EXPRESSION;
+    public SyntaxKind getKind() {
+        return this.kind;
     }
 
     @Override

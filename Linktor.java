@@ -47,7 +47,7 @@ public class Linktor {
         String marker = isLast ? "└──" : "├──";
         System.out.print(indent);
         System.out.print(marker);
-        System.out.print(node.getType());
+        System.out.print(node.getKind());
         if (node instanceof SyntaxToken s && s.getValue() != null) {
             System.out.print(" ");
             System.out.print(s.getValue());

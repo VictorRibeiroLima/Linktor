@@ -1,8 +1,8 @@
 package codeanalysis.syntax.expression;
 
+import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,10 +10,12 @@ import java.util.List;
 public class UnaryExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken operatorToken;
     private final ExpressionSyntax right;
+    private final SyntaxKind kind;
 
     public UnaryExpressionSyntax(SyntaxToken operatorToken, ExpressionSyntax right) {
         this.operatorToken = operatorToken;
         this.right = right;
+        this.kind = SyntaxKind.UNARY_EXPRESSION;
     }
 
     public SyntaxToken getOperatorToken() {
@@ -25,8 +27,8 @@ public class UnaryExpressionSyntax extends ExpressionSyntax {
     }
 
     @Override
-    public SyntaxType getType() {
-        return SyntaxType.UNARY_EXPRESSION;
+    public SyntaxKind getKind() {
+        return this.kind;
     }
 
     @Override

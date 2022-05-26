@@ -1,6 +1,6 @@
 package codeanalysis.syntax;
 
-public enum SyntaxType {
+public enum SyntaxKind {
 
     BAD_TOKEN,
     WHITESPACE_TOKEN,
@@ -18,7 +18,7 @@ public enum SyntaxType {
     PARENTHESIZED_EXPRESSION,
     UNARY_EXPRESSION;
 
-    public static SyntaxType get(char representation) {
+    public static SyntaxKind get(char representation) {
         if (Character.isDigit(representation)) {
             return NUMBER_TOKEN;
         } else if (representation == '+')
@@ -39,7 +39,7 @@ public enum SyntaxType {
         return BAD_TOKEN;
     }
 
-    public static SyntaxType get(String representation) {
+    public static SyntaxKind get(String representation) {
         if (representation.matches("-?\\d+"))
             return NUMBER_TOKEN;
         else if (representation.isBlank()) {
