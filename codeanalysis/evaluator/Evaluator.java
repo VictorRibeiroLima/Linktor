@@ -1,6 +1,5 @@
 package codeanalysis.evaluator;
 
-import codeanalysis.syntax.SyntaxType;
 import codeanalysis.syntax.expression.BinaryExpressionSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 import codeanalysis.syntax.expression.LiteralExpressionSyntax;
@@ -23,15 +22,18 @@ public final class Evaluator {
         if (node instanceof BinaryExpressionSyntax b) {
             int left = evaluateExpression(b.getLeft());
             int right = evaluateExpression(b.getRight());
-            if (b.getOperatorToken().getType() == SyntaxType.PLUS_TOKEN)
-                return left + right;
-            else if (b.getOperatorToken().getType() == SyntaxType.MINUS_TOKEN)
-                return left - right;
-            else if (b.getOperatorToken().getType() == SyntaxType.DIVISION_TOKEN)
-                return left / right;
-            else if (b.getOperatorToken().getType() == SyntaxType.MULTIPLICATION_TOKEN)
-                return left * right;
-            throw new Exception("Unexpected binary operation " + b.getOperatorToken().getType().toString());
+            switch (b.getOperatorToken().getType()) {
+                case PLUS_TOKEN:
+                    return left + right;
+                case MINUS_TOKEN:
+                    return left - right;
+                case DIVISION_TOKEN:
+                    return left / right;
+                case MULTIPLICATION_TOKEN:
+                    return left * right;
+                default:
+                    throw new Exception("Unexpected binary operation " + b.getOperatorToken().getType().toString());
+            }
         }
         if (node instanceof ParenthesizedExpressionSyntax p) {
             return evaluateExpression(p.getExpression());
