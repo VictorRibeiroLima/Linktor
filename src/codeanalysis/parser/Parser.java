@@ -44,30 +44,47 @@ public final class Parser {
     }
 
     private ExpressionSyntax parseExpression() {
-        return parseExpression(0);
+        return parseAssignmentExpression();
+    }
+
+    private ExpressionSyntax parseAssignmentExpression() {
+        if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN &&
+                peek(1).getKind() == SyntaxKind.EQUAL_TOKEN) {
+            SyntaxToken identifier = nextToken();
+            SyntaxToken equals = nextToken();
+            ExpressionSyntax right = parseAssignmentExpression();
+            return new AssignmentExpressionSyntax(identifier, equals, right);
+        }
+        return parseBinaryExpression();
+    }
+
+    private ExpressionSyntax parseBinaryExpression() {
+        return parseBinaryExpression(0);
     }
 
 
-    private ExpressionSyntax parseExpression(int parentPrecedence) {
-        ExpressionSyntax left;
-        int unaryPrecedence = SyntaxFacts.getUnaryOperatorPrecedence(getCurrent().getKind());
-        if (unaryPrecedence > parentPrecedence) {
-            SyntaxToken operator = nextToken();
-            left = parseExpression(0);
-            return new UnaryExpressionSyntax(operator, left);
-        } else {
-            left = parsePrimaryExpression();
-        }
+    private ExpressionSyntax parseBinaryExpression(int parentPrecedence) {
+        ExpressionSyntax left = parseUnaryExpression(parentPrecedence);
         while (true) {
             int precedence = SyntaxFacts.getBinaryOperatorPrecedence(getCurrent().getKind());
             if (precedence <= parentPrecedence)
                 break;
 
             SyntaxToken operatorToken = nextToken();
-            ExpressionSyntax right = parseExpression(precedence);
+            ExpressionSyntax right = parseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
         }
         return left;
+    }
+
+    private ExpressionSyntax parseUnaryExpression(int parentPrecedence) {
+        int unaryPrecedence = SyntaxFacts.getUnaryOperatorPrecedence(getCurrent().getKind());
+        if (unaryPrecedence > parentPrecedence) {
+            SyntaxToken operator = nextToken();
+            ExpressionSyntax left = parseBinaryExpression(0);
+            return new UnaryExpressionSyntax(operator, left);
+        }
+        return parsePrimaryExpression();
     }
 
     private ExpressionSyntax parsePrimaryExpression() {
@@ -84,6 +101,8 @@ public final class Parser {
                 boolean value = token.getKind() == SyntaxKind.TRUE_KEYWORD;
                 return new LiteralExpressionSyntax(token, value);
             }
+            case IDENTIFIER_TOKEN:
+                return new NameExpressionSyntax(nextToken());
             default: {
                 SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
                 return new LiteralExpressionSyntax(token);
