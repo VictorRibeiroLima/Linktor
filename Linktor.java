@@ -21,14 +21,14 @@ public class Linktor {
                     continue;
                 }
                 SyntaxTree tree = SyntaxTree.parse(input);
+                if (showTree) {
+                    printTree(tree.getRoot());
+                }
                 List<String> diagnostics = tree.getDiagnostics();
                 Binder binder = new Binder();
 
                 BoundExpression bound = binder.bindExpression(tree.getRoot());
                 diagnostics.addAll(binder.getDiagnostics());
-                if (showTree) {
-                    printTree(tree.getRoot());
-                }
                 if (!tree.getDiagnostics().isEmpty()) {
                     for (String error : tree.getDiagnostics()) {
                         System.out.println("\033[0;31m" + error);

@@ -20,30 +20,40 @@ public final class Evaluator {
         if (node instanceof BoundLiteralExpression l)
             return l.getValue();
         if (node instanceof BoundUnaryExpression u) {
-            int value = (int) evaluateExpression(u.getRight());
-            switch (u.getOperatorKind()) {
+            Object value = evaluateExpression(u.getRight());
+            switch (u.getOperator().getKind()) {
                 case IDENTITY:
                     return value;
                 case NEGATION:
-                    return -value;
+                    return -(int) value;
+                case LOGICAL_NEGATION:
+                    return !(boolean) value;
                 default:
-                    throw new Exception("Unexpected unary operation " + u.getOperatorKind());
+                    throw new Exception("Unexpected unary operation " + u.getOperator());
             }
         }
         if (node instanceof BoundBinaryExpression b) {
-            int left = (int) evaluateExpression(b.getLeft());
-            int right = (int) evaluateExpression(b.getRight());
-            switch (b.getOperatorKind()) {
+            Object left = evaluateExpression(b.getLeft());
+            Object right = evaluateExpression(b.getRight());
+            switch (b.getOperator().getKind()) {
+                case LOGICAL_AND:
+                    return (boolean) left && (boolean) right;
+                case LOGICAL_OR:
+                    return (boolean) left || (boolean) right;
+                case LOGICAL_EQUALITY:
+                    return left.equals(right);
+                case LOGICAL_INEQUALITY:
+                    return !left.equals(right);
                 case ADDITION:
-                    return left + right;
+                    return (int) left + (int) right;
                 case SUBTRACTION:
-                    return left - right;
+                    return (int) left - (int) right;
                 case DIVISION:
-                    return left / right;
+                    return (int) left / (int) right;
                 case MULTIPLICATION:
-                    return left * right;
+                    return (int) left * (int) right;
                 default:
-                    throw new Exception("Unexpected binary operation " + b.getOperatorKind());
+                    throw new Exception("Unexpected binary operation " + b.getOperator());
             }
         }
         throw new Exception("Unexpected node " + node.getKind());

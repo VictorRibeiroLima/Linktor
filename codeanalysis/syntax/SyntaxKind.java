@@ -20,36 +20,7 @@ public enum SyntaxKind {
     PARENTHESIZED_EXPRESSION,
     UNARY_EXPRESSION,
     TRUE_KEYWORD,
-    FALSE_KEYWORD;
+    EQUAL_EQUAL_TOKEN, EXCLAMATION_EQUAL_TOKEN, EXCLAMATION_TOKEN, AMPERSAND_AMPERSAND_TOKEN, PIPE_PIPE_TOKEN, FALSE_KEYWORD
 
 
-    public static SyntaxKind get(char representation) {
-        if (Character.isDigit(representation)) {
-            return NUMBER_TOKEN;
-        } else if (representation == '+')
-            return PLUS_TOKEN;
-        else if (representation == '-')
-            return MINUS_TOKEN;
-        else if (representation == '/') {
-            return SLASH_TOKEN;
-        } else if (representation == '*') {
-            return STAR_TOKEN;
-        } else if (representation == '(') {
-            return OPEN_PARENTHESIS_TOKEN;
-        } else if (representation == ')') {
-            return CLOSE_PARENTHESIS_TOKEN;
-        } else if (representation == '=') {
-            return EQUAL_TOKEN;
-        }
-        return BAD_TOKEN;
-    }
-
-    public static SyntaxKind get(String representation) {
-        if (representation.matches("-?\\d+"))
-            return NUMBER_TOKEN;
-        else if (representation.isBlank()) {
-            return WHITESPACE_TOKEN;
-        }
-        return BAD_TOKEN;
-    }
 }

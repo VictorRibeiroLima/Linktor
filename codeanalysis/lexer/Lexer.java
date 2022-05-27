@@ -20,19 +20,10 @@ public final class Lexer {
         this.position = 0;
     }
 
-    public char getCurrent() {
-        if (position >= text.length())
-            return '\0';
-        return text.charAt(position);
-    }
-
     public List<String> getDiagnostics() {
         return diagnostics;
     }
 
-    private void next() {
-        this.position++;
-    }
 
     public SyntaxToken lex() {
         if (getCurrent() == '\0')
@@ -73,9 +64,61 @@ public final class Lexer {
             return new SyntaxToken(kind, start, text, null);
 
         }
+        switch (getCurrent()) {
+            case '+':
+                return new SyntaxToken(SyntaxKind.PLUS_TOKEN, position++, "+", null);
+            case '-':
+                return new SyntaxToken(SyntaxKind.MINUS_TOKEN, position++, "-", null);
+            case '/':
+                return new SyntaxToken(SyntaxKind.SLASH_TOKEN, position++, "/", null);
+            case '*':
+                return new SyntaxToken(SyntaxKind.STAR_TOKEN, position++, "*", null);
+            case '(':
+                return new SyntaxToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN, position++, "(", null);
+            case ')':
+                return new SyntaxToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN, position++, ")", null);
+            case '=': {
+                if (lookahead() == '=')
+                    return new SyntaxToken(SyntaxKind.EQUAL_EQUAL_TOKEN, position += 2, "==", null);
+                return new SyntaxToken(SyntaxKind.EQUAL_TOKEN, position++, "=", null);
+            }
+            case '!': {
+                if (lookahead() == '=')
+                    return new SyntaxToken(SyntaxKind.EXCLAMATION_EQUAL_TOKEN, position += 2, "!=", null);
+                return new SyntaxToken(SyntaxKind.EXCLAMATION_TOKEN, position++, "!", null);
+            }
+            case '&': {
+                if (lookahead() == '&')
+                    return new SyntaxToken(SyntaxKind.AMPERSAND_AMPERSAND_TOKEN, position += 2, "&&", null);
+                break;
+            }
+            case '|': {
+                if (lookahead() == '|')
+                    return new SyntaxToken(SyntaxKind.PIPE_PIPE_TOKEN, position += 2, "||", null);
+                break;
+            }
 
-        return new SyntaxToken(SyntaxKind.get(getCurrent()), position++, text.substring(position - 1, position), null);
+        }
+        diagnostics.add("ERROR: bad char input :" + getCurrent());
+        return new SyntaxToken(SyntaxKind.BAD_TOKEN, position++, text.substring(position - 1, position), null);
     }
 
+    private void next() {
+        this.position++;
+    }
 
+    private char getCurrent() {
+        return peek(0);
+    }
+
+    private char peek(int offset) {
+        int index = position + offset;
+        if (index >= text.length())
+            return '\0';
+        return text.charAt(index);
+    }
+
+    private char lookahead() {
+        return peek(1);
+    }
 }

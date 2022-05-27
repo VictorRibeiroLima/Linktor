@@ -95,9 +95,9 @@ public final class Parser {
     }
 
     private SyntaxToken peek(int offset) {
-        int index = position - offset;
+        int index = position + offset;
         if (index >= tokens.size())
-            return tokens.get(position - 1);
+            return peek(offset - 1);
         return tokens.get(index);
     }
 

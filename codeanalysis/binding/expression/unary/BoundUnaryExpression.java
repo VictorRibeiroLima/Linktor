@@ -6,21 +6,21 @@ import codeanalysis.binding.expression.BoundExpression;
 import java.lang.reflect.Type;
 
 public class BoundUnaryExpression extends BoundExpression {
-    private final BoundUnaryOperatorKind operatorKind;
+    private final BoundUnaryOperator operator;
     private final BoundExpression right;
     private final BoundNodeKind kind;
 
     private final Type type;
 
-    public BoundUnaryExpression(BoundUnaryOperatorKind operatorKind, BoundExpression right) {
-        this.operatorKind = operatorKind;
+    public BoundUnaryExpression(BoundUnaryOperator operator, BoundExpression right) {
+        this.operator = operator;
         this.right = right;
         this.kind = BoundNodeKind.UNARY_EXPRESSION;
-        this.type = this.right.getType();
+        this.type = this.operator.getResultType();
     }
 
-    public BoundUnaryOperatorKind getOperatorKind() {
-        return operatorKind;
+    public BoundUnaryOperator getOperator() {
+        return operator;
     }
 
     public BoundExpression getRight() {

@@ -9,7 +9,8 @@ public final class SyntaxFacts {
         switch (kind) {
             case PLUS_TOKEN:
             case MINUS_TOKEN:
-                return 3;
+            case EXCLAMATION_TOKEN:
+                return 6;
             default:
                 return 0;
         }
@@ -19,9 +20,16 @@ public final class SyntaxFacts {
         switch (kind) {
             case STAR_TOKEN:
             case SLASH_TOKEN:
-                return 2;
+                return 5;
             case PLUS_TOKEN:
             case MINUS_TOKEN:
+                return 4;
+            case EQUAL_EQUAL_TOKEN:
+            case EXCLAMATION_EQUAL_TOKEN:
+                return 3;
+            case AMPERSAND_AMPERSAND_TOKEN:
+                return 2;
+            case PIPE_PIPE_TOKEN:
                 return 1;
             default:
                 return 0;
