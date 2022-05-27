@@ -1,8 +1,8 @@
 package codeanalysis.syntax.expression;
 
+import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,10 +12,13 @@ public class ParenthesizedExpressionSyntax extends ExpressionSyntax {
     private final ExpressionSyntax expression;
     private final SyntaxToken close;
 
+    private final SyntaxKind kind;
+
     public ParenthesizedExpressionSyntax(SyntaxToken open, ExpressionSyntax expression, SyntaxToken close) {
         this.open = open;
         this.expression = expression;
         this.close = close;
+        this.kind = SyntaxKind.PARENTHESIZED_EXPRESSION;
     }
 
     public ExpressionSyntax getExpression() {
@@ -23,8 +26,8 @@ public class ParenthesizedExpressionSyntax extends ExpressionSyntax {
     }
 
     @Override
-    public SyntaxType getType() {
-        return SyntaxType.PARENTHESIZED_EXPRESSION;
+    public SyntaxKind getKind() {
+        return this.kind;
     }
 
     @Override

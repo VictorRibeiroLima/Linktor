@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SyntaxToken extends SyntaxNode {
-    private final SyntaxType type;
+    private final SyntaxKind kind;
     private final int position;
     private final String text;
     private final Object value;
 
-    public SyntaxToken(SyntaxType type, int position, String text, Object value) {
-        this.type = type;
+    public SyntaxToken(SyntaxKind kind, int position, String text, Object value) {
+        this.kind = kind;
         this.position = position;
         this.text = text;
         this.value = value;
     }
 
-    public SyntaxType getType() {
-        return type;
+    public SyntaxKind getKind() {
+        return kind;
     }
 
     public int getPosition() {

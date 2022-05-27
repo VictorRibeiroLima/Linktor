@@ -1,8 +1,8 @@
 package codeanalysis.syntax.expression;
 
+import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,18 +10,34 @@ import java.util.List;
 public class LiteralExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken token;
 
+    private final SyntaxKind kind;
+
+    private final Object value;
+
+    public LiteralExpressionSyntax(SyntaxToken token, Object value) {
+        this.token = token;
+        this.kind = SyntaxKind.LITERAL_EXPRESSION;
+        this.value = value;
+    }
+
     public LiteralExpressionSyntax(SyntaxToken token) {
         this.token = token;
+        this.kind = SyntaxKind.LITERAL_EXPRESSION;
+        this.value = this.token.getValue();
     }
 
     @Override
-    public SyntaxType getType() {
-        return SyntaxType.LITERAL_EXPRESSION;
+    public SyntaxKind getKind() {
+        return this.kind;
     }
 
 
     public SyntaxToken getToken() {
         return token;
+    }
+
+    public Object getValue() {
+        return value;
     }
 
     public List<SyntaxNode> getChildren() {

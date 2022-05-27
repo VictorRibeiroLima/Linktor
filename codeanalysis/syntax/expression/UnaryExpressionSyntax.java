@@ -7,26 +7,19 @@ import codeanalysis.syntax.SyntaxToken;
 import java.util.Arrays;
 import java.util.List;
 
-public class BinaryExpressionSyntax extends ExpressionSyntax {
+public class UnaryExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken operatorToken;
-    private final ExpressionSyntax left;
     private final ExpressionSyntax right;
-
     private final SyntaxKind kind;
 
-    public BinaryExpressionSyntax(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right) {
-        this.left = left;
+    public UnaryExpressionSyntax(SyntaxToken operatorToken, ExpressionSyntax right) {
         this.operatorToken = operatorToken;
         this.right = right;
-        this.kind = SyntaxKind.BINARY_EXPRESSION;
+        this.kind = SyntaxKind.UNARY_EXPRESSION;
     }
 
     public SyntaxToken getOperatorToken() {
         return operatorToken;
-    }
-
-    public ExpressionSyntax getLeft() {
-        return left;
     }
 
     public ExpressionSyntax getRight() {
@@ -40,6 +33,6 @@ public class BinaryExpressionSyntax extends ExpressionSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(left, operatorToken, right);
+        return Arrays.asList(operatorToken, right);
     }
 }
