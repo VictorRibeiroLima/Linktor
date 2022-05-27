@@ -1,17 +1,15 @@
 package src.codeanalysis.syntax;
 
+import src.codeanalysis.diagnostics.DiagnosticBag;
 import src.codeanalysis.parser.Parser;
 import src.codeanalysis.syntax.expression.ExpressionSyntax;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class SyntaxTree {
-    private final List<String> diagnostics = new ArrayList<>();
+    private final DiagnosticBag diagnostics = new DiagnosticBag();
     private final ExpressionSyntax root;
     private final SyntaxToken endOfFileToken;
 
-    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, List<String> diagnostics) {
+    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics) {
         this.root = root;
         this.endOfFileToken = endOfFileToken;
         this.diagnostics.addAll(diagnostics);
@@ -23,7 +21,7 @@ public class SyntaxTree {
         return tree;
     }
 
-    public List<String> getDiagnostics() {
+    public DiagnosticBag getDiagnostics() {
         return diagnostics;
     }
 

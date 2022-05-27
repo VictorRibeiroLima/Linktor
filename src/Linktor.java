@@ -2,16 +2,19 @@ package src;
 
 import src.codeanalysis.binding.Binder;
 import src.codeanalysis.binding.expression.BoundExpression;
+import src.codeanalysis.diagnostics.Diagnostic;
+import src.codeanalysis.diagnostics.DiagnosticBag;
 import src.codeanalysis.evaluator.Evaluator;
 import src.codeanalysis.syntax.SyntaxNode;
 import src.codeanalysis.syntax.SyntaxToken;
 import src.codeanalysis.syntax.SyntaxTree;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class Linktor {
     public static void main(String[] args) {
+        final String redColor = "\033[0;31m";
+        final String whiteColor = "\033[0m";
         try {
             boolean showTree = false;
             Scanner console = new Scanner(System.in);
@@ -26,14 +29,22 @@ public class Linktor {
                 if (showTree) {
                     printTree(tree.getRoot());
                 }
-                List<String> diagnostics = tree.getDiagnostics();
+
                 Binder binder = new Binder();
 
                 BoundExpression bound = binder.bindExpression(tree.getRoot());
-                diagnostics.addAll(binder.getDiagnostics());
-                if (!tree.getDiagnostics().isEmpty()) {
-                    for (String error : tree.getDiagnostics()) {
-                        System.out.println("\033[0;31m" + error);
+                DiagnosticBag diagnostics = binder.getDiagnostics().concat(tree.getDiagnostics());
+                if (!diagnostics.isEmpty()) {
+                    for (Diagnostic diagnostic : diagnostics) {
+                        System.out.println(redColor);
+                        System.out.println(diagnostic);
+
+                        String prefix = input.substring(0, diagnostic.span().start());
+                        String error = input.substring(diagnostic.span().start(), diagnostic.span().end());
+                        String suffix = input.substring(diagnostic.span().end());
+
+                        System.out.println(whiteColor + prefix + redColor + error + whiteColor + suffix);
+
                     }
                 } else {
                     Evaluator evaluator = new Evaluator(bound);
@@ -41,9 +52,10 @@ public class Linktor {
                     System.out.println("Result: " + result);
 
                 }
-                System.out.println("\033[0m" + "-------");
+                System.out.println(whiteColor + "-------");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("\033[0;31m" + e.getMessage());
         }
     }

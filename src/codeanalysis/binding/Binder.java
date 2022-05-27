@@ -6,16 +6,14 @@ import src.codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import src.codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import src.codeanalysis.binding.expression.unary.BoundUnaryOperator;
+import src.codeanalysis.diagnostics.DiagnosticBag;
 import src.codeanalysis.syntax.expression.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Binder {
 
-    private final List<String> diagnostics = new ArrayList<>();
+    private final DiagnosticBag diagnostics = new DiagnosticBag();
 
-    public List<String> getDiagnostics() {
+    public DiagnosticBag getDiagnostics() {
         return diagnostics;
     }
 
@@ -38,10 +36,8 @@ public class Binder {
         BoundExpression right = bindExpression(syntax.getRight());
         BoundUnaryOperator operator = BoundUnaryOperator.bind(syntax.getOperatorToken().getKind(), right.getType());
         if (operator == null) {
-            diagnostics.add(
-                    "ERROR: Unary operator " + syntax.getOperatorToken().getText() +
-                            " is not defined for type " + right.getType() + "."
-            );
+            diagnostics.reportUndefinedUnaryOperator(syntax.getOperatorToken().getSpan(),
+                    syntax.getOperatorToken().getText(), right.getType());
             return right;
         }
         return new BoundUnaryExpression(operator, right);
@@ -52,10 +48,9 @@ public class Binder {
         BoundExpression right = bindExpression(syntax.getRight());
         BoundBinaryOperator operator = BoundBinaryOperator.bind(syntax.getOperatorToken().getKind(), left.getType(), right.getType());
         if (operator == null) {
-            diagnostics.add(
-                    "ERROR: Binary operator " + syntax.getOperatorToken().getText() +
-                            " is not defined for type " + left.getType() + " and " + right.getType() + "."
-            );
+            diagnostics.reportUndefinedBinaryOperator(syntax.getOperatorToken().getSpan(),
+                    syntax.getOperatorToken().getText(), left.getType(), right.getType());
+
             return left;
         }
         return new BoundBinaryExpression(left, operator, right);

@@ -1,5 +1,6 @@
 package src.codeanalysis.parser;
 
+import src.codeanalysis.diagnostics.DiagnosticBag;
 import src.codeanalysis.lexer.Lexer;
 import src.codeanalysis.syntax.SyntaxFacts;
 import src.codeanalysis.syntax.SyntaxKind;
@@ -15,7 +16,7 @@ public final class Parser {
     private final List<SyntaxToken> tokens;
     private int position;
 
-    private final List<String> diagnostics = new ArrayList<>();
+    private final DiagnosticBag diagnostics = new DiagnosticBag();
 
     public Parser(String text) {
         position = 0;
@@ -26,15 +27,12 @@ public final class Parser {
             token = lexer.lex();
             if (token.getKind() != SyntaxKind.WHITESPACE_TOKEN && token.getKind() != SyntaxKind.BAD_TOKEN)
                 tokens.add(token);
-            else if (token.getKind() == SyntaxKind.BAD_TOKEN) {
-                diagnostics.add("ERROR: Bad Token input: " + token.getText());
-            }
         } while (token.getKind() != SyntaxKind.END_OF_FILE_TOKEN);
-        this.diagnostics.addAll(lexer.getDiagnostics());
         this.tokens = tokens;
+        diagnostics.addAll(lexer.getDiagnostics());
     }
 
-    public List<String> getDiagnostics() {
+    public DiagnosticBag getDiagnostics() {
         return diagnostics;
     }
 
@@ -115,7 +113,7 @@ public final class Parser {
         if (getCurrent().getKind() == type)
             return nextToken();
 
-        diagnostics.add("ERROR: unexpected token '" + getCurrent().getKind() + "' expected '" + type + "'");
+        diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
         return new SyntaxToken(type, getCurrent().getPosition(), null, null);
     }
 }
