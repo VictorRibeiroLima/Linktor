@@ -30,7 +30,43 @@ public enum SyntaxKind {
 
     //KEYWORDS
     TRUE_KEYWORD,
-    FALSE_KEYWORD
+    FALSE_KEYWORD;
 
+    public static String getText(SyntaxKind kind){
+        switch (kind){
+            case PLUS_TOKEN:
+                return "+";
+            case NUMBER_TOKEN:
+                return "1";
+            case MINUS_TOKEN:
+                return "-";
+            case SLASH_TOKEN:
+                return "/";
+            case STAR_TOKEN:
+                return "*";
+            case OPEN_PARENTHESIS_TOKEN:
+                return "(";
+            case CLOSE_PARENTHESIS_TOKEN:
+                return ")";
+            case EQUAL_TOKEN:
+                return "=";
+            case EQUAL_EQUAL_TOKEN:
+                return "==";
+            case EXCLAMATION_EQUAL_TOKEN:
+                return "!=";
+            case EXCLAMATION_TOKEN:
+                return "!";
+            case AMPERSAND_AMPERSAND_TOKEN:
+                return "&&";
+            case PIPE_PIPE_TOKEN:
+                return "||";
+            case FALSE_KEYWORD:
+                return "false";
+            case TRUE_KEYWORD:
+                return "true";
+            default:
+                return null;
+        }
+    }
 
 }
