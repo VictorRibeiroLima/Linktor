@@ -9,15 +9,18 @@ import src.codeanalysis.syntax.SyntaxNode;
 import src.codeanalysis.syntax.SyntaxToken;
 import src.codeanalysis.syntax.SyntaxTree;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Linktor {
     public static void main(String[] args) {
         final String redColor = "\033[0;31m";
         final String whiteColor = "\033[0m";
+        boolean showTree = false;
+        Scanner console = new Scanner(System.in);
+        final Map<String, Object> variables = new HashMap<>();
         try {
-            boolean showTree = false;
-            Scanner console = new Scanner(System.in);
             while (true) {
                 String input = console.nextLine();
                 if (input.equals("#showTree")) {
@@ -30,7 +33,7 @@ public class Linktor {
                     printTree(tree.getRoot());
                 }
 
-                Binder binder = new Binder();
+                Binder binder = new Binder(variables);
 
                 BoundExpression bound = binder.bindExpression(tree.getRoot());
                 DiagnosticBag diagnostics = binder.getDiagnostics().concat(tree.getDiagnostics());
@@ -47,7 +50,7 @@ public class Linktor {
 
                     }
                 } else {
-                    Evaluator evaluator = new Evaluator(bound);
+                    Evaluator evaluator = new Evaluator(bound, variables);
                     Object result = evaluator.evaluate();
                     System.out.println("Result: " + result);
 

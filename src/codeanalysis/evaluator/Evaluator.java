@@ -5,11 +5,15 @@ import src.codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import src.codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
 
+import java.util.Map;
+
 public final class Evaluator {
     private final BoundExpression root;
+    private final Map<String, Object> variables;
 
-    public Evaluator(BoundExpression root) {
+    public Evaluator(BoundExpression root, Map<String, Object> variables) {
         this.root = root;
+        this.variables = variables;
     }
 
     public Object evaluate() throws Exception {

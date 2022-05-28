@@ -19,6 +19,23 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         return diagnostics;
     }
 
+
+    public boolean isEmpty() {
+        return diagnostics.isEmpty();
+    }
+
+    public void addAll(DiagnosticBag bag) {
+        this.diagnostics.addAll(bag.diagnostics);
+    }
+
+    public DiagnosticBag concat(DiagnosticBag bag) {
+        DiagnosticBag concatenatedBag = new DiagnosticBag();
+        concatenatedBag.addAll(this);
+        concatenatedBag.addAll(bag);
+        return concatenatedBag;
+    }
+
+
     private void report(TextSpan span, String message) {
         Diagnostic diagnostic = new Diagnostic(span, message);
         diagnostics.add(diagnostic);
@@ -52,19 +69,8 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
-    public boolean isEmpty() {
-        return diagnostics.isEmpty();
+    public void reportUndefinedNameExpression(TextSpan span, String name) {
+        String message = "ERROR: undefined variable '" + name + "'";
+        report(span, message);
     }
-
-    public void addAll(DiagnosticBag bag) {
-        this.diagnostics.addAll(bag.diagnostics);
-    }
-
-    public DiagnosticBag concat(DiagnosticBag bag) {
-        DiagnosticBag concatenatedBag = new DiagnosticBag();
-        concatenatedBag.addAll(this);
-        concatenatedBag.addAll(bag);
-        return concatenatedBag;
-    }
-
 }
