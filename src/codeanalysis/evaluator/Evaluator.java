@@ -1,17 +1,20 @@
 package src.codeanalysis.evaluator;
 
+import src.codeanalysis.binding.assignment.BoundAssignmentExpression;
 import src.codeanalysis.binding.expression.BoundExpression;
 import src.codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import src.codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
+import src.codeanalysis.binding.expression.variable.BoundVariableExpression;
+import src.codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;
 
 public final class Evaluator {
     private final BoundExpression root;
-    private final Map<String, Object> variables;
+    private final Map<VariableSymbol, Object> variables;
 
-    public Evaluator(BoundExpression root, Map<String, Object> variables) {
+    public Evaluator(BoundExpression root, Map<VariableSymbol, Object> variables) {
         this.root = root;
         this.variables = variables;
     }
@@ -23,6 +26,13 @@ public final class Evaluator {
     private Object evaluateExpression(BoundExpression node) throws Exception {
         if (node instanceof BoundLiteralExpression l)
             return l.getValue();
+        if (node instanceof BoundVariableExpression v)
+            return variables.get(v.getVariable());
+        if (node instanceof BoundAssignmentExpression a) {
+            Object value = evaluateExpression(a.getBoundExpression());
+            variables.put(a.getVariable(), value);
+            return value;
+        }
         if (node instanceof BoundUnaryExpression u) {
             Object value = evaluateExpression(u.getRight());
             switch (u.getOperator().getKind()) {

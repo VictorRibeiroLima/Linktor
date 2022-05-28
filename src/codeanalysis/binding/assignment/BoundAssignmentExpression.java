@@ -2,21 +2,22 @@ package src.codeanalysis.binding.assignment;
 
 import src.codeanalysis.binding.BoundNodeKind;
 import src.codeanalysis.binding.expression.BoundExpression;
+import src.codeanalysis.symbol.VariableSymbol;
 
 import java.lang.reflect.Type;
 
 public class BoundAssignmentExpression extends BoundExpression {
 
-    private final String name;
+    private final VariableSymbol variable;
     private final BoundExpression boundExpression;
     private final BoundNodeKind kind;
     private final Type type;
 
-    public BoundAssignmentExpression(String name, BoundExpression boundExpression) {
-        this.name = name;
+    public BoundAssignmentExpression(VariableSymbol variable, BoundExpression boundExpression) {
+        this.variable = variable;
         this.boundExpression = boundExpression;
         this.kind = BoundNodeKind.ASSIGNMENT_EXPRESSION;
-        this.type = boundExpression.getType();
+        this.type = variable.type();
     }
 
     @Override
@@ -29,8 +30,8 @@ public class BoundAssignmentExpression extends BoundExpression {
         return this.type;
     }
 
-    public String getName() {
-        return name;
+    public VariableSymbol getVariable() {
+        return variable;
     }
 
     public BoundExpression getBoundExpression() {

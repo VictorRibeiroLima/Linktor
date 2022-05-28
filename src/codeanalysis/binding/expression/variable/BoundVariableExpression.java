@@ -2,29 +2,34 @@ package src.codeanalysis.binding.expression.variable;
 
 import src.codeanalysis.binding.BoundNodeKind;
 import src.codeanalysis.binding.expression.BoundExpression;
+import src.codeanalysis.symbol.VariableSymbol;
 
 import java.lang.reflect.Type;
 
 public class BoundVariableExpression extends BoundExpression {
-    private final String name;
+    private final VariableSymbol variable;
 
     private final BoundNodeKind kind;
 
     private final Type type;
 
-    public BoundVariableExpression(String name, Type type) {
-        this.name = name;
+    public BoundVariableExpression(VariableSymbol variable) {
+        this.variable = variable;
         this.kind = BoundNodeKind.VARIABLE_EXPRESSION;
-        this.type = type;
+        this.type = variable.type();
     }
 
     @Override
     public BoundNodeKind getKind() {
-        return null;
+        return this.kind;
     }
 
     @Override
     public Type getType() {
-        return null;
+        return this.type;
+    }
+
+    public VariableSymbol getVariable() {
+        return variable;
     }
 }

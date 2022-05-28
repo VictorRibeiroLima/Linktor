@@ -5,6 +5,7 @@ import src.codeanalysis.binding.expression.BoundExpression;
 import src.codeanalysis.diagnostics.Diagnostic;
 import src.codeanalysis.diagnostics.DiagnosticBag;
 import src.codeanalysis.evaluator.Evaluator;
+import src.codeanalysis.symbol.VariableSymbol;
 import src.codeanalysis.syntax.SyntaxNode;
 import src.codeanalysis.syntax.SyntaxToken;
 import src.codeanalysis.syntax.SyntaxTree;
@@ -19,7 +20,7 @@ public class Linktor {
         final String whiteColor = "\033[0m";
         boolean showTree = false;
         Scanner console = new Scanner(System.in);
-        final Map<String, Object> variables = new HashMap<>();
+        final Map<VariableSymbol, Object> variables = new HashMap<>();
         try {
             while (true) {
                 String input = console.nextLine();

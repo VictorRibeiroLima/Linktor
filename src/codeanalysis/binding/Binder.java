@@ -9,18 +9,19 @@ import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import src.codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import src.codeanalysis.binding.expression.variable.BoundVariableExpression;
 import src.codeanalysis.diagnostics.DiagnosticBag;
+import src.codeanalysis.symbol.VariableSymbol;
 import src.codeanalysis.syntax.expression.*;
 
-import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 public class Binder {
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
-    private final Map<String, Object> variables;
+    private final Map<VariableSymbol, Object> variables;
 
-    public Binder(Map<String, Object> variables) {
+    public Binder(Map<VariableSymbol, Object> variables) {
         this.variables = variables;
     }
 
@@ -47,10 +48,9 @@ public class Binder {
 
     private BoundExpression bindNameExpression(NameExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
-        if (variables.containsKey(name)) {
-            Object value = variables.get(name);
-            Type type = Integer.class;
-            return new BoundVariableExpression(name, type);
+        Optional<VariableSymbol> variable = variables.keySet().stream().filter(v -> v.name().equals(name)).findFirst();
+        if (variable.isPresent()) {
+            return new BoundVariableExpression(variable.get());
         }
         diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
         return new BoundLiteralExpression(0);
@@ -59,7 +59,8 @@ public class Binder {
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
         BoundExpression boundExpression = bindExpression(syntax.getExpression());
-        return new BoundAssignmentExpression(name, boundExpression);
+        VariableSymbol variable = new VariableSymbol(name, boundExpression.getType());
+        return new BoundAssignmentExpression(variable, boundExpression);
     }
 
 

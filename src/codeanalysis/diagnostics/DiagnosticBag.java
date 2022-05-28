@@ -70,7 +70,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportUndefinedNameExpression(TextSpan span, String name) {
-        String message = "ERROR: undefined variable '" + name + "'";
+        String message = "ERROR: Undefined variable '" + name + "'";
         report(span, message);
     }
 }
