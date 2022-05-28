@@ -1,7 +1,7 @@
-package src.codeanalysis.binding.expression.binary;
+package codeanalysis.binding.expression.binary;
 
-import src.codeanalysis.binding.BoundNodeKind;
-import src.codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.expression.BoundExpression;
 
 import java.lang.reflect.Type;
 

@@ -1,4 +1,4 @@
-package src.codeanalysis.binding.expression.unary;
+package codeanalysis.binding.expression.unary;
 
 public enum BoundUnaryOperatorKind {
     IDENTITY,

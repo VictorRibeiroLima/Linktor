@@ -1,4 +1,4 @@
-package src.codeanalysis.symbol;
+package codeanalysis.symbol;
 
 import java.lang.reflect.Type;
 

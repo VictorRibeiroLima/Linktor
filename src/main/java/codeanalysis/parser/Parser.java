@@ -1,12 +1,12 @@
-package src.codeanalysis.parser;
+package codeanalysis.parser;
 
-import src.codeanalysis.diagnostics.DiagnosticBag;
-import src.codeanalysis.lexer.Lexer;
-import src.codeanalysis.syntax.SyntaxFacts;
-import src.codeanalysis.syntax.SyntaxKind;
-import src.codeanalysis.syntax.SyntaxToken;
-import src.codeanalysis.syntax.SyntaxTree;
-import src.codeanalysis.syntax.expression.*;
+import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.lexer.Lexer;
+import codeanalysis.syntax.SyntaxFacts;
+import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
+import codeanalysis.syntax.expression.*;
 
 import java.util.ArrayList;
 import java.util.List;

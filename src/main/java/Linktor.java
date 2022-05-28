@@ -1,14 +1,12 @@
-package src;
-
-import src.codeanalysis.binding.Binder;
-import src.codeanalysis.binding.expression.BoundExpression;
-import src.codeanalysis.diagnostics.Diagnostic;
-import src.codeanalysis.diagnostics.DiagnosticBag;
-import src.codeanalysis.evaluator.Evaluator;
-import src.codeanalysis.symbol.VariableSymbol;
-import src.codeanalysis.syntax.SyntaxNode;
-import src.codeanalysis.syntax.SyntaxToken;
-import src.codeanalysis.syntax.SyntaxTree;
+import codeanalysis.binding.Binder;
+import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.diagnostics.Diagnostic;
+import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.evaluator.Evaluator;
+import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.HashMap;
 import java.util.Map;

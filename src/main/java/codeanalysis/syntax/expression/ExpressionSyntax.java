@@ -1,6 +1,6 @@
-package src.codeanalysis.syntax.expression;
+package codeanalysis.syntax.expression;
 
-import src.codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxNode;
 
 public abstract class ExpressionSyntax extends SyntaxNode {
 }

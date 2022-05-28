@@ -1,4 +1,4 @@
-package src.codeanalysis.syntax;
+package codeanalysis.syntax;
 
 import java.util.List;
 

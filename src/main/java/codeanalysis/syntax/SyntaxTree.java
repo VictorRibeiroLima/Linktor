@@ -1,8 +1,8 @@
-package src.codeanalysis.syntax;
+package codeanalysis.syntax;
 
-import src.codeanalysis.diagnostics.DiagnosticBag;
-import src.codeanalysis.parser.Parser;
-import src.codeanalysis.syntax.expression.ExpressionSyntax;
+import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.parser.Parser;
+import codeanalysis.syntax.expression.ExpressionSyntax;
 
 public class SyntaxTree {
     private final DiagnosticBag diagnostics = new DiagnosticBag();

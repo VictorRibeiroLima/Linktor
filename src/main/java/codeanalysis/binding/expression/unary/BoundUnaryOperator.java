@@ -1,6 +1,6 @@
-package src.codeanalysis.binding.expression.unary;
+package codeanalysis.binding.expression.unary;
 
-import src.codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxKind;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;

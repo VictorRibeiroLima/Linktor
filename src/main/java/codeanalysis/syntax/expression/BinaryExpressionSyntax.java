@@ -1,8 +1,8 @@
-package src.codeanalysis.syntax.expression;
+package codeanalysis.syntax.expression;
 
-import src.codeanalysis.syntax.SyntaxKind;
-import src.codeanalysis.syntax.SyntaxNode;
-import src.codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxToken;
 
 import java.util.Arrays;
 import java.util.List;

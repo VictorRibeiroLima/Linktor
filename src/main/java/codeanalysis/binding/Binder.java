@@ -1,16 +1,16 @@
-package src.codeanalysis.binding;
+package codeanalysis.binding;
 
-import src.codeanalysis.binding.assignment.BoundAssignmentExpression;
-import src.codeanalysis.binding.expression.BoundExpression;
-import src.codeanalysis.binding.expression.binary.BoundBinaryExpression;
-import src.codeanalysis.binding.expression.binary.BoundBinaryOperator;
-import src.codeanalysis.binding.expression.literal.BoundLiteralExpression;
-import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
-import src.codeanalysis.binding.expression.unary.BoundUnaryOperator;
-import src.codeanalysis.binding.expression.variable.BoundVariableExpression;
-import src.codeanalysis.diagnostics.DiagnosticBag;
-import src.codeanalysis.symbol.VariableSymbol;
-import src.codeanalysis.syntax.expression.*;
+import codeanalysis.binding.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryOperator;
+import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.unary.BoundUnaryExpression;
+import codeanalysis.binding.expression.unary.BoundUnaryOperator;
+import codeanalysis.binding.expression.variable.BoundVariableExpression;
+import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.syntax.expression.*;
 
 import java.util.Map;
 import java.util.Optional;

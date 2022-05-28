@@ -1,10 +1,10 @@
-package src.codeanalysis.lexer;
+package codeanalysis.lexer;
 
-import src.codeanalysis.diagnostics.DiagnosticBag;
-import src.codeanalysis.diagnostics.TextSpan;
-import src.codeanalysis.syntax.SyntaxFacts;
-import src.codeanalysis.syntax.SyntaxKind;
-import src.codeanalysis.syntax.SyntaxToken;
+import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.TextSpan;
+import codeanalysis.syntax.SyntaxFacts;
+import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxToken;
 
 
 public final class Lexer {

@@ -1,4 +1,4 @@
-package src.codeanalysis.diagnostics;
+package codeanalysis.diagnostics;
 
 public record Diagnostic(TextSpan span, String message) {
 

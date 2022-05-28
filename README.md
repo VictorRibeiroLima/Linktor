@@ -1,1 +1,1 @@
-# src.Linktor
+# src.main.java.Linktor

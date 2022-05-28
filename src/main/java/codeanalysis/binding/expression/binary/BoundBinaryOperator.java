@@ -1,6 +1,6 @@
-package src.codeanalysis.binding.expression.binary;
+package codeanalysis.binding.expression.binary;
 
-import src.codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxKind;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;

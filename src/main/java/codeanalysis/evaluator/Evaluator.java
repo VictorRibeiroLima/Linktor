@@ -1,12 +1,12 @@
-package src.codeanalysis.evaluator;
+package codeanalysis.evaluator;
 
-import src.codeanalysis.binding.assignment.BoundAssignmentExpression;
-import src.codeanalysis.binding.expression.BoundExpression;
-import src.codeanalysis.binding.expression.binary.BoundBinaryExpression;
-import src.codeanalysis.binding.expression.literal.BoundLiteralExpression;
-import src.codeanalysis.binding.expression.unary.BoundUnaryExpression;
-import src.codeanalysis.binding.expression.variable.BoundVariableExpression;
-import src.codeanalysis.symbol.VariableSymbol;
+import codeanalysis.binding.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.unary.BoundUnaryExpression;
+import codeanalysis.binding.expression.variable.BoundVariableExpression;
+import codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;
 

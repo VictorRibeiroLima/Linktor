@@ -1,8 +1,8 @@
-package src.codeanalysis.binding.assignment;
+package codeanalysis.binding.assignment;
 
-import src.codeanalysis.binding.BoundNodeKind;
-import src.codeanalysis.binding.expression.BoundExpression;
-import src.codeanalysis.symbol.VariableSymbol;
+import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.symbol.VariableSymbol;
 
 import java.lang.reflect.Type;
 

@@ -1,4 +1,4 @@
-package src.codeanalysis.syntax;
+package codeanalysis.syntax;
 
 public final class SyntaxFacts {
     private SyntaxFacts() {

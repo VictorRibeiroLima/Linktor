@@ -1,4 +1,4 @@
-package src.codeanalysis.binding;
+package codeanalysis.binding;
 
 public enum BoundNodeKind {
     LITERAL_EXPRESSION, UNARY_EXPRESSION, VARIABLE_EXPRESSION, ASSIGNMENT_EXPRESSION, BINARY_EXPRESSION

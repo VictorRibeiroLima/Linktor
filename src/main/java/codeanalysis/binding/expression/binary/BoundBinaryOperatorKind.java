@@ -1,4 +1,4 @@
-package src.codeanalysis.binding.expression.binary;
+package codeanalysis.binding.expression.binary;
 
 public enum BoundBinaryOperatorKind {
     ADDITION,

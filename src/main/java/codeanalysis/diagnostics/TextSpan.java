@@ -1,4 +1,4 @@
-package src.codeanalysis.diagnostics;
+package codeanalysis.diagnostics;
 
 public record TextSpan(int start, int length) {
     public int end() {
