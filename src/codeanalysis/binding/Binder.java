@@ -60,6 +60,7 @@ public class Binder {
         String name = syntax.getIdentifierToken().getText();
         BoundExpression boundExpression = bindExpression(syntax.getExpression());
         VariableSymbol variable = new VariableSymbol(name, boundExpression.getType());
+        variables.put(variable, null);
         return new BoundAssignmentExpression(variable, boundExpression);
     }
 
