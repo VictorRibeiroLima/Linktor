@@ -1,8 +1,12 @@
 package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.lexer.Lexer;
 import codeanalysis.parser.Parser;
 import codeanalysis.syntax.expression.ExpressionSyntax;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SyntaxTree {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
@@ -16,9 +20,21 @@ public class SyntaxTree {
     }
 
     public static SyntaxTree parse(String input) {
-        Parser parser = new Parser(input);
+        final Parser parser = new Parser(input);
         SyntaxTree tree = parser.parse();
         return tree;
+    }
+
+    public static List<SyntaxToken> parseTokens(String input){
+        final Lexer lexer = new Lexer(input);
+        final List<SyntaxToken>tokens = new ArrayList<>();
+        while(true){
+            SyntaxToken token = lexer.lex();
+            if(token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
+                break;
+            tokens.add(token);
+        }
+        return tokens;
     }
 
     public DiagnosticBag getDiagnostics() {
