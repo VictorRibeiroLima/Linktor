@@ -1,19 +1,40 @@
 package codeanalysis.lexer;
 
+import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.SyntaxTree;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LexerTest {
+
+    @Test
+    void testAllTokens(){
+        List<SyntaxKind> tokenKinds = Arrays.stream(SyntaxKind.values())
+                .filter(syntaxKind -> syntaxKind.toString().endsWith("KEYWORD")
+                        ||syntaxKind.toString().endsWith("TOKEN")
+                        && syntaxKind != SyntaxKind.BAD_TOKEN
+                        && syntaxKind != SyntaxKind.END_OF_FILE_TOKEN
+                )
+                .toList();
+
+        List<SyntaxKind> testedTokens = Stream.concat(getTokens().map(arg-> (SyntaxKind) arg.get()[0])
+                ,getSeparator().map(arg-> (SyntaxKind) arg.get()[0])).toList();
+
+        List<SyntaxKind> untestedTokens = new ArrayList<>(tokenKinds);
+        untestedTokens.removeAll(testedTokens);
+
+        assertTrue(untestedTokens.isEmpty());
+    }
 
     @ParameterizedTest
     @MethodSource("provideTokens")
@@ -93,25 +114,17 @@ class LexerTest {
     }
 
     private static Stream<Arguments> getTokens() {
-        return Stream.of(
-                Arguments.of(SyntaxKind.PLUS_TOKEN,"+"),
-                Arguments.of(SyntaxKind.NUMBER_TOKEN,"1"),
-                Arguments.of(SyntaxKind.MINUS_TOKEN,"-"),
-                Arguments.of(SyntaxKind.SLASH_TOKEN,"/"),
-                Arguments.of(SyntaxKind.STAR_TOKEN,"*"),
-                Arguments.of(SyntaxKind.OPEN_PARENTHESIS_TOKEN,"("),
-                Arguments.of(SyntaxKind.CLOSE_PARENTHESIS_TOKEN,")"),
-                Arguments.of(SyntaxKind.EQUAL_TOKEN,"="),
-                Arguments.of(SyntaxKind.IDENTIFIER_TOKEN,"v"),
-                Arguments.of(SyntaxKind.IDENTIFIER_TOKEN,"variable"),
-                Arguments.of(SyntaxKind.EQUAL_EQUAL_TOKEN,"=="),
-                Arguments.of(SyntaxKind.EXCLAMATION_EQUAL_TOKEN,"!="),
-                Arguments.of(SyntaxKind.EXCLAMATION_TOKEN,"!"),
-                Arguments.of(SyntaxKind.AMPERSAND_AMPERSAND_TOKEN,"&&"),
-                Arguments.of(SyntaxKind.PIPE_PIPE_TOKEN,"||"),
-                Arguments.of(SyntaxKind.FALSE_KEYWORD,"false"),
-                Arguments.of(SyntaxKind.TRUE_KEYWORD,"true")
-        );
+       Stream<Arguments> fixedValues = Arrays.stream(SyntaxKind.values())
+                .filter(syntaxKind -> SyntaxFacts.getText(syntaxKind) != null)
+                .map(syntaxKind -> Arguments.of(syntaxKind,SyntaxFacts.getText(syntaxKind)));
+       Stream<Arguments> dynamicValues =Stream.of(
+               Arguments.of(SyntaxKind.NUMBER_TOKEN,"1"),
+               Arguments.of(SyntaxKind.NUMBER_TOKEN,"123"),
+               Arguments.of(SyntaxKind.IDENTIFIER_TOKEN,"a"),
+               Arguments.of(SyntaxKind.IDENTIFIER_TOKEN,"abc")
+       );
+
+        return Stream.concat(fixedValues,dynamicValues);
     }
 
     private static Stream<Arguments> getSeparator(){
@@ -143,9 +156,7 @@ class LexerTest {
             return true;
         if(k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EXCLAMATION_TOKEN)
             return true;
-        if(k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN)
-            return true;
-        return  false;
+        return k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN;
     }
 
 }
