@@ -1,6 +1,6 @@
 package codeanalysis.binding;
 
-import codeanalysis.binding.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;

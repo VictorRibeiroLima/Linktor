@@ -1,4 +1,4 @@
-package codeanalysis.binding.assignment;
+package codeanalysis.binding.expression.assignment;
 
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
