@@ -4,10 +4,9 @@ import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.VariableSymbol;
-import codeanalysis.syntax.SyntaxNode;
-import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.SyntaxTree;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -29,7 +28,7 @@ public class Linktor {
                 }
                 SyntaxTree tree = SyntaxTree.parse(input);
                 if (showTree) {
-                    printTree(tree.getRoot());
+                    tree.getRoot().writeTo(new PrintWriter(System.out, true));
                 }
 
                 Binder binder = new Binder(variables);
@@ -60,33 +59,5 @@ public class Linktor {
             e.printStackTrace();
             System.out.println("\033[0;31m" + e.getMessage());
         }
-    }
-
-    private static void printTree(SyntaxNode node) {
-        printTree(node, "", false);
-    }
-
-    private static void printTree(SyntaxNode node, String indent, boolean isLast) {
-        String marker = isLast ? "└──" : "├──";
-        System.out.print(indent);
-        System.out.print(marker);
-        System.out.print(node.getKind());
-        if (node instanceof SyntaxToken s && s.getValue() != null) {
-            System.out.print(" ");
-            System.out.print(s.getValue());
-        }
-        System.out.println();
-
-        indent += isLast ? "    " : "│   ";
-
-        SyntaxNode last = null;
-        if (!node.getChildren().isEmpty()) {
-            last = node.getChildren().get(node.getChildren().size() - 1);
-        }
-        for (SyntaxNode n : node.getChildren()) {
-            printTree(n, indent, last == n);
-        }
-
-
     }
 }
