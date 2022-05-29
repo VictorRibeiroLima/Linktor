@@ -77,7 +77,7 @@ public final class Parser {
         int unaryPrecedence = SyntaxFacts.getUnaryOperatorPrecedence(getCurrent().getKind());
         if (unaryPrecedence > 0) {
             SyntaxToken operator = nextToken();
-            ExpressionSyntax left = parsePrimaryExpression();
+            ExpressionSyntax left = parseUnaryExpression();
             return new UnaryExpressionSyntax(operator, left);
         }
         return parsePrimaryExpression();
