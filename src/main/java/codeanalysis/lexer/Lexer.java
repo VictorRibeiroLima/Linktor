@@ -1,7 +1,6 @@
 package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.TextSpan;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
@@ -98,12 +97,21 @@ public final class Lexer {
                 next();
                 break;
             }
-            case '1': case '2': case '3': case '4':case '5':
-            case '6': case '7': case '8': case '9':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
                 readNumberToken();
                 break;
-            case ' ': case '\t':
-            case '\n': case '\r':
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
                 readWhitespace();
                 break;
             default:

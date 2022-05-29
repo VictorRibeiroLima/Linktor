@@ -1,5 +1,6 @@
 package codeanalysis.diagnostics;
 
+import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.syntax.SyntaxKind;
 
 import java.lang.reflect.Type;
