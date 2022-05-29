@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class ParserTest {
 
     @ParameterizedTest
@@ -73,7 +71,7 @@ class ParserTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideUnaryOperatorPairs")
+    @MethodSource("provideBinaryUnaryOperatorPairs")
     void parseBinaryUnaryExpressionHonorsPrecedence(SyntaxKind binaryExpression,SyntaxKind unaryExpression){
         String binaryText = SyntaxFacts.getText(binaryExpression);
         String unaryText = SyntaxFacts.getText(unaryExpression);
@@ -102,7 +100,7 @@ class ParserTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideUnaryOperatorPairs")
+    @MethodSource("provideBinaryUnaryOperatorPairs")
     void parseUnaryBinaryExpressionHonorsPrecedence(SyntaxKind binaryExpression,SyntaxKind unaryExpression){
         String binaryText = SyntaxFacts.getText(binaryExpression);
         String unaryText = SyntaxFacts.getText(unaryExpression);
@@ -130,7 +128,34 @@ class ParserTest {
                 asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"b");
     }
 
-    static Stream<Arguments> provideBinaryOperatorPairs (){
+    @ParameterizedTest
+    @MethodSource("provideUnaryOperatorPairs")
+    void parseUnaryUnaryExpression(SyntaxKind u1,SyntaxKind u2){
+        String u1Text = SyntaxFacts.getText(u1);
+        String u2Text = SyntaxFacts.getText(u2);
+
+        String text = u1Text+u2Text+"a";
+        Parser parser = new Parser(text);
+        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        /*
+
+                  !
+                 /
+                !
+               /
+              a
+
+             */
+
+        asserting.assertNode(SyntaxKind.UNARY_EXPRESSION);
+        asserting.assertToken(u1,u1Text);
+            asserting.assertNode(SyntaxKind.UNARY_EXPRESSION);
+            asserting.assertToken(u2,u2Text);
+                asserting.assertNode(SyntaxKind.NAME_EXPRESSION);
+                    asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"a");
+    }
+
+    static Stream<Arguments> provideBinaryOperatorPairs(){
         List<SyntaxKind> bos1 = SyntaxFacts.getBinaryOperatorKinds();
         List<SyntaxKind> bos2 = SyntaxFacts.getBinaryOperatorKinds();
         List<Arguments> args = new ArrayList<>();
@@ -142,8 +167,20 @@ class ParserTest {
         return args.stream();
     }
 
-    static Stream<Arguments> provideUnaryOperatorPairs (){
+    static Stream<Arguments> provideBinaryUnaryOperatorPairs(){
         List<SyntaxKind> bos1 = SyntaxFacts.getBinaryOperatorKinds();
+        List<SyntaxKind> bos2 = SyntaxFacts.getUnaryOperatorKinds();
+        List<Arguments> args = new ArrayList<>();
+        for (SyntaxKind bo1:bos1) {
+            for (SyntaxKind bo2:bos2) {
+                args.add(Arguments.of(bo1,bo2));
+            }
+        }
+        return args.stream();
+    }
+
+    static Stream<Arguments> provideUnaryOperatorPairs(){
+        List<SyntaxKind> bos1 = SyntaxFacts.getUnaryOperatorKinds();
         List<SyntaxKind> bos2 = SyntaxFacts.getUnaryOperatorKinds();
         List<Arguments> args = new ArrayList<>();
         for (SyntaxKind bo1:bos1) {
