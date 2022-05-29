@@ -32,11 +32,6 @@ public final class Parser {
         diagnostics.addAll(lexer.getDiagnostics());
     }
 
-    public DiagnosticBag getDiagnostics() {
-        return diagnostics;
-    }
-
-
     public SyntaxTree parse() {
         ExpressionSyntax expression = parseExpression();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
@@ -64,7 +59,7 @@ public final class Parser {
 
 
     private ExpressionSyntax parseBinaryExpression(int parentPrecedence) {
-        ExpressionSyntax left = parseUnaryExpression(parentPrecedence);
+        ExpressionSyntax left = parseUnaryExpression();
         while (true) {
             int precedence = SyntaxFacts.getBinaryOperatorPrecedence(getCurrent().getKind());
             if (precedence <= parentPrecedence)
@@ -73,15 +68,16 @@ public final class Parser {
             SyntaxToken operatorToken = nextToken();
             ExpressionSyntax right = parseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax(left, operatorToken, right);
+
         }
         return left;
     }
 
-    private ExpressionSyntax parseUnaryExpression(int parentPrecedence) {
+    private ExpressionSyntax parseUnaryExpression() {
         int unaryPrecedence = SyntaxFacts.getUnaryOperatorPrecedence(getCurrent().getKind());
-        if (unaryPrecedence > parentPrecedence) {
+        if (unaryPrecedence > 0) {
             SyntaxToken operator = nextToken();
-            ExpressionSyntax left = parseBinaryExpression(0);
+            ExpressionSyntax left = parseUnaryExpression();
             return new UnaryExpressionSyntax(operator, left);
         }
         return parsePrimaryExpression();

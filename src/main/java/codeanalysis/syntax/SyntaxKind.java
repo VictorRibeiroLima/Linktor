@@ -30,7 +30,6 @@ public enum SyntaxKind {
 
     //KEYWORDS
     TRUE_KEYWORD,
-    FALSE_KEYWORD
-
+    FALSE_KEYWORD;
 
 }
