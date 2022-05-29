@@ -38,6 +38,7 @@ public class SyntaxToken extends SyntaxNode {
         return value;
     }
 
+    @Override
     public TextSpan getSpan() {
         return span;
     }
