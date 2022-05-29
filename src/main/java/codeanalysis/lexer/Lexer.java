@@ -11,6 +11,12 @@ public final class Lexer {
     private final String text;
     private int position;
 
+    private int start;
+
+    private SyntaxKind kind;
+
+    private Object value;
+
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
 
@@ -25,88 +31,122 @@ public final class Lexer {
 
 
     public SyntaxToken lex() {
-        if (getCurrent() == '\0')
-            return new SyntaxToken(SyntaxKind.END_OF_FILE_TOKEN, position, String.valueOf(getCurrent()), null);
-        int start = position;
-
-        if (Character.isDigit(getCurrent())) {
-
-            while (Character.isDigit(getCurrent()))
-                next();
-
-            String text = this.text.substring(start, position);
-            try {
-                return new SyntaxToken(SyntaxKind.NUMBER_TOKEN, start, text, Integer.parseInt(text));
-            } catch (NumberFormatException e) {
-                diagnostics.reportInvalidType(new TextSpan(start, position), this.text, Integer.class);
-                return new SyntaxToken(SyntaxKind.NUMBER_TOKEN, start, text, null);
-            }
-
-        }
-        if (Character.isWhitespace(getCurrent())) {
-
-            while (Character.isWhitespace(getCurrent()))
-                next();
-
-
-            String text = this.text.substring(start, position);
-            return new SyntaxToken(SyntaxKind.WHITESPACE_TOKEN, start, text, null);
-        }
-        if (Character.isLetter(getCurrent())) {
-
-            while (Character.isLetter(getCurrent()))
-                next();
-
-            String text = this.text.substring(start, position);
-            SyntaxKind kind = SyntaxFacts.getKeywordKind(text);
-            return new SyntaxToken(kind, start, text, null);
-
-        }
+        start = position;
+        kind = SyntaxKind.BAD_TOKEN;
+        value = null;
         switch (getCurrent()) {
+            case '\0':
+                kind = SyntaxKind.END_OF_FILE_TOKEN;
+                break;
             case '+':
-                return new SyntaxToken(SyntaxKind.PLUS_TOKEN, position++, "+", null);
+                kind = SyntaxKind.PLUS_TOKEN;
+                next();
+                break;
             case '-':
-                return new SyntaxToken(SyntaxKind.MINUS_TOKEN, position++, "-", null);
+                kind = SyntaxKind.MINUS_TOKEN;
+                next();
+                break;
             case '/':
-                return new SyntaxToken(SyntaxKind.SLASH_TOKEN, position++, "/", null);
+                kind = SyntaxKind.SLASH_TOKEN;
+                next();
+                break;
             case '*':
-                return new SyntaxToken(SyntaxKind.STAR_TOKEN, position++, "*", null);
+                kind = SyntaxKind.STAR_TOKEN;
+                next();
+                break;
             case '(':
-                return new SyntaxToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN, position++, "(", null);
+                kind = SyntaxKind.OPEN_PARENTHESIS_TOKEN;
+                next();
+                break;
             case ')':
-                return new SyntaxToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN, position++, ")", null);
+                kind = SyntaxKind.CLOSE_PARENTHESIS_TOKEN;
+                next();
+                break;
             case '=': {
                 if (lookahead() == '=') {
-                    position += 2;
-                    return new SyntaxToken(SyntaxKind.EQUAL_EQUAL_TOKEN, start, "==", null);
+                    kind = SyntaxKind.EQUAL_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.EQUAL_TOKEN;
                 }
-                return new SyntaxToken(SyntaxKind.EQUAL_TOKEN, position++, "=", null);
+                next();
+                break;
             }
             case '!': {
                 if (lookahead() == '=') {
-                    position += 2;
-                    return new SyntaxToken(SyntaxKind.EXCLAMATION_EQUAL_TOKEN, start, "!=", null);
+                    kind = SyntaxKind.EXCLAMATION_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.EXCLAMATION_TOKEN;
                 }
-                return new SyntaxToken(SyntaxKind.EXCLAMATION_TOKEN, position++, "!", null);
+                next();
+                break;
             }
             case '&': {
                 if (lookahead() == '&') {
-                    position += 2;
-                    return new SyntaxToken(SyntaxKind.AMPERSAND_AMPERSAND_TOKEN, start, "&&", null);
+                    kind = SyntaxKind.AMPERSAND_AMPERSAND_TOKEN;
+                    next();
                 }
+                next();
                 break;
             }
             case '|': {
                 if (lookahead() == '|') {
-                    position += 2;
-                    return new SyntaxToken(SyntaxKind.PIPE_PIPE_TOKEN, start, "||", null);
+                    kind = SyntaxKind.PIPE_PIPE_TOKEN;
+                    next();
                 }
+                next();
                 break;
             }
-
+            case '1': case '2': case '3': case '4':case '5':
+            case '6': case '7': case '8': case '9':
+                readNumberToken();
+                break;
+            case ' ': case '\t':
+            case '\n': case '\r':
+                readWhitespace();
+                break;
+            default:
+                if (Character.isLetter(getCurrent()))
+                    readWordToken();
+                else if (Character.isWhitespace(getCurrent()))
+                    readWhitespace();
+                diagnostics.reportBadChar(position, getCurrent());
+                break;
         }
-        diagnostics.reportBadChar(position, getCurrent());
-        return new SyntaxToken(SyntaxKind.BAD_TOKEN, position++, text.substring(position - 1, position), null);
+
+        String text = SyntaxFacts.getText(kind);
+        if (text == null) {
+            text = this.text.substring(start, position);
+        }
+        return new SyntaxToken(kind, start, text, value);
+    }
+
+    private void readNumberToken() {
+        while (Character.isDigit(getCurrent()))
+            next();
+
+        String text = this.text.substring(start, position);
+
+        kind = SyntaxKind.NUMBER_TOKEN;
+        value = Integer.parseInt(text);
+    }
+
+    private void readWhitespace() {
+        while (Character.isWhitespace(getCurrent()))
+            next();
+
+
+        String text = this.text.substring(start, position);
+        kind = SyntaxKind.WHITESPACE_TOKEN;
+    }
+
+    private void readWordToken() {
+        while (Character.isLetter(getCurrent()))
+            next();
+
+        String text = this.text.substring(start, position);
+        kind = SyntaxFacts.getKeywordKind(text);
     }
 
     private void next() {
