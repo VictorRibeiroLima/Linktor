@@ -72,9 +72,79 @@ class ParserTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("provideUnaryOperatorPairs")
+    void parseBinaryUnaryExpressionHonorsPrecedence(SyntaxKind binaryExpression,SyntaxKind unaryExpression){
+        String binaryText = SyntaxFacts.getText(binaryExpression);
+        String unaryText = SyntaxFacts.getText(unaryExpression);
+
+        String text = "a "+binaryText+ unaryText+" b";
+        Parser parser = new Parser(text);
+        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        /*
+
+                  +
+                 / \
+                a   !
+                     \
+                      b
+             */
+
+        asserting.assertNode(SyntaxKind.BINARY_EXPRESSION);
+            asserting.assertNode(SyntaxKind.NAME_EXPRESSION);
+                asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"a");
+            asserting.assertToken(binaryExpression,binaryText);
+            asserting.assertNode(SyntaxKind.UNARY_EXPRESSION);
+                asserting.assertToken(unaryExpression,unaryText);
+                asserting.assertNode(SyntaxKind.NAME_EXPRESSION);
+                    asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"b");
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideUnaryOperatorPairs")
+    void parseUnaryBinaryExpressionHonorsPrecedence(SyntaxKind binaryExpression,SyntaxKind unaryExpression){
+        String binaryText = SyntaxFacts.getText(binaryExpression);
+        String unaryText = SyntaxFacts.getText(unaryExpression);
+
+        String text = unaryText+"a "+binaryText+" b";
+        Parser parser = new Parser(text);
+        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        /*
+
+                  +
+                 / \
+                !   b
+               /
+              a
+
+             */
+
+        asserting.assertNode(SyntaxKind.BINARY_EXPRESSION);
+            asserting.assertNode(SyntaxKind.UNARY_EXPRESSION);
+                asserting.assertToken(unaryExpression,unaryText);
+                asserting.assertNode(SyntaxKind.NAME_EXPRESSION);
+                    asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"a");
+            asserting.assertToken(binaryExpression,binaryText);
+            asserting.assertNode(SyntaxKind.NAME_EXPRESSION);
+                asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN,"b");
+    }
+
     static Stream<Arguments> provideBinaryOperatorPairs (){
         List<SyntaxKind> bos1 = SyntaxFacts.getBinaryOperatorKinds();
         List<SyntaxKind> bos2 = SyntaxFacts.getBinaryOperatorKinds();
+        List<Arguments> args = new ArrayList<>();
+        for (SyntaxKind bo1:bos1) {
+            for (SyntaxKind bo2:bos2) {
+                args.add(Arguments.of(bo1,bo2));
+            }
+        }
+        return args.stream();
+    }
+
+    static Stream<Arguments> provideUnaryOperatorPairs (){
+        List<SyntaxKind> bos1 = SyntaxFacts.getBinaryOperatorKinds();
+        List<SyntaxKind> bos2 = SyntaxFacts.getUnaryOperatorKinds();
         List<Arguments> args = new ArrayList<>();
         for (SyntaxKind bo1:bos1) {
             for (SyntaxKind bo2:bos2) {
