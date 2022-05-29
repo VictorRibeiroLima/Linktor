@@ -84,27 +84,37 @@ public final class Parser {
     }
 
     private ExpressionSyntax parsePrimaryExpression() {
-        switch (getCurrent().getKind()) {
-            case OPEN_PARENTHESIS_TOKEN: {
-                SyntaxToken left = nextToken();
-                ExpressionSyntax expression = parseExpression();
-                SyntaxToken right = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-                return new ParenthesizedExpressionSyntax(left, expression, right);
-            }
-            case TRUE_KEYWORD:
-            case FALSE_KEYWORD: {
-                SyntaxToken token = nextToken();
-                boolean value = token.getKind() == SyntaxKind.TRUE_KEYWORD;
-                return new LiteralExpressionSyntax(token, value);
-            }
-            case IDENTIFIER_TOKEN:
-                return new NameExpressionSyntax(nextToken());
-            default: {
-                SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
-                return new LiteralExpressionSyntax(token);
-            }
-        }
+        return switch (getCurrent().getKind()) {
+            case OPEN_PARENTHESIS_TOKEN -> parseParenthesizedExpression();
+            case TRUE_KEYWORD, FALSE_KEYWORD -> parseBooleanLiteralExpression();
+            case NUMBER_TOKEN -> parseNumberLiteralExpression();
+            default -> parseNameExpression();
+        };
 
+    }
+
+    private ParenthesizedExpressionSyntax parseParenthesizedExpression() {
+        SyntaxToken left = matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
+        ExpressionSyntax expression = parseExpression();
+        SyntaxToken right = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
+        return new ParenthesizedExpressionSyntax(left, expression, right);
+    }
+
+    private LiteralExpressionSyntax parseBooleanLiteralExpression() {
+        boolean isTrue =getCurrent().getKind() == SyntaxKind.TRUE_KEYWORD;
+        SyntaxToken token = isTrue? matchToken(SyntaxKind.TRUE_KEYWORD):
+                matchToken(SyntaxKind.FALSE_KEYWORD);
+        return new LiteralExpressionSyntax(token, isTrue);
+    }
+
+    private NameExpressionSyntax parseNameExpression() {
+        SyntaxToken token = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        return new NameExpressionSyntax(token);
+    }
+
+    private LiteralExpressionSyntax parseNumberLiteralExpression() {
+        SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
+        return new LiteralExpressionSyntax(token);
     }
 
     private SyntaxToken peek(int offset) {
