@@ -11,7 +11,7 @@ public class SourceText {
 
     private SourceText(String text) {
         this.text = text;
-        List<TextLine> lines = parseLines(text);
+        List<TextLine> lines = SourceText.parseLines(this, text);
         this.lines = Collections.unmodifiableList(lines);
     }
 
@@ -41,14 +41,14 @@ public class SourceText {
     }
 
     public String toString(TextSpan span) {
-        return toString(span.start(), span.length());
+        return toString(span.start(), span.end());
     }
 
     public static SourceText from(String text) {
         return new SourceText(text);
     }
 
-    private List<TextLine> parseLines(String text) {
+    private static List<TextLine> parseLines(SourceText source, String text) {
         List<TextLine> lines = new ArrayList<>();
         int lineStartingPosition = 0;
         int position = 0;
@@ -57,28 +57,28 @@ public class SourceText {
             if (lineBreakWidth == 0) {
                 position++;
             } else {
-                addLine(lineStartingPosition, position, lineBreakWidth, lines);
+                addLine(source, lineStartingPosition, position, lineBreakWidth, lines);
                 position += lineBreakWidth;
                 lineStartingPosition = position;
             }
         }
         if (position > lineStartingPosition) {
-            addLine(lineStartingPosition, position, 0, lines);
+            addLine(source, lineStartingPosition, position, 0, lines);
         }
         return lines;
     }
 
-    private void addLine(int lineStartingPosition, int position, int lineBreakWidth, List<TextLine> lines) {
+    private static void addLine(SourceText source, int lineStartingPosition, int position, int lineBreakWidth, List<TextLine> lines) {
         int lineLength = position - lineStartingPosition;
         int lineLengthWithLineBreak = lineLength + lineBreakWidth;
-        TextLine line = new TextLine(this, lineStartingPosition, lineLength, lineLengthWithLineBreak);
+        TextLine line = new TextLine(source, lineStartingPosition, lineLength, lineLengthWithLineBreak);
         lines.add(line);
     }
 
-    private int getLineBreakWidth(String text, int i) {
+    private static int getLineBreakWidth(String text, int i) {
         char c = text.charAt(i);
         char lookAhead = i >= text.length() - 1 ? '\0' : text.charAt(i + 1);
-        if (c == '\r' && c == '\n')
+        if (c == '\r' && lookAhead == '\n')
             return 2;
         if (c == '\r' || c == '\n')
             return 1;
@@ -89,7 +89,7 @@ public class SourceText {
         int mid = start + (end - start) / 2;
         if (start > end)
             return -1;
-        if (lines.get(mid).getStart() <= target && lines.get(mid).getEnd() >= target)
+        if (lines.get(mid).getStart() <= target && lines.get(mid).getEndWithLineBreak() >= target)
             return mid;
 
         if (lines.get(mid).getEnd() < target)

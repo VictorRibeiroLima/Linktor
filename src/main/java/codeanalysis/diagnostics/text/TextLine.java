@@ -6,6 +6,7 @@ public class TextLine {
     private final int length;
     private final int lengthWithLineBreak;
     private final int end;
+    private final int endWithLineBreak;
     private final TextSpan span;
     private final TextSpan spanWithLineBreak;
 
@@ -15,6 +16,7 @@ public class TextLine {
         this.length = length;
         this.lengthWithLineBreak = lengthWithLineBreak;
         this.end = this.start + this.length;
+        this.endWithLineBreak = this.start + lengthWithLineBreak;
         this.span = new TextSpan(this.start, this.length);
         this.spanWithLineBreak = new TextSpan(this.start, this.lengthWithLineBreak);
     }
@@ -37,6 +39,10 @@ public class TextLine {
 
     public int getEnd() {
         return end;
+    }
+
+    public int getEndWithLineBreak() {
+        return endWithLineBreak;
     }
 
     public TextSpan getSpan() {

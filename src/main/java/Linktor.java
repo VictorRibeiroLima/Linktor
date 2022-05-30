@@ -3,6 +3,7 @@ import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.diagnostics.text.TextLine;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
@@ -17,17 +18,32 @@ public class Linktor {
         final String redColor = "\033[0;31m";
         final String whiteColor = "\033[0m";
         boolean showTree = false;
+        StringBuilder input = new StringBuilder();
         Scanner console = new Scanner(System.in);
         final Map<VariableSymbol, Object> variables = new HashMap<>();
         try {
             while (true) {
-                String input = console.nextLine();
-                if (input.equals("#showTree")) {
-                    showTree = true;
+                if (input.isEmpty()) {
+                    System.out.print(">");
+                } else {
+                    System.out.print("...");
+                }
+                String inLineInput = console.nextLine();
+                if (inLineInput.equals("#showTree")) {
+                    showTree = !showTree;
+                    String isShowingTree = showTree ? "Showing parse tree" : "Not showing parse tree";
+                    System.out.println(isShowingTree);
                     console.nextLine();
                     continue;
                 }
-                SyntaxTree tree = SyntaxTree.parse(input);
+
+
+                input.append(inLineInput);
+                SyntaxTree tree = SyntaxTree.parse(input.toString());
+                if (!inLineInput.isEmpty() && !tree.getDiagnostics().isEmpty()) {
+                    input.append("\n");
+                    continue;
+                }
                 if (showTree) {
                     tree.getRoot().writeTo(new PrintWriter(System.out, true));
                 }
@@ -44,21 +60,21 @@ public class Linktor {
                     SourceText text = tree.getText();
                     for (Diagnostic diagnostic : diagnostics) {
                         int lineIndex = text.getLineIndex(diagnostic.span().start());
+                        TextLine line = text.getLines().get(lineIndex);
                         int lineNumber = lineIndex + 1;
-                        int character = diagnostic.span().start() - text.getLines().get(lineIndex).getStart() + 1;
+                        int character = diagnostic.span().start() - line.getStart() + 1;
 
                         System.out.println(redColor);
                         System.out.println(diagnostic);
 
-                        String prefix = input.substring(0, diagnostic.span().start());
-                        String error = input.substring(diagnostic.span().start(), diagnostic.span().end());
-                        String suffix = input.substring(diagnostic.span().end());
+                        String error = tree.getText().toString(diagnostic.span());
 
                         System.out.print("At Line(" + lineNumber + "," + character + "): ");
-                        System.out.println(whiteColor + prefix + redColor + error + whiteColor + suffix);
+                        System.out.println(redColor + error);
                     }
                 }
                 System.out.println(whiteColor + "-------");
+                input.setLength(0);
             }
         } catch (Exception e) {
             e.printStackTrace();
