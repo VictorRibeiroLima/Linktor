@@ -1,1 +1,3 @@
-# src.main.java.Linktor
+## Linktor
+
+Java compiler for linktor programing language
