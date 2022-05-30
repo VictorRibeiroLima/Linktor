@@ -62,7 +62,7 @@ public class SourceText {
                 lineStartingPosition = position;
             }
         }
-        if (position > lineStartingPosition) {
+        if (position >= lineStartingPosition) {
             addLine(source, lineStartingPosition, position, 0, lines);
         }
         return lines;

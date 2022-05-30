@@ -120,8 +120,10 @@ public final class Lexer {
                     readWordToken();
                 else if (Character.isWhitespace(getCurrent()))
                     readWhitespace();
-                else
+                else {
                     diagnostics.reportBadChar(position, getCurrent());
+                    next();
+                }
                 break;
         }
 

@@ -143,6 +143,6 @@ public final class Parser {
             return nextToken();
 
         diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
-        return new SyntaxToken(type, getCurrent().getPosition() - 1, null, null);
+        return new SyntaxToken(type, getCurrent().getPosition(), null, null);
     }
 }
