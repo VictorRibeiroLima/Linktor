@@ -1,6 +1,7 @@
 package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.parser.Parser;
 import codeanalysis.syntax.expression.ExpressionSyntax;
@@ -20,17 +21,22 @@ public class SyntaxTree {
     }
 
     public static SyntaxTree parse(String input) {
-        final Parser parser = new Parser(input);
+        SourceText text = SourceText.from(input);
+        return parse(text);
+    }
+
+    public static SyntaxTree parse(SourceText text) {
+        final Parser parser = new Parser(text);
         SyntaxTree tree = parser.parse();
         return tree;
     }
 
-    public static List<SyntaxToken> parseTokens(String input){
+    public static List<SyntaxToken> parseTokens(String input) {
         final Lexer lexer = new Lexer(input);
-        final List<SyntaxToken>tokens = new ArrayList<>();
-        while(true){
+        final List<SyntaxToken> tokens = new ArrayList<>();
+        while (true) {
             SyntaxToken token = lexer.lex();
-            if(token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
+            if (token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
                 break;
             tokens.add(token);
         }

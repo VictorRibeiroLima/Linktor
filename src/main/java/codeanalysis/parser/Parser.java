@@ -1,6 +1,7 @@
 package codeanalysis.parser;
 
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
@@ -18,7 +19,7 @@ public final class Parser {
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
-    public Parser(String text) {
+    public Parser(SourceText text) {
         position = 0;
         SyntaxToken token;
         List<SyntaxToken> tokens = new ArrayList<>();
@@ -101,8 +102,8 @@ public final class Parser {
     }
 
     private LiteralExpressionSyntax parseBooleanLiteralExpression() {
-        boolean isTrue =getCurrent().getKind() == SyntaxKind.TRUE_KEYWORD;
-        SyntaxToken token = isTrue? matchToken(SyntaxKind.TRUE_KEYWORD):
+        boolean isTrue = getCurrent().getKind() == SyntaxKind.TRUE_KEYWORD;
+        SyntaxToken token = isTrue ? matchToken(SyntaxKind.TRUE_KEYWORD) :
                 matchToken(SyntaxKind.FALSE_KEYWORD);
         return new LiteralExpressionSyntax(token, isTrue);
     }

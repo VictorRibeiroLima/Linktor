@@ -1,13 +1,14 @@
 package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 
 
 public final class Lexer {
-    private final String text;
+    private final SourceText text;
     private int position;
 
     private int start;
@@ -19,7 +20,7 @@ public final class Lexer {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
 
-    public Lexer(String text) {
+    public Lexer(SourceText text) {
         this.text = text;
         this.position = 0;
     }
@@ -126,7 +127,7 @@ public final class Lexer {
 
         String text = SyntaxFacts.getText(kind);
         if (text == null) {
-            text = this.text.substring(start, position);
+            text = this.text.toString(start, position);
         }
         return new SyntaxToken(kind, start, text, value);
     }
@@ -135,7 +136,7 @@ public final class Lexer {
         while (Character.isDigit(getCurrent()))
             next();
 
-        String text = this.text.substring(start, position);
+        String text = this.text.toString(start, position);
 
         kind = SyntaxKind.NUMBER_TOKEN;
         value = Integer.parseInt(text);
@@ -144,9 +145,6 @@ public final class Lexer {
     private void readWhitespace() {
         while (Character.isWhitespace(getCurrent()))
             next();
-
-
-        String text = this.text.substring(start, position);
         kind = SyntaxKind.WHITESPACE_TOKEN;
     }
 
@@ -154,7 +152,7 @@ public final class Lexer {
         while (Character.isLetter(getCurrent()))
             next();
 
-        String text = this.text.substring(start, position);
+        String text = this.text.toString(start, position);
         kind = SyntaxFacts.getKeywordKind(text);
     }
 
