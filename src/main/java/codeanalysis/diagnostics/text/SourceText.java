@@ -15,8 +15,12 @@ public class SourceText {
         this.lines = Collections.unmodifiableList(lines);
     }
 
-    public int getLineFromIndex(int position) {
-        return getLineFromIndex(lines, position, 0, this.text.length() - 1);
+    public int getLineIndex(int position) {
+        return getLineIndex(lines, position, 0, this.lines.size());
+    }
+
+    public List<TextLine> getLines() {
+        return lines;
     }
 
     public char charAt(int index) {
@@ -59,7 +63,7 @@ public class SourceText {
             }
         }
         if (position > lineStartingPosition) {
-            addLine(position, lineStartingPosition, 0, lines);
+            addLine(lineStartingPosition, position, 0, lines);
         }
         return lines;
     }
@@ -73,7 +77,7 @@ public class SourceText {
 
     private int getLineBreakWidth(String text, int i) {
         char c = text.charAt(i);
-        char lookAhead = i >= text.length() ? '\0' : text.charAt(i + 1);
+        char lookAhead = i >= text.length() - 1 ? '\0' : text.charAt(i + 1);
         if (c == '\r' && c == '\n')
             return 2;
         if (c == '\r' || c == '\n')
@@ -81,16 +85,16 @@ public class SourceText {
         return 0;
     }
 
-    private int getLineFromIndex(List<TextLine> lines, int target, int start, int end) {
+    private int getLineIndex(List<TextLine> lines, int target, int start, int end) {
         int mid = start + (end - start) / 2;
         if (start > end)
             return -1;
-        if (lines.get(mid).getStart() == target)
+        if (lines.get(mid).getStart() <= target && lines.get(mid).getEnd() >= target)
             return mid;
 
-        if (lines.get(mid).getEnd() > target)
-            return getLineFromIndex(lines, target, mid + 1, end);
+        if (lines.get(mid).getEnd() < target)
+            return getLineIndex(lines, target, mid + 1, end);
 
-        return getLineFromIndex(lines, target, start, mid - 1);
+        return getLineIndex(lines, target, start, mid - 1);
     }
 }

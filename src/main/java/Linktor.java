@@ -2,6 +2,7 @@ import codeanalysis.binding.Binder;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
@@ -35,8 +36,17 @@ public class Linktor {
 
                 BoundExpression bound = binder.bindExpression(tree.getRoot());
                 DiagnosticBag diagnostics = binder.getDiagnostics().concat(tree.getDiagnostics());
-                if (!diagnostics.isEmpty()) {
+                if (diagnostics.isEmpty()) {
+                    Evaluator evaluator = new Evaluator(bound, variables);
+                    Object result = evaluator.evaluate();
+                    System.out.println("Result: " + result);
+                } else {
+                    SourceText text = tree.getText();
                     for (Diagnostic diagnostic : diagnostics) {
+                        int lineIndex = text.getLineIndex(diagnostic.span().start());
+                        int lineNumber = lineIndex + 1;
+                        int character = diagnostic.span().start() - text.getLines().get(lineIndex).getStart() + 1;
+
                         System.out.println(redColor);
                         System.out.println(diagnostic);
 
@@ -44,14 +54,9 @@ public class Linktor {
                         String error = input.substring(diagnostic.span().start(), diagnostic.span().end());
                         String suffix = input.substring(diagnostic.span().end());
 
+                        System.out.print("At Line(" + lineNumber + "," + character + "): ");
                         System.out.println(whiteColor + prefix + redColor + error + whiteColor + suffix);
-
                     }
-                } else {
-                    Evaluator evaluator = new Evaluator(bound, variables);
-                    Object result = evaluator.evaluate();
-                    System.out.println("Result: " + result);
-
                 }
                 System.out.println(whiteColor + "-------");
             }

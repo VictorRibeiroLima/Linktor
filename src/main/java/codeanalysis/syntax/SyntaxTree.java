@@ -14,10 +14,13 @@ public class SyntaxTree {
     private final ExpressionSyntax root;
     private final SyntaxToken endOfFileToken;
 
-    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics) {
+    private final SourceText text;
+
+    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics, SourceText text) {
         this.root = root;
         this.endOfFileToken = endOfFileToken;
         this.diagnostics.addAll(diagnostics);
+        this.text = text;
     }
 
     public static SyntaxTree parse(String input) {
@@ -27,12 +30,12 @@ public class SyntaxTree {
 
     public static SyntaxTree parse(SourceText text) {
         final Parser parser = new Parser(text);
-        SyntaxTree tree = parser.parse();
-        return tree;
+        return parser.parse();
     }
 
     public static List<SyntaxToken> parseTokens(String input) {
-        final Lexer lexer = new Lexer(input);
+        SourceText text = SourceText.from(input);
+        final Lexer lexer = new Lexer(text);
         final List<SyntaxToken> tokens = new ArrayList<>();
         while (true) {
             SyntaxToken token = lexer.lex();
@@ -53,5 +56,9 @@ public class SyntaxTree {
 
     public SyntaxToken getEndOfFileToken() {
         return endOfFileToken;
+    }
+
+    public SourceText getText() {
+        return text;
     }
 }

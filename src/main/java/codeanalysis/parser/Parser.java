@@ -19,6 +19,8 @@ public final class Parser {
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
+    private final SourceText text;
+
     public Parser(SourceText text) {
         position = 0;
         SyntaxToken token;
@@ -31,12 +33,13 @@ public final class Parser {
         } while (token.getKind() != SyntaxKind.END_OF_FILE_TOKEN);
         this.tokens = tokens;
         diagnostics.addAll(lexer.getDiagnostics());
+        this.text = text;
     }
 
     public SyntaxTree parse() {
         ExpressionSyntax expression = parseExpression();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
-        return new SyntaxTree(expression, endOfFileToken, diagnostics);
+        return new SyntaxTree(expression, endOfFileToken, diagnostics, text);
     }
 
     private ExpressionSyntax parseExpression() {

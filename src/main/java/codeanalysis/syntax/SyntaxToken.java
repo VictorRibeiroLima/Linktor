@@ -18,7 +18,7 @@ public class SyntaxToken extends SyntaxNode {
         this.position = position;
         this.text = text;
         this.value = value;
-        int length = text != null ? text.length() : 1;
+        int length = text != null ? text.length() : 0;
         span = new TextSpan(position, length);
     }
 
