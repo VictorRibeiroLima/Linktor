@@ -55,8 +55,6 @@ public final class SyntaxFacts {
         switch (kind){
             case PLUS_TOKEN:
                 return "+";
-            case NUMBER_TOKEN:
-                return "1";
             case MINUS_TOKEN:
                 return "-";
             case SLASH_TOKEN:

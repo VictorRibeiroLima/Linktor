@@ -2,12 +2,13 @@ import codeanalysis.binding.Binder;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.diagnostics.text.TextLine;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.VariableSymbol;
-import codeanalysis.syntax.SyntaxNode;
-import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.SyntaxTree;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -17,76 +18,67 @@ public class Linktor {
         final String redColor = "\033[0;31m";
         final String whiteColor = "\033[0m";
         boolean showTree = false;
+        StringBuilder input = new StringBuilder();
         Scanner console = new Scanner(System.in);
         final Map<VariableSymbol, Object> variables = new HashMap<>();
         try {
             while (true) {
-                String input = console.nextLine();
-                if (input.equals("#showTree")) {
-                    showTree = true;
+                if (input.isEmpty()) {
+                    System.out.print(">");
+                } else {
+                    System.out.print("...");
+                }
+                String inLineInput = console.nextLine();
+                if (inLineInput.equals("#showTree")) {
+                    showTree = !showTree;
+                    String isShowingTree = showTree ? "Showing parse tree" : "Not showing parse tree";
+                    System.out.println(isShowingTree);
                     console.nextLine();
                     continue;
                 }
-                SyntaxTree tree = SyntaxTree.parse(input);
+
+
+                input.append(inLineInput);
+                SyntaxTree tree = SyntaxTree.parse(input.toString());
+                if (!inLineInput.isEmpty() && !tree.getDiagnostics().isEmpty()) {
+                    input.append("\n");
+                    continue;
+                }
                 if (showTree) {
-                    printTree(tree.getRoot());
+                    tree.getRoot().writeTo(new PrintWriter(System.out, true));
                 }
 
                 Binder binder = new Binder(variables);
 
                 BoundExpression bound = binder.bindExpression(tree.getRoot());
                 DiagnosticBag diagnostics = binder.getDiagnostics().concat(tree.getDiagnostics());
-                if (!diagnostics.isEmpty()) {
-                    for (Diagnostic diagnostic : diagnostics) {
-                        System.out.println(redColor);
-                        System.out.println(diagnostic);
-
-                        String prefix = input.substring(0, diagnostic.span().start());
-                        String error = input.substring(diagnostic.span().start(), diagnostic.span().end());
-                        String suffix = input.substring(diagnostic.span().end());
-
-                        System.out.println(whiteColor + prefix + redColor + error + whiteColor + suffix);
-
-                    }
-                } else {
+                if (diagnostics.isEmpty()) {
                     Evaluator evaluator = new Evaluator(bound, variables);
                     Object result = evaluator.evaluate();
                     System.out.println("Result: " + result);
+                } else {
+                    SourceText text = tree.getText();
+                    for (Diagnostic diagnostic : diagnostics) {
+                        int lineIndex = text.getLineIndex(diagnostic.span().start());
+                        TextLine line = text.getLines().get(lineIndex);
+                        int lineNumber = lineIndex + 1;
+                        int character = diagnostic.span().start() - line.getStart() + 1;
 
+                        System.out.println(redColor);
+                        System.out.println(diagnostic);
+
+                        String error = tree.getText().toString(diagnostic.span());
+
+                        System.out.print("At Line(" + lineNumber + "," + character + "): ");
+                        System.out.println(redColor + error);
+                    }
                 }
                 System.out.println(whiteColor + "-------");
+                input.setLength(0);
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("\033[0;31m" + e.getMessage());
         }
-    }
-
-    private static void printTree(SyntaxNode node) {
-        printTree(node, "", false);
-    }
-
-    private static void printTree(SyntaxNode node, String indent, boolean isLast) {
-        String marker = isLast ? "└──" : "├──";
-        System.out.print(indent);
-        System.out.print(marker);
-        System.out.print(node.getKind());
-        if (node instanceof SyntaxToken s && s.getValue() != null) {
-            System.out.print(" ");
-            System.out.print(s.getValue());
-        }
-        System.out.println();
-
-        indent += isLast ? "    " : "│   ";
-
-        SyntaxNode last = null;
-        if (!node.getChildren().isEmpty()) {
-            last = node.getChildren().get(node.getChildren().size() - 1);
-        }
-        for (SyntaxNode n : node.getChildren()) {
-            printTree(n, indent, last == n);
-        }
-
-
     }
 }

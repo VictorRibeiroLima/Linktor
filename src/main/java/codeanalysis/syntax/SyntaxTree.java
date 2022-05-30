@@ -1,6 +1,7 @@
 package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.parser.Parser;
 import codeanalysis.syntax.expression.ExpressionSyntax;
@@ -13,24 +14,32 @@ public class SyntaxTree {
     private final ExpressionSyntax root;
     private final SyntaxToken endOfFileToken;
 
-    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics) {
+    private final SourceText text;
+
+    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics, SourceText text) {
         this.root = root;
         this.endOfFileToken = endOfFileToken;
         this.diagnostics.addAll(diagnostics);
+        this.text = text;
     }
 
     public static SyntaxTree parse(String input) {
-        final Parser parser = new Parser(input);
-        SyntaxTree tree = parser.parse();
-        return tree;
+        SourceText text = SourceText.from(input);
+        return parse(text);
     }
 
-    public static List<SyntaxToken> parseTokens(String input){
-        final Lexer lexer = new Lexer(input);
-        final List<SyntaxToken>tokens = new ArrayList<>();
-        while(true){
+    public static SyntaxTree parse(SourceText text) {
+        final Parser parser = new Parser(text);
+        return parser.parse();
+    }
+
+    public static List<SyntaxToken> parseTokens(String input) {
+        SourceText text = SourceText.from(input);
+        final Lexer lexer = new Lexer(text);
+        final List<SyntaxToken> tokens = new ArrayList<>();
+        while (true) {
             SyntaxToken token = lexer.lex();
-            if(token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
+            if (token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
                 break;
             tokens.add(token);
         }
@@ -47,5 +56,9 @@ public class SyntaxTree {
 
     public SyntaxToken getEndOfFileToken() {
         return endOfFileToken;
+    }
+
+    public SourceText getText() {
+        return text;
     }
 }

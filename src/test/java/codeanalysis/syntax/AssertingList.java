@@ -15,15 +15,15 @@ public class AssertingList{
     public void assertToken(SyntaxKind kind,String text){
         assertTrue(nodes.hasMoreElements());
         current = nodes.nextElement();
-        assertEquals(current.getClass(),SyntaxToken.class);
-        assertEquals(current.getKind(),kind);
-        assertEquals(((SyntaxToken)current).getText(),text);
+        assertEquals(SyntaxToken.class,current.getClass());
+        assertEquals(kind,current.getKind());
+        assertEquals(text,((SyntaxToken)current).getText());
     }
 
     public void assertNode(SyntaxKind kind){
         assertTrue(nodes.hasMoreElements());
         current = nodes.nextElement();
-        assertNotEquals(current.getClass(),SyntaxNode.class);
+        assertNotEquals(SyntaxNode.class,current.getClass());
         assertEquals(kind,current.getKind());
     }
 
