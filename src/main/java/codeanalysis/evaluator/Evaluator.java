@@ -6,21 +6,66 @@ import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
+import codeanalysis.binding.statement.BoundBlockStatement;
+import codeanalysis.binding.statement.BoundExpressionStatement;
+import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.BoundVariableDeclarationStatement;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;
 
 public final class Evaluator {
-    private final BoundExpression root;
+    private final BoundStatement root;
     private final Map<VariableSymbol, Object> variables;
 
-    public Evaluator(BoundExpression root, Map<VariableSymbol, Object> variables) {
+    private Object lastValue;
+
+    public Evaluator(BoundStatement root, Map<VariableSymbol, Object> variables) {
         this.root = root;
         this.variables = variables;
     }
 
     public Object evaluate() throws Exception {
-        return evaluateExpression(root);
+        evaluateStatement(root);
+        return lastValue;
+    }
+
+    private void evaluateStatement(BoundStatement statement) throws Exception {
+        switch (statement.getKind()) {
+            case BLOCK_STATEMENT -> {
+                evaluateBlockStatement((BoundBlockStatement) statement);
+                break;
+            }
+            case EXPRESSION_STATEMENT -> {
+                evaluateExpressionStatement((BoundExpressionStatement) statement);
+                break;
+            }
+            case VARIABLE_DECLARATION_STATEMENT -> {
+                evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
+                break;
+            }
+            default -> {
+                throw new Exception("Unexpected node " + statement.getKind());
+
+            }
+        }
+    }
+
+    private void evaluateVariableDeclarationStatement(BoundVariableDeclarationStatement statement) throws Exception {
+        Object value = evaluateExpression(statement.getInitializer());
+        variables.put(statement.getVariable(), value);
+        lastValue = value;
+    }
+
+    private void evaluateBlockStatement(BoundBlockStatement statement) throws Exception {
+        for (BoundStatement b : statement.getStatements()) {
+            evaluateStatement(b);
+        }
+    }
+
+    private void evaluateExpressionStatement(BoundExpressionStatement statement) throws Exception {
+        Object result = evaluateExpression(statement.getExpression());
+        lastValue = result;
     }
 
     private Object evaluateExpression(BoundExpression node) throws Exception {
@@ -39,7 +84,8 @@ public final class Evaluator {
     }
 
     private Object evaluateVariableExpression(BoundVariableExpression v) {
-        return variables.get(v.getVariable());
+        Object variable = variables.get(v.getVariable());
+        return variable;
     }
 
     private Object evaluateAssignmentExpression(BoundAssignmentExpression a) throws Exception {

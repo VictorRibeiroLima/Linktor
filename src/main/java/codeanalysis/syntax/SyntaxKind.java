@@ -1,6 +1,9 @@
 package codeanalysis.syntax;
 
 public enum SyntaxKind {
+    //UNITS
+    COMPILATION_UNIT,
+
     //TOKENS
     BAD_TOKEN,
     WHITESPACE_TOKEN,
@@ -23,6 +26,8 @@ public enum SyntaxKind {
     GREATER_EQUAL_TOKEN,
     LESS_TOKEN,
     LESS_EQUAL_TOKEN,
+    OPEN_BRACE_TOKEN,
+    CLOSE_BRACE_TOKEN,
 
     //EXPRESSIONS
     LITERAL_EXPRESSION,
@@ -35,5 +40,12 @@ public enum SyntaxKind {
     //KEYWORDS
     TRUE_KEYWORD,
     FALSE_KEYWORD,
+    LET_KEYWORD,
+    VAR_KEYWORD,
+
+    //STATEMENTS
+    EXPRESSION_STATEMENT,
+    BLOCK_STATEMENT,
+    VARIABLE_DECLARATION_STATEMENT,
 
 }
