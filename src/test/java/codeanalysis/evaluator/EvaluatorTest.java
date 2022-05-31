@@ -1,8 +1,8 @@
 package codeanalysis.evaluator;
 
 import codeanalysis.binding.Binder;
-import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.scopes.BoundGlobalScope;
+import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +29,7 @@ class EvaluatorTest {
 
     @ParameterizedTest
     @MethodSource("provideExpressions")
-    void evaluate(BoundExpression expression, Object expectedResult) throws Exception {
+    void evaluate(BoundStatement expression, Object expectedResult) throws Exception {
         Evaluator evaluator = new Evaluator(expression, variables);
         Object result = evaluator.evaluate();
         assertEquals(expectedResult, result);
@@ -76,20 +76,20 @@ class EvaluatorTest {
                 Arguments.of(getExpression("-5 *4-(24/2-(5+2*3)+8) == 29"), false),
                 Arguments.of(getExpression("-5 *4-(24/2-(5+2*3)+8) == 29 || 1+1 ==2"), true),
                 Arguments.of(getExpression("-5 *4-(24/2-(5+2*3)+8) == 29 && 1+1 ==2"), false),
-                Arguments.of(getExpression("a = -5 *4-(24/2-(5+2*3)+8) == 29 && 1+1 ==2"), false),
+                Arguments.of(getExpression("var a = -5 *4-(24/2-(5+2*3)+8) == 29 && 1+1 ==2"), false),
                 Arguments.of(getExpression("!a"), true),
                 Arguments.of(getExpression("!!a"), false),
-                Arguments.of(getExpression("b=10"), 10),
-                Arguments.of(getExpression("c=25"), 25),
+                Arguments.of(getExpression("let b=10"), 10),
+                Arguments.of(getExpression("let c=25"), 25),
                 Arguments.of(getExpression("b+c"), 35)
         );
     }
 
-    static BoundExpression getExpression(String input) throws Exception {
+    static BoundStatement getExpression(String input) throws Exception {
         SyntaxTree tree = SyntaxTree.parse(input);
         BoundGlobalScope localGlobalScope = Binder.boundGlobalScope(tree.getRoot(), globalScope);
         globalScope = localGlobalScope;
-        BoundExpression bound = localGlobalScope.getStatement();
+        BoundStatement bound = localGlobalScope.getStatement();
         return bound;
     }
 }

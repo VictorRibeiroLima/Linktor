@@ -72,10 +72,12 @@ public class Linktor {
                         System.out.println(redColor);
                         System.out.println(diagnostic);
 
+                        String prefix = input.substring(line.getStart(), diagnostic.span().start());
                         String error = tree.getText().toString(diagnostic.span());
+                        String suffix = input.substring(diagnostic.span().end());
 
                         System.out.print("At Line(" + lineNumber + "," + character + "): ");
-                        System.out.println(redColor + error);
+                        System.out.println(whiteColor + prefix + redColor + error + whiteColor + suffix);
                     }
                 }
                 System.out.println(whiteColor + "-------");
