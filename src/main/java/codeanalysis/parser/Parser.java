@@ -3,11 +3,15 @@ package codeanalysis.parser;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
+import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.*;
+import codeanalysis.syntax.statements.BlockStatementSyntax;
+import codeanalysis.syntax.statements.ExpressionStatementSyntax;
+import codeanalysis.syntax.statements.StatementSyntax;
+import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +40,49 @@ public final class Parser {
         this.text = text;
     }
 
-    public SyntaxTree parse() {
-        ExpressionSyntax expression = parseExpression();
+    public DiagnosticBag getDiagnostics() {
+        return diagnostics;
+    }
+
+    public CompilationUnitSyntax parseCompilationUnit() {
+        StatementSyntax expression = parseStatement();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
-        return new SyntaxTree(expression, endOfFileToken, diagnostics, text);
+        return new CompilationUnitSyntax(expression, endOfFileToken);
+    }
+
+
+    private StatementSyntax parseStatement() {
+        return switch (getCurrent().getKind()) {
+            case OPEN_BRACE_TOKEN -> parseBlockStatement();
+            case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
+            default -> parseExpressionStatement();
+        };
+    }
+
+    private StatementSyntax parseVariableDeclarationStatement() {
+        SyntaxToken keyword = matchToken(getCurrent().getKind());
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
+        ExpressionSyntax initializer = parseExpression();
+        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initializer);
+
+    }
+
+    private StatementSyntax parseBlockStatement() {
+        SyntaxToken open = matchToken(SyntaxKind.OPEN_BRACE_TOKEN);
+        List<StatementSyntax> statements = new ArrayList<>();
+        while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN &&
+                getCurrent().getKind() != SyntaxKind.CLOSE_BRACE_TOKEN) {
+            StatementSyntax statement = parseStatement();
+            statements.add(statement);
+        }
+        SyntaxToken close = matchToken(SyntaxKind.CLOSE_BRACE_TOKEN);
+        return new BlockStatementSyntax(open, statements, close);
+    }
+
+    private StatementSyntax parseExpressionStatement() {
+        ExpressionSyntax expression = parseExpression();
+        return new ExpressionStatementSyntax(expression);
     }
 
     private ExpressionSyntax parseExpression() {

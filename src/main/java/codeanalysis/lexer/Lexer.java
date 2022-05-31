@@ -62,6 +62,14 @@ public final class Lexer {
                 kind = SyntaxKind.CLOSE_PARENTHESIS_TOKEN;
                 next();
                 break;
+            case '{':
+                kind = SyntaxKind.OPEN_BRACE_TOKEN;
+                next();
+                break;
+            case '}':
+                kind = SyntaxKind.CLOSE_BRACE_TOKEN;
+                next();
+                break;
             case '=': {
                 if (lookahead() == '=') {
                     kind = SyntaxKind.EQUAL_EQUAL_TOKEN;

@@ -45,14 +45,18 @@ public final class SyntaxFacts {
                 return SyntaxKind.TRUE_KEYWORD;
             case "false":
                 return SyntaxKind.FALSE_KEYWORD;
+            case "var":
+                return SyntaxKind.VAR_KEYWORD;
+            case "let":
+                return SyntaxKind.LET_KEYWORD;
             default:
                 return SyntaxKind.IDENTIFIER_TOKEN;
 
         }
     }
 
-    public static String getText(SyntaxKind kind){
-        switch (kind){
+    public static String getText(SyntaxKind kind) {
+        switch (kind) {
             case PLUS_TOKEN:
                 return "+";
             case MINUS_TOKEN:
@@ -65,6 +69,10 @@ public final class SyntaxFacts {
                 return "(";
             case CLOSE_PARENTHESIS_TOKEN:
                 return ")";
+            case OPEN_BRACE_TOKEN:
+                return "{";
+            case CLOSE_BRACE_TOKEN:
+                return "}";
             case EQUAL_TOKEN:
                 return "=";
             case EQUAL_EQUAL_TOKEN:
@@ -81,26 +89,30 @@ public final class SyntaxFacts {
                 return "false";
             case TRUE_KEYWORD:
                 return "true";
+            case VAR_KEYWORD:
+                return "var";
+            case LET_KEYWORD:
+                return "let";
             default:
                 return null;
         }
     }
 
-    public static List<SyntaxKind> getUnaryOperatorKinds(){
+    public static List<SyntaxKind> getUnaryOperatorKinds() {
         SyntaxKind[] kinds = SyntaxKind.values();
         List<SyntaxKind> unaryKinds = new ArrayList<>();
-        for (SyntaxKind kind:kinds) {
-           if(getUnaryOperatorPrecedence(kind)>0)
+        for (SyntaxKind kind : kinds) {
+            if (getUnaryOperatorPrecedence(kind) > 0)
                 unaryKinds.add(kind);
         }
         return unaryKinds;
     }
 
-    public static List<SyntaxKind> getBinaryOperatorKinds(){
+    public static List<SyntaxKind> getBinaryOperatorKinds() {
         SyntaxKind[] kinds = SyntaxKind.values();
         List<SyntaxKind> binaryKinds = new ArrayList<>();
-        for (SyntaxKind kind:kinds) {
-            if(getBinaryOperatorPrecedence(kind)>0)
+        for (SyntaxKind kind : kinds) {
+            if (getBinaryOperatorPrecedence(kind) > 0)
                 binaryKinds.add(kind);
         }
         return binaryKinds;

@@ -4,22 +4,22 @@ import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.parser.Parser;
-import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SyntaxTree {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
-    private final ExpressionSyntax root;
-    private final SyntaxToken endOfFileToken;
+    private final CompilationUnitSyntax root;
 
     private final SourceText text;
 
-    public SyntaxTree(ExpressionSyntax root, SyntaxToken endOfFileToken, DiagnosticBag diagnostics, SourceText text) {
+    private SyntaxTree(SourceText text) {
+        Parser parser = new Parser(text);
+        CompilationUnitSyntax root = parser.parseCompilationUnit();
+
         this.root = root;
-        this.endOfFileToken = endOfFileToken;
-        this.diagnostics.addAll(diagnostics);
+        this.diagnostics.addAll(parser.getDiagnostics());
         this.text = text;
     }
 
@@ -29,8 +29,7 @@ public class SyntaxTree {
     }
 
     public static SyntaxTree parse(SourceText text) {
-        final Parser parser = new Parser(text);
-        return parser.parse();
+        return new SyntaxTree(text);
     }
 
     public static List<SyntaxToken> parseTokens(String input) {
@@ -50,12 +49,8 @@ public class SyntaxTree {
         return diagnostics;
     }
 
-    public ExpressionSyntax getRoot() {
+    public CompilationUnitSyntax getRoot() {
         return root;
-    }
-
-    public SyntaxToken getEndOfFileToken() {
-        return endOfFileToken;
     }
 
     public SourceText getText() {
