@@ -2,7 +2,7 @@ package codeanalysis.symbol;
 
 import java.lang.reflect.Type;
 
-public record VariableSymbol(String name, Type type) {
+public record VariableSymbol(String name, Type type, boolean readOnly) {
 
     @Override
     public String toString() {

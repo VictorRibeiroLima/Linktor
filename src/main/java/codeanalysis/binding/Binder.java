@@ -13,14 +13,17 @@ import codeanalysis.binding.scopes.BoundScope;
 import codeanalysis.binding.statement.BoundBlockStatement;
 import codeanalysis.binding.statement.BoundExpressionStatement;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.BoundVariableDeclarationStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
+import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.BlockStatementSyntax;
 import codeanalysis.syntax.statements.ExpressionStatementSyntax;
 import codeanalysis.syntax.statements.StatementSyntax;
+import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +33,7 @@ public class Binder {
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
-    private final BoundScope scope;
+    private BoundScope scope;
 
     private Binder(BoundScope parent) {
         scope = new BoundScope(parent);
@@ -73,17 +76,32 @@ public class Binder {
         return switch (syntax.getKind()) {
             case BLOCK_STATEMENT -> bindBlockStatement((BlockStatementSyntax) syntax);
             case EXPRESSION_STATEMENT -> bindExpressionStatement((ExpressionStatementSyntax) syntax);
+            case VARIABLE_DECLARATION_STATEMENT ->
+                    bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
     }
 
+    private BoundStatement bindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax) throws Exception {
+        boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
+        String name = syntax.getIdentifier().getText();
+        BoundExpression initializer = bindExpression(syntax.getInitializer());
+        VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
+        if (!scope.declareVariable(variableSymbol))
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getKeyword().getSpan());
+
+        return new BoundVariableDeclarationStatement(variableSymbol, initializer);
+    }
+
     private BoundBlockStatement bindBlockStatement(BlockStatementSyntax syntax) throws Exception {
         List<BoundStatement> statements = new ArrayList<>();
+        scope = new BoundScope(scope);
         for (StatementSyntax e : syntax.getStatements()
         ) {
             BoundStatement statement = bindStatement(e);
             statements.add(statement);
         }
+        scope = scope.getParent();
         return new BoundBlockStatement(statements);
     }
 
@@ -109,7 +127,7 @@ public class Binder {
         return bindExpression(syntax.getExpression());
     }
 
-    private BoundExpression bindNameExpression(NameExpressionSyntax syntax) throws Exception {
+    private BoundExpression bindNameExpression(NameExpressionSyntax syntax) {
         String name = syntax.getIdentifierToken().getText();
         VariableSymbol variable = scope.getVariableByIdentifier(name);
         if (variable != null) {
@@ -122,23 +140,21 @@ public class Binder {
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
         BoundExpression boundExpression = bindExpression(syntax.getExpression());
-        VariableSymbol variable;
         if (!scope.isVariablePresent(name)) {
-            variable = new VariableSymbol(name, boundExpression.getType());
-            scope.declareVariable(variable);
-        } else {
-            variable = scope.getVariableByIdentifier(name);
-            if (!boundExpression.getType().equals(variable.type())) {
-                diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.type());
-                return boundExpression;
-            }
+            diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
+            return boundExpression;
+
+        }
+        VariableSymbol variable = scope.getVariableByIdentifier(name);
+        scope.declareVariable(variable);
+        if (variable.readOnly()) {
+            diagnostics.reportReadOnly(syntax.getEqualsToken().getSpan(), name);
+        }
+        if (!boundExpression.getType().equals(variable.type())) {
+            diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.type());
+            return boundExpression;
         }
         return new BoundAssignmentExpression(variable, boundExpression);
-        /*
-        if (!scope.declareVariable(variable)) {
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifierToken().getSpan());
-        }
-        return new BoundAssignmentExpression(variable, boundExpression);*/
     }
 
 

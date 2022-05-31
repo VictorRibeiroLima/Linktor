@@ -88,4 +88,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         String message = "ERROR: Cannot convert '" + expectedType + "' into '" + actualType + "'.";
         report(span, message);
     }
+
+    public void reportReadOnly(TextSpan span, String name) {
+        String message = "ERROR: Variable '" + name + "' is read only and cannot be assigned";
+        report(span, message);
+    }
 }

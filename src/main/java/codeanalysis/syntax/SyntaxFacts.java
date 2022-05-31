@@ -45,6 +45,10 @@ public final class SyntaxFacts {
                 return SyntaxKind.TRUE_KEYWORD;
             case "false":
                 return SyntaxKind.FALSE_KEYWORD;
+            case "var":
+                return SyntaxKind.VAR_KEYWORD;
+            case "let":
+                return SyntaxKind.LET_KEYWORD;
             default:
                 return SyntaxKind.IDENTIFIER_TOKEN;
 
@@ -85,6 +89,10 @@ public final class SyntaxFacts {
                 return "false";
             case TRUE_KEYWORD:
                 return "true";
+            case VAR_KEYWORD:
+                return "var";
+            case LET_KEYWORD:
+                return "let";
             default:
                 return null;
         }

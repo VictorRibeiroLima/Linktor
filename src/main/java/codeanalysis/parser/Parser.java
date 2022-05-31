@@ -11,6 +11,7 @@ import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.BlockStatementSyntax;
 import codeanalysis.syntax.statements.ExpressionStatementSyntax;
 import codeanalysis.syntax.statements.StatementSyntax;
+import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,10 +50,22 @@ public final class Parser {
         return new CompilationUnitSyntax(expression, endOfFileToken);
     }
 
+
     private StatementSyntax parseStatement() {
-        if (getCurrent().getKind() == SyntaxKind.OPEN_BRACE_TOKEN)
-            return parseBlockStatement();
-        return parseExpressionStatement();
+        return switch (getCurrent().getKind()) {
+            case OPEN_BRACE_TOKEN -> parseBlockStatement();
+            case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
+            default -> parseExpressionStatement();
+        };
+    }
+
+    private StatementSyntax parseVariableDeclarationStatement() {
+        SyntaxToken keyword = matchToken(getCurrent().getKind());
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
+        ExpressionSyntax initializer = parseExpression();
+        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initializer);
+
     }
 
     private StatementSyntax parseBlockStatement() {

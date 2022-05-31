@@ -26,7 +26,7 @@ public class Linktor {
                 if (input.isEmpty()) {
                     System.out.print(">");
                 } else {
-                    System.out.print("...");
+                    System.out.print(".");
                 }
                 String inLineInput = console.nextLine();
                 if (inLineInput.equals("#showTree")) {

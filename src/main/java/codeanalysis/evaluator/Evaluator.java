@@ -9,6 +9,7 @@ import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.statement.BoundBlockStatement;
 import codeanalysis.binding.statement.BoundExpressionStatement;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.BoundVariableDeclarationStatement;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;
@@ -39,11 +40,21 @@ public final class Evaluator {
                 evaluateExpressionStatement((BoundExpressionStatement) statement);
                 break;
             }
+            case VARIABLE_DECLARATION_STATEMENT -> {
+                evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
+                break;
+            }
             default -> {
                 throw new Exception("Unexpected node " + statement.getKind());
 
             }
         }
+    }
+
+    private void evaluateVariableDeclarationStatement(BoundVariableDeclarationStatement statement) throws Exception {
+        Object value = evaluateExpression(statement.getInitializer());
+        variables.put(statement.getVariable(), value);
+        lastValue = value;
     }
 
     private void evaluateBlockStatement(BoundBlockStatement statement) throws Exception {

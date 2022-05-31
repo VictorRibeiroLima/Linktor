@@ -16,6 +16,10 @@ public class BoundScope {
         this.parent = parent;
     }
 
+    public BoundScope getParent() {
+        return parent;
+    }
+
     public boolean declareVariable(VariableSymbol variable) {
         if (variables.containsKey(variable.name()))
             return false;
