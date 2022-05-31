@@ -72,6 +72,26 @@ public final class Lexer {
                 next();
                 break;
             }
+            case '<': {
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.LESS_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.LESS_TOKEN;
+                }
+                next();
+                break;
+            }
+            case '>': {
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.GREATER_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.GREATER_TOKEN;
+                }
+                next();
+                break;
+            }
             case '!': {
                 if (lookahead() == '=') {
                     kind = SyntaxKind.EXCLAMATION_EQUAL_TOKEN;

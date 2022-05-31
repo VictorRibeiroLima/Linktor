@@ -1,8 +1,7 @@
 package codeanalysis.evaluator;
 
-import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
@@ -66,25 +65,20 @@ public final class Evaluator {
     private Object evaluateBinaryExpression(BoundBinaryExpression b) throws Exception {
         Object left = evaluateExpression(b.getLeft());
         Object right = evaluateExpression(b.getRight());
-        switch (b.getOperator().getKind()) {
-            case LOGICAL_AND:
-                return (boolean) left && (boolean) right;
-            case LOGICAL_OR:
-                return (boolean) left || (boolean) right;
-            case LOGICAL_EQUALITY:
-                return left.equals(right);
-            case LOGICAL_INEQUALITY:
-                return !left.equals(right);
-            case ADDITION:
-                return (int) left + (int) right;
-            case SUBTRACTION:
-                return (int) left - (int) right;
-            case DIVISION:
-                return (int) left / (int) right;
-            case MULTIPLICATION:
-                return (int) left * (int) right;
-            default:
-                throw new Exception("Unexpected binary operation " + b.getOperator());
-        }
+        return switch (b.getOperator().getKind()) {
+            case LOGICAL_AND -> (boolean) left && (boolean) right;
+            case LOGICAL_OR -> (boolean) left || (boolean) right;
+            case LOGICAL_EQUALITY -> left.equals(right);
+            case LOGICAL_INEQUALITY -> !left.equals(right);
+            case ADDITION -> (int) left + (int) right;
+            case SUBTRACTION -> (int) left - (int) right;
+            case DIVISION -> (int) left / (int) right;
+            case MULTIPLICATION -> (int) left * (int) right;
+            case LESS_THAN -> (int) left < (int) right;
+            case LESS_EQUAL_THAN -> (int) left <= (int) right;
+            case GREATER_THAN -> (int) left > (int) right;
+            case GREATER_EQUAL_THAN -> (int) left >= (int) right;
+            default -> throw new Exception("Unexpected binary operation " + b.getOperator());
+        };
     }
 }
