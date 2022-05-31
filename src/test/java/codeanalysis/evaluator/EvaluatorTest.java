@@ -89,7 +89,7 @@ class EvaluatorTest {
         SyntaxTree tree = SyntaxTree.parse(input);
         BoundGlobalScope localGlobalScope = Binder.boundGlobalScope(tree.getRoot(), globalScope);
         globalScope = localGlobalScope;
-        BoundExpression bound = localGlobalScope.getExpression();
+        BoundExpression bound = localGlobalScope.getStatement();
         return bound;
     }
 }

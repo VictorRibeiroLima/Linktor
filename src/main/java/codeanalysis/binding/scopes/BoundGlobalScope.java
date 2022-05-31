@@ -1,6 +1,6 @@
 package codeanalysis.binding.scopes;
 
-import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.symbol.VariableSymbol;
 
@@ -14,13 +14,13 @@ public class BoundGlobalScope {
 
     private final List<VariableSymbol> variables;
 
-    private final BoundExpression expression;
+    private final BoundStatement statement;
 
-    public BoundGlobalScope(BoundGlobalScope previous, List<Diagnostic> diagnostics, List<VariableSymbol> variables, BoundExpression expression) {
+    public BoundGlobalScope(BoundGlobalScope previous, List<Diagnostic> diagnostics, List<VariableSymbol> variables, BoundStatement statement) {
         this.previous = previous;
         this.diagnostics = Collections.unmodifiableList(diagnostics);
         this.variables = Collections.unmodifiableList(variables);
-        this.expression = expression;
+        this.statement = statement;
     }
 
     public BoundGlobalScope getPrevious() {
@@ -35,7 +35,7 @@ public class BoundGlobalScope {
         return variables;
     }
 
-    public BoundExpression getExpression() {
-        return expression;
+    public BoundStatement getStatement() {
+        return statement;
     }
 }

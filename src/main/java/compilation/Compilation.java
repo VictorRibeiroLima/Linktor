@@ -58,7 +58,7 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        Evaluator evaluator = new Evaluator(globalScope.getExpression(), variables);
+        Evaluator evaluator = new Evaluator(globalScope.getStatement(), variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
     }

@@ -10,12 +10,19 @@ import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.scopes.BoundScope;
+import codeanalysis.binding.statement.BoundBlockStatement;
+import codeanalysis.binding.statement.BoundExpressionStatement;
+import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.expression.*;
+import codeanalysis.syntax.statements.BlockStatementSyntax;
+import codeanalysis.syntax.statements.ExpressionStatementSyntax;
+import codeanalysis.syntax.statements.StatementSyntax;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -36,7 +43,7 @@ public class Binder {
     public static BoundGlobalScope boundGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
-        BoundExpression expression = binder.bindExpression(unit.getExpression());
+        BoundStatement expression = binder.bindStatement(unit.getExpression());
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
         return new BoundGlobalScope(previous, diagnostics, variables, expression);
@@ -60,6 +67,29 @@ public class Binder {
             parentScope = scope;
         }
         return parentScope;
+    }
+
+    public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
+        return switch (syntax.getKind()) {
+            case BLOCK_STATEMENT -> bindBlockStatement((BlockStatementSyntax) syntax);
+            case EXPRESSION_STATEMENT -> bindExpressionStatement((ExpressionStatementSyntax) syntax);
+            default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
+        };
+    }
+
+    private BoundBlockStatement bindBlockStatement(BlockStatementSyntax syntax) throws Exception {
+        List<BoundStatement> statements = new ArrayList<>();
+        for (StatementSyntax e : syntax.getStatements()
+        ) {
+            BoundStatement statement = bindStatement(e);
+            statements.add(statement);
+        }
+        return new BoundBlockStatement(statements);
+    }
+
+    private BoundExpressionStatement bindExpressionStatement(ExpressionStatementSyntax syntax) throws Exception {
+        BoundExpression expression = bindExpression(syntax.getExpression());
+        return new BoundExpressionStatement(expression);
     }
 
     public BoundExpression bindExpression(ExpressionSyntax syntax) throws Exception {

@@ -8,6 +8,9 @@ import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.expression.*;
+import codeanalysis.syntax.statements.BlockStatementSyntax;
+import codeanalysis.syntax.statements.ExpressionStatementSyntax;
+import codeanalysis.syntax.statements.StatementSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +44,32 @@ public final class Parser {
     }
 
     public CompilationUnitSyntax parseCompilationUnit() {
-        ExpressionSyntax expression = parseExpression();
+        StatementSyntax expression = parseStatement();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
         return new CompilationUnitSyntax(expression, endOfFileToken);
+    }
+
+    private StatementSyntax parseStatement() {
+        if (getCurrent().getKind() == SyntaxKind.OPEN_BRACE_TOKEN)
+            return parseBlockStatement();
+        return parseExpressionStatement();
+    }
+
+    private StatementSyntax parseBlockStatement() {
+        SyntaxToken open = matchToken(SyntaxKind.OPEN_BRACE_TOKEN);
+        List<StatementSyntax> statements = new ArrayList<>();
+        while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN &&
+                getCurrent().getKind() != SyntaxKind.CLOSE_BRACE_TOKEN) {
+            StatementSyntax statement = parseStatement();
+            statements.add(statement);
+        }
+        SyntaxToken close = matchToken(SyntaxKind.CLOSE_BRACE_TOKEN);
+        return new BlockStatementSyntax(open, statements, close);
+    }
+
+    private StatementSyntax parseExpressionStatement() {
+        ExpressionSyntax expression = parseExpression();
+        return new ExpressionStatementSyntax(expression);
     }
 
     private ExpressionSyntax parseExpression() {

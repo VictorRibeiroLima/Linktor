@@ -51,8 +51,8 @@ public final class SyntaxFacts {
         }
     }
 
-    public static String getText(SyntaxKind kind){
-        switch (kind){
+    public static String getText(SyntaxKind kind) {
+        switch (kind) {
             case PLUS_TOKEN:
                 return "+";
             case MINUS_TOKEN:
@@ -65,6 +65,10 @@ public final class SyntaxFacts {
                 return "(";
             case CLOSE_PARENTHESIS_TOKEN:
                 return ")";
+            case OPEN_BRACE_TOKEN:
+                return "{";
+            case CLOSE_BRACE_TOKEN:
+                return "}";
             case EQUAL_TOKEN:
                 return "=";
             case EQUAL_EQUAL_TOKEN:
@@ -86,21 +90,21 @@ public final class SyntaxFacts {
         }
     }
 
-    public static List<SyntaxKind> getUnaryOperatorKinds(){
+    public static List<SyntaxKind> getUnaryOperatorKinds() {
         SyntaxKind[] kinds = SyntaxKind.values();
         List<SyntaxKind> unaryKinds = new ArrayList<>();
-        for (SyntaxKind kind:kinds) {
-           if(getUnaryOperatorPrecedence(kind)>0)
+        for (SyntaxKind kind : kinds) {
+            if (getUnaryOperatorPrecedence(kind) > 0)
                 unaryKinds.add(kind);
         }
         return unaryKinds;
     }
 
-    public static List<SyntaxKind> getBinaryOperatorKinds(){
+    public static List<SyntaxKind> getBinaryOperatorKinds() {
         SyntaxKind[] kinds = SyntaxKind.values();
         List<SyntaxKind> binaryKinds = new ArrayList<>();
-        for (SyntaxKind kind:kinds) {
-            if(getBinaryOperatorPrecedence(kind)>0)
+        for (SyntaxKind kind : kinds) {
+            if (getBinaryOperatorPrecedence(kind) > 0)
                 binaryKinds.add(kind);
         }
         return binaryKinds;
