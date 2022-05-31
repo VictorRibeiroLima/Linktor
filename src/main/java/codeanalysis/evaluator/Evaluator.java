@@ -1,8 +1,7 @@
 package codeanalysis.evaluator;
 
-import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
@@ -40,7 +39,8 @@ public final class Evaluator {
     }
 
     private Object evaluateVariableExpression(BoundVariableExpression v) {
-        return variables.get(v.getVariable());
+        Object variable = variables.get(v.getVariable());
+        return variable;
     }
 
     private Object evaluateAssignmentExpression(BoundAssignmentExpression a) throws Exception {

@@ -16,4 +16,9 @@ public record VariableSymbol(String name, Type type) {
         VariableSymbol v = (VariableSymbol) o;
         return v == this || v.name().equals(this.name);
     }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
 }

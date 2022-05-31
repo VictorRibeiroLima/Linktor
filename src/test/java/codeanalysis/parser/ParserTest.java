@@ -27,7 +27,7 @@ class ParserTest {
 
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
 
         if (precedence1 >= precedence2) {
             /*
@@ -82,7 +82,7 @@ class ParserTest {
 
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         /*
 
                   *
@@ -117,7 +117,7 @@ class ParserTest {
         String text = "a " + binaryText + unaryText + " b";
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         /*
 
                   +
@@ -147,7 +147,7 @@ class ParserTest {
         String text = unaryText + "a " + binaryText + " b";
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         /*
 
                   +
@@ -189,7 +189,7 @@ class ParserTest {
 
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
 
         asserting.assertNode(SyntaxKind.ASSIGNMENT_EXPRESSION);
         asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN, "a");
@@ -212,7 +212,7 @@ class ParserTest {
         String text = "a=" + expectedText;
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         asserting.assertNode(SyntaxKind.ASSIGNMENT_EXPRESSION);
         asserting.assertToken(SyntaxKind.IDENTIFIER_TOKEN, "a");
         asserting.assertNode(SyntaxKind.EQUAL_TOKEN);
@@ -225,7 +225,7 @@ class ParserTest {
         String text = "(1";
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         asserting.assertNode(SyntaxKind.PARENTHESIZED_EXPRESSION);
         asserting.assertNode(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
         asserting.assertNode(SyntaxKind.LITERAL_EXPRESSION);
@@ -242,7 +242,7 @@ class ParserTest {
         String text = u1Text + u2Text + "a";
         SourceText input = SourceText.from(text);
         Parser parser = new Parser(input);
-        AssertingList asserting = new AssertingList(parser.parse().getRoot());
+        AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getExpression());
         /*
 
                   !

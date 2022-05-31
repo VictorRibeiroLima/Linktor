@@ -37,14 +37,14 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
 
-    private void report(TextSpan span, String message) {
-        Diagnostic diagnostic = new Diagnostic(span, message);
-        diagnostics.add(diagnostic);
-    }
-
     public void reportInvalidType(TextSpan span, String text, Type type) {
         String message = "ERROR: The number " + text + "is not a valid representation of " + type + ".";
         report(span, message);
+    }
+
+    private void report(TextSpan span, String message) {
+        Diagnostic diagnostic = new Diagnostic(span, message);
+        diagnostics.add(diagnostic);
     }
 
     public void reportBadChar(int position, char character) {
@@ -71,7 +71,16 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportUndefinedNameExpression(TextSpan span, String name) {
-        String message = "ERROR: Undefined variable '" + name + "'";
+        String message = "ERROR: Undefined variable '" + name + "'.";
         report(span, message);
+    }
+
+    public void reportVariableAlreadyDeclared(String name, TextSpan span) {
+        String message = "ERROR: variable '" + name + "' is already declared.";
+        report(span, message);
+    }
+
+    public List<Diagnostic> toUnmodifiableList() {
+        return List.copyOf(diagnostics);
     }
 }

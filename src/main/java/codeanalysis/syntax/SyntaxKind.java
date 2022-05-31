@@ -1,6 +1,9 @@
 package codeanalysis.syntax;
 
 public enum SyntaxKind {
+    //UNITS
+    COMPILATION_UNIT,
+
     //TOKENS
     BAD_TOKEN,
     WHITESPACE_TOKEN,
@@ -30,6 +33,6 @@ public enum SyntaxKind {
 
     //KEYWORDS
     TRUE_KEYWORD,
-    FALSE_KEYWORD;
+    FALSE_KEYWORD,
 
 }

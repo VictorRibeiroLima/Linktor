@@ -3,10 +3,10 @@ package codeanalysis.parser;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
+import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.*;
 
 import java.util.ArrayList;
@@ -36,10 +36,14 @@ public final class Parser {
         this.text = text;
     }
 
-    public SyntaxTree parse() {
+    public DiagnosticBag getDiagnostics() {
+        return diagnostics;
+    }
+
+    public CompilationUnitSyntax parseCompilationUnit() {
         ExpressionSyntax expression = parseExpression();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
-        return new SyntaxTree(expression, endOfFileToken, diagnostics, text);
+        return new CompilationUnitSyntax(expression, endOfFileToken);
     }
 
     private ExpressionSyntax parseExpression() {
