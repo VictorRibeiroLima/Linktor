@@ -55,7 +55,7 @@ public class Binder {
             previous = stack.pop();
             BoundScope scope = new BoundScope(parentScope);
             for (VariableSymbol variable : previous.getVariables()) {
-                scope.declare(variable);
+                scope.declareVariable(variable);
             }
             parentScope = scope;
         }
@@ -81,8 +81,7 @@ public class Binder {
 
     private BoundExpression bindNameExpression(NameExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
-        VariableSymbol variable = new VariableSymbol(name, null);
-        variable = scope.lookup(variable);
+        VariableSymbol variable = scope.getVariableByIdentifier(name);
         if (variable != null) {
             return new BoundVariableExpression(variable);
         }
@@ -93,11 +92,23 @@ public class Binder {
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
         BoundExpression boundExpression = bindExpression(syntax.getExpression());
-        VariableSymbol variable = new VariableSymbol(name, boundExpression.getType());
-        if (!scope.declare(variable)) {
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifierToken().getSpan());
+        VariableSymbol variable;
+        if (!scope.isVariablePresent(name)) {
+            variable = new VariableSymbol(name, boundExpression.getType());
+            scope.declareVariable(variable);
+        } else {
+            variable = scope.getVariableByIdentifier(name);
+            if (!boundExpression.getType().equals(variable.type())) {
+                diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.type());
+                return boundExpression;
+            }
         }
         return new BoundAssignmentExpression(variable, boundExpression);
+        /*
+        if (!scope.declareVariable(variable)) {
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifierToken().getSpan());
+        }
+        return new BoundAssignmentExpression(variable, boundExpression);*/
     }
 
 

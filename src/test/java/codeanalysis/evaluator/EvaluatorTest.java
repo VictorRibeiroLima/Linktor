@@ -10,7 +10,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -88,7 +87,6 @@ class EvaluatorTest {
 
     static BoundExpression getExpression(String input) throws Exception {
         SyntaxTree tree = SyntaxTree.parse(input);
-        tree.getRoot().writeTo(new PrintWriter(System.out, true));
         BoundGlobalScope localGlobalScope = Binder.boundGlobalScope(tree.getRoot(), globalScope);
         globalScope = localGlobalScope;
         BoundExpression bound = localGlobalScope.getExpression();

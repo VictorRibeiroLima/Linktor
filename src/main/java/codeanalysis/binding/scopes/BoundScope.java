@@ -16,7 +16,7 @@ public class BoundScope {
         this.parent = parent;
     }
 
-    public boolean declare(VariableSymbol variable) {
+    public boolean declareVariable(VariableSymbol variable) {
         if (variables.containsKey(variable.name()))
             return false;
 
@@ -24,15 +24,34 @@ public class BoundScope {
         return true;
     }
 
-    public VariableSymbol lookup(VariableSymbol variableSymbol) {
-        if (variables.containsKey(variableSymbol.name())) {
-            VariableSymbol variable = variables.get(variableSymbol.name());
+    public VariableSymbol getVariableByIdentifier(String identifier) {
+        if (variables.containsKey(identifier)) {
+            VariableSymbol variable = variables.get(identifier);
             return variable;
         }
         if (this.parent == null)
             return null;
 
-        return parent.lookup(variableSymbol);
+        return parent.getVariableByIdentifier(identifier);
+    }
+
+    public VariableSymbol getLocalVariableByIdentifier(String identifier) {
+        if (variables.containsKey(identifier)) {
+            VariableSymbol variable = variables.get(identifier);
+            return variable;
+        }
+        return null;
+    }
+
+    public boolean isVariablePresent(String identifier) {
+        if (variables.containsKey(identifier)) {
+            VariableSymbol variable = variables.get(identifier);
+            return true;
+        }
+        if (this.parent == null)
+            return false;
+
+        return parent.isVariablePresent(identifier);
     }
 
     public List<VariableSymbol> getDeclaredVariables() {

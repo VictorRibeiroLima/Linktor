@@ -83,4 +83,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     public List<Diagnostic> toUnmodifiableList() {
         return List.copyOf(diagnostics);
     }
+
+    public void reportCannotConvert(TextSpan span, Type expectedType, Type actualType) {
+        String message = "ERROR: Cannot convert '" + expectedType + "' into '" + actualType + "'.";
+        report(span, message);
+    }
 }
