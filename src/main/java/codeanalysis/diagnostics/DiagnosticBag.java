@@ -90,7 +90,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportReadOnly(TextSpan span, String name) {
-        String message = "ERROR: Variable '" + name + "' is read only and cannot be assigned";
+        String message = "ERROR: Variable '" + name + "' is read only and cannot be assigned.";
         report(span, message);
     }
 }

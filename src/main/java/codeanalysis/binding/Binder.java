@@ -130,7 +130,7 @@ public class Binder {
         BoundExpression initializer = bindExpression(syntax.getInitializer());
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (!scope.declareVariable(variableSymbol))
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getKeyword().getSpan());
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
 
         return new BoundVariableDeclarationStatement(variableSymbol, initializer);
     }
