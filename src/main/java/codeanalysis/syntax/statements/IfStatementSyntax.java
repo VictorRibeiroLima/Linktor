@@ -5,7 +5,7 @@ import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class IfStatementSyntax extends StatementSyntax {
@@ -28,7 +28,14 @@ public class IfStatementSyntax extends StatementSyntax {
         this.thenStatement = thenStatement;
         this.kind = SyntaxKind.IF_STATEMENT;
         this.elseClause = elseClause;
-        this.children = Arrays.asList(ifWorld, condition, thenStatement, elseClause);
+        List<SyntaxNode> children = new ArrayList<>();
+        children.add(ifWorld);
+        children.add(condition);
+        children.add(thenStatement);
+        if (elseClause != null) {
+            children.add(elseClause);
+        }
+        this.children = List.copyOf(children);
     }
 
     public SyntaxToken getIfWorld() {

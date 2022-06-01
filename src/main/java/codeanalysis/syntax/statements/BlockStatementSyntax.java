@@ -26,7 +26,7 @@ public class BlockStatementSyntax extends StatementSyntax {
         children.add(openBrace);
         children.addAll(statements);
         children.add(closeBrace);
-        this.children = children;
+        this.children = List.copyOf(children);
     }
 
     public List<StatementSyntax> getStatements() {
