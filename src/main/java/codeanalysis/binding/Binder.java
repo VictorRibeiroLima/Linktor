@@ -74,8 +74,15 @@ public class Binder {
             case VARIABLE_DECLARATION_STATEMENT ->
                     bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) syntax);
             case IF_STATEMENT -> bindIfStatement((IfStatementSyntax) syntax);
+            case WHILE_STATEMENT -> bindWhileStatement((WhileStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+    }
+
+    private BoundStatement bindWhileStatement(WhileStatementSyntax syntax) throws Exception {
+        BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
+        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        return new BoundWhileStatement(condition, thenStatement);
     }
 
     private BoundStatement bindIfStatement(IfStatementSyntax syntax) throws Exception {

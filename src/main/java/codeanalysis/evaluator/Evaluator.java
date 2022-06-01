@@ -34,9 +34,16 @@ public final class Evaluator {
             case VARIABLE_DECLARATION_STATEMENT ->
                     evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
             case IF_STATEMENT -> evaluateIfStatement((BoundIfStatement) statement);
+            case WHILE_STATEMENT -> evaluateWhileStatement((BoundWhileStatement) statement);
             default -> throw new Exception("Unexpected node " + statement.getKind());
 
 
+        }
+    }
+
+    private void evaluateWhileStatement(BoundWhileStatement statement) throws Exception {
+        while ((boolean) evaluateExpression(statement.getCondition())) {
+            evaluateStatement(statement.getThenStatement());
         }
     }
 

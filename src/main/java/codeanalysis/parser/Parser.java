@@ -53,8 +53,16 @@ public final class Parser {
             case OPEN_BRACE_TOKEN -> parseBlockStatement();
             case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
             case IF_KEYWORD -> parseIfStatement();
+            case WHILE_KEYWORD -> parseWhileStatement();
             default -> parseExpressionStatement();
         };
+    }
+
+    private StatementSyntax parseWhileStatement() {
+        SyntaxToken whileKeyword = matchToken(SyntaxKind.WHILE_KEYWORD);
+        ExpressionSyntax condition = parseParenthesizedExpression();
+        StatementSyntax thenStatement = parseStatement();
+        return new WhileStatementSyntax(whileKeyword, condition, thenStatement);
     }
 
     private StatementSyntax parseIfStatement() {
