@@ -19,12 +19,15 @@ public class VariableDeclarationStatementSyntax extends StatementSyntax {
 
     private final SyntaxKind kind;
 
+    private final List<SyntaxNode> children;
+
     public VariableDeclarationStatementSyntax(SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equals, ExpressionSyntax initializer) {
         this.keyword = keyword;
         this.identifier = identifier;
         this.equals = equals;
         this.initializer = initializer;
         this.kind = SyntaxKind.VARIABLE_DECLARATION_STATEMENT;
+        this.children = Arrays.asList(keyword, identifier, equals, initializer);
     }
 
     public SyntaxToken getKeyword() {
@@ -50,6 +53,6 @@ public class VariableDeclarationStatementSyntax extends StatementSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(keyword, identifier, equals, initializer);
+        return children;
     }
 }

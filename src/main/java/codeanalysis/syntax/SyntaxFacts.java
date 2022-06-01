@@ -9,93 +9,69 @@ public final class SyntaxFacts {
     }
 
     public static int getUnaryOperatorPrecedence(SyntaxKind kind) {
-        switch (kind) {
-            case PLUS_TOKEN:
-            case MINUS_TOKEN:
-            case EXCLAMATION_TOKEN:
-                return 6;
-            default:
-                return 0;
-        }
+        return switch (kind) {
+            case PLUS_TOKEN, MINUS_TOKEN, EXCLAMATION_TOKEN -> 6;
+            default -> 0;
+        };
     }
 
     public static int getBinaryOperatorPrecedence(SyntaxKind kind) {
-        switch (kind) {
-            case STAR_TOKEN:
-            case SLASH_TOKEN:
-                return 5;
-            case PLUS_TOKEN:
-            case MINUS_TOKEN:
-                return 4;
-            case EQUAL_EQUAL_TOKEN:
-            case EXCLAMATION_EQUAL_TOKEN:
-                return 3;
-            case AMPERSAND_AMPERSAND_TOKEN:
-                return 2;
-            case PIPE_PIPE_TOKEN:
-                return 1;
-            default:
-                return 0;
-        }
+        return switch (kind) {
+            case STAR_TOKEN, SLASH_TOKEN -> 5;
+            case PLUS_TOKEN, MINUS_TOKEN -> 4;
+            case EQUAL_EQUAL_TOKEN, EXCLAMATION_EQUAL_TOKEN, LESS_TOKEN, LESS_EQUAL_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN ->
+                    3;
+            case AMPERSAND_AMPERSAND_TOKEN -> 2;
+            case PIPE_PIPE_TOKEN -> 1;
+            default -> 0;
+        };
     }
 
     public static SyntaxKind getKeywordKind(String text) {
-        switch (text) {
-            case "true":
-                return SyntaxKind.TRUE_KEYWORD;
-            case "false":
-                return SyntaxKind.FALSE_KEYWORD;
-            case "var":
-                return SyntaxKind.VAR_KEYWORD;
-            case "let":
-                return SyntaxKind.LET_KEYWORD;
-            default:
-                return SyntaxKind.IDENTIFIER_TOKEN;
-
-        }
+        return switch (text) {
+            case "true" -> SyntaxKind.TRUE_KEYWORD;
+            case "false" -> SyntaxKind.FALSE_KEYWORD;
+            case "var" -> SyntaxKind.VAR_KEYWORD;
+            case "let" -> SyntaxKind.LET_KEYWORD;
+            case "if" -> SyntaxKind.IF_KEYWORD;
+            case "else" -> SyntaxKind.ELSE_KEYWORD;
+            case "while" -> SyntaxKind.WHILE_KEYWORD;
+            case "for" -> SyntaxKind.FOR_KEYWORD;
+            default -> SyntaxKind.IDENTIFIER_TOKEN;
+        };
     }
 
     public static String getText(SyntaxKind kind) {
-        switch (kind) {
-            case PLUS_TOKEN:
-                return "+";
-            case MINUS_TOKEN:
-                return "-";
-            case SLASH_TOKEN:
-                return "/";
-            case STAR_TOKEN:
-                return "*";
-            case OPEN_PARENTHESIS_TOKEN:
-                return "(";
-            case CLOSE_PARENTHESIS_TOKEN:
-                return ")";
-            case OPEN_BRACE_TOKEN:
-                return "{";
-            case CLOSE_BRACE_TOKEN:
-                return "}";
-            case EQUAL_TOKEN:
-                return "=";
-            case EQUAL_EQUAL_TOKEN:
-                return "==";
-            case EXCLAMATION_EQUAL_TOKEN:
-                return "!=";
-            case EXCLAMATION_TOKEN:
-                return "!";
-            case AMPERSAND_AMPERSAND_TOKEN:
-                return "&&";
-            case PIPE_PIPE_TOKEN:
-                return "||";
-            case FALSE_KEYWORD:
-                return "false";
-            case TRUE_KEYWORD:
-                return "true";
-            case VAR_KEYWORD:
-                return "var";
-            case LET_KEYWORD:
-                return "let";
-            default:
-                return null;
-        }
+        return switch (kind) {
+            case SEMICOLON_TOKEN -> ";";
+            case PLUS_TOKEN -> "+";
+            case MINUS_TOKEN -> "-";
+            case SLASH_TOKEN -> "/";
+            case STAR_TOKEN -> "*";
+            case OPEN_PARENTHESIS_TOKEN -> "(";
+            case CLOSE_PARENTHESIS_TOKEN -> ")";
+            case OPEN_BRACE_TOKEN -> "{";
+            case CLOSE_BRACE_TOKEN -> "}";
+            case EQUAL_TOKEN -> "=";
+            case EQUAL_EQUAL_TOKEN -> "==";
+            case EXCLAMATION_EQUAL_TOKEN -> "!=";
+            case GREATER_TOKEN -> ">";
+            case GREATER_EQUAL_TOKEN -> ">=";
+            case LESS_TOKEN -> "<";
+            case LESS_EQUAL_TOKEN -> "<=";
+            case EXCLAMATION_TOKEN -> "!";
+            case AMPERSAND_AMPERSAND_TOKEN -> "&&";
+            case PIPE_PIPE_TOKEN -> "||";
+            case FALSE_KEYWORD -> "false";
+            case TRUE_KEYWORD -> "true";
+            case VAR_KEYWORD -> "var";
+            case LET_KEYWORD -> "let";
+            case IF_KEYWORD -> "if";
+            case ELSE_KEYWORD -> "else";
+            case WHILE_KEYWORD -> "while";
+            case FOR_KEYWORD -> "for";
+            default -> null;
+        };
     }
 
     public static List<SyntaxKind> getUnaryOperatorKinds() {

@@ -5,6 +5,7 @@ import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
 import compilation.EvaluationResult;
+import util.ConsoleColors;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -59,7 +60,8 @@ public class Linktor {
                 Object result = evaluationResult.result();
 
                 if (diagnostics.isEmpty()) {
-                    System.out.println("Result: " + result);
+
+                    System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
                     previous = compilation;
                 } else {
                     SourceText text = tree.getText();

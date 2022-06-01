@@ -1,6 +1,7 @@
 package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.text.TextSpan;
+import util.ConsoleColors;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -39,6 +40,19 @@ public abstract class SyntaxNode {
     }
 
     private void printTree(PrintWriter out, SyntaxNode node, String indent, boolean isLast) {
+        String color;
+        String kindString = node.getKind().toString();
+        if (kindString.contains("UNIT"))
+            color = ConsoleColors.WHITE_BRIGHT;
+        else if (kindString.contains("TOKEN"))
+            color = ConsoleColors.CYAN_BRIGHT;
+        else if (kindString.contains("KEYWORD"))
+            color = ConsoleColors.GREEN_BRIGHT;
+        else
+            color = ConsoleColors.PURPLE_BRIGHT;
+
+        out.print(color);
+
         String marker = isLast ? "└──" : "├──";
         out.print(indent);
         out.print(marker);
@@ -58,8 +72,6 @@ public abstract class SyntaxNode {
         for (SyntaxNode n : node.getChildren()) {
             printTree(out, n, indent, last == n);
         }
-
-
     }
 
 }

@@ -3,8 +3,12 @@ package codeanalysis.evaluator;
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.diagnostics.Diagnostic;
+import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
+import compilation.Compilation;
+import compilation.EvaluationResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EvaluatorTest {
 
@@ -33,6 +38,22 @@ class EvaluatorTest {
         Evaluator evaluator = new Evaluator(expression, variables);
         Object result = evaluator.evaluate();
         assertEquals(expectedResult, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideDiagnostics")
+    void diagnostics(String text, String expectedDiagnostic) throws Exception {
+        AnnotatedText input = AnnotatedText.parse(text);
+        SyntaxTree tree = SyntaxTree.parse(input.getText());
+        Compilation compilation = new Compilation(tree);
+        EvaluationResult result = compilation.evaluate(new HashMap<>());
+        assertTrue(result.diagnostics().size() > 0);
+        Diagnostic diagnostic = result.diagnostics().get(0);
+        TextSpan expectedSpan = input.getSpans().get(0);
+
+        assertEquals(expectedDiagnostic, diagnostic.message());
+        assertEquals(expectedSpan, diagnostic.span());
+
     }
 
     static Stream<Arguments> provideExpressions() throws Exception {
@@ -81,7 +102,32 @@ class EvaluatorTest {
                 Arguments.of(getExpression("!!a"), false),
                 Arguments.of(getExpression("let b=10"), 10),
                 Arguments.of(getExpression("let c=25"), 25),
-                Arguments.of(getExpression("b+c"), 35)
+                Arguments.of(getExpression("b+c"), 35),
+                Arguments.of(getExpression("c>b"), true),
+                Arguments.of(getExpression("b<=c"), true),
+                Arguments.of(getExpression("c>100"), false),
+                Arguments.of(getExpression("b<=1"), false)
+        );
+    }
+
+    static Stream<Arguments> provideDiagnostics() throws Exception {
+        return Stream.of(
+                Arguments.of("""
+                                {
+                                    var a = 10;
+                                    var [a] = 100;
+                                }
+                                """,
+                        "ERROR: variable 'a' is already declared."
+                ),
+                Arguments.of("""
+                                {
+                                    let a = 10;
+                                    a [=] 100;
+                                }
+                                """,
+                        "ERROR: Variable 'a' is read only and cannot be assigned."
+                )
         );
     }
 
@@ -92,4 +138,6 @@ class EvaluatorTest {
         BoundStatement bound = localGlobalScope.getStatement();
         return bound;
     }
+
+
 }

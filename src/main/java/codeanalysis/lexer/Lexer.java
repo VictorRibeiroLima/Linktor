@@ -38,6 +38,10 @@ public final class Lexer {
             case '\0':
                 kind = SyntaxKind.END_OF_FILE_TOKEN;
                 break;
+            case ';':
+                kind = SyntaxKind.SEMICOLON_TOKEN;
+                next();
+                break;
             case '+':
                 kind = SyntaxKind.PLUS_TOKEN;
                 next();
@@ -80,6 +84,26 @@ public final class Lexer {
                 next();
                 break;
             }
+            case '<': {
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.LESS_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.LESS_TOKEN;
+                }
+                next();
+                break;
+            }
+            case '>': {
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.GREATER_EQUAL_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.GREATER_TOKEN;
+                }
+                next();
+                break;
+            }
             case '!': {
                 if (lookahead() == '=') {
                     kind = SyntaxKind.EXCLAMATION_EQUAL_TOKEN;
@@ -106,6 +130,7 @@ public final class Lexer {
                 next();
                 break;
             }
+            case '0':
             case '1':
             case '2':
             case '3':

@@ -3,15 +3,11 @@ package codeanalysis.parser;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
-import codeanalysis.syntax.CompilationUnitSyntax;
-import codeanalysis.syntax.SyntaxFacts;
-import codeanalysis.syntax.SyntaxKind;
-import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.*;
+import codeanalysis.syntax.clause.ElseClauseSyntax;
+import codeanalysis.syntax.clause.ForConditionClause;
 import codeanalysis.syntax.expression.*;
-import codeanalysis.syntax.statements.BlockStatementSyntax;
-import codeanalysis.syntax.statements.ExpressionStatementSyntax;
-import codeanalysis.syntax.statements.StatementSyntax;
-import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
+import codeanalysis.syntax.statements.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +18,6 @@ public final class Parser {
     private int position;
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
-
-    private final SourceText text;
 
     public Parser(SourceText text) {
         position = 0;
@@ -37,7 +31,6 @@ public final class Parser {
         } while (token.getKind() != SyntaxKind.END_OF_FILE_TOKEN);
         this.tokens = tokens;
         diagnostics.addAll(lexer.getDiagnostics());
-        this.text = text;
     }
 
     public DiagnosticBag getDiagnostics() {
@@ -52,11 +45,67 @@ public final class Parser {
 
 
     private StatementSyntax parseStatement() {
-        return switch (getCurrent().getKind()) {
+        StatementSyntax statement = switch (getCurrent().getKind()) {
             case OPEN_BRACE_TOKEN -> parseBlockStatement();
             case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
+            case IF_KEYWORD -> parseIfStatement();
+            case WHILE_KEYWORD -> parseWhileStatement();
+            case FOR_KEYWORD -> parseForStatement();
             default -> parseExpressionStatement();
         };
+        if (getCurrent().getKind() == SyntaxKind.SEMICOLON_TOKEN)
+            nextToken();
+        return statement;
+    }
+
+    private StatementSyntax parseForStatement() {
+        SyntaxToken forKeyWord = matchToken(SyntaxKind.FOR_KEYWORD);
+        ForConditionClause condition = parseForConditionClause();
+        StatementSyntax thenStatement = parseStatement();
+        return new ForStatementSyntax(forKeyWord, condition, thenStatement);
+    }
+
+    private ForConditionClause parseForConditionClause() {
+        matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
+        SyntaxNode variableExpression;
+        switch (getCurrent().getKind()) {
+            case VAR_KEYWORD:
+            case LET_KEYWORD:
+                variableExpression = parseVariableDeclarationStatement();
+                break;
+            default:
+                variableExpression = parseNameExpression();
+        }
+        matchToken(SyntaxKind.SEMICOLON_TOKEN);
+        ExpressionSyntax condition = parseExpression();
+        matchToken(SyntaxKind.SEMICOLON_TOKEN);
+        ExpressionSyntax increment = parseExpression();
+        matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
+        return new ForConditionClause(variableExpression, condition, increment);
+    }
+
+    private StatementSyntax parseWhileStatement() {
+        SyntaxToken whileKeyword = matchToken(SyntaxKind.WHILE_KEYWORD);
+        ExpressionSyntax condition = parseParenthesizedExpression();
+        StatementSyntax thenStatement = parseStatement();
+        return new WhileStatementSyntax(whileKeyword, condition, thenStatement);
+    }
+
+    private StatementSyntax parseIfStatement() {
+        SyntaxToken ifKeyword = matchToken(SyntaxKind.IF_KEYWORD);
+        ExpressionSyntax condition = parseParenthesizedExpression();
+        StatementSyntax thenStatement = parseStatement();
+        ElseClauseSyntax elseClause = parseElseClause();
+        return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
+    }
+
+    private ElseClauseSyntax parseElseClause() {
+        if (getCurrent().getKind() == SyntaxKind.ELSE_KEYWORD) {
+            SyntaxToken elseKeyword = matchToken(SyntaxKind.ELSE_KEYWORD);
+            StatementSyntax thenStatement = parseStatement();
+            return new ElseClauseSyntax(elseKeyword, thenStatement);
+        }
+        return null;
     }
 
     private StatementSyntax parseVariableDeclarationStatement() {
@@ -93,7 +142,7 @@ public final class Parser {
         if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN &&
                 peek(1).getKind() == SyntaxKind.EQUAL_TOKEN) {
             SyntaxToken identifier = nextToken();
-            SyntaxToken equals = nextToken();
+            SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
             ExpressionSyntax right = parseAssignmentExpression();
             return new AssignmentExpressionSyntax(identifier, equals, right);
         }
@@ -186,6 +235,7 @@ public final class Parser {
             return nextToken();
 
         diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
+        nextToken();
         return new SyntaxToken(type, getCurrent().getPosition(), null, null);
     }
 }

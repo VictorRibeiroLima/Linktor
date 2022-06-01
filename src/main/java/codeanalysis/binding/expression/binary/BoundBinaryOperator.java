@@ -30,7 +30,16 @@ public final class BoundBinaryOperator {
             new BoundBinaryOperator(SyntaxKind.EQUAL_EQUAL_TOKEN,
                     BoundBinaryOperatorKind.LOGICAL_EQUALITY, Boolean.class),
             new BoundBinaryOperator(SyntaxKind.EXCLAMATION_EQUAL_TOKEN,
-                    BoundBinaryOperatorKind.LOGICAL_INEQUALITY, Boolean.class)
+                    BoundBinaryOperatorKind.LOGICAL_INEQUALITY, Boolean.class),
+
+            new BoundBinaryOperator(SyntaxKind.LESS_TOKEN,
+                    BoundBinaryOperatorKind.LESS_THAN, Integer.class, Boolean.class),
+            new BoundBinaryOperator(SyntaxKind.LESS_EQUAL_TOKEN,
+                    BoundBinaryOperatorKind.LESS_EQUAL_THAN, Integer.class, Boolean.class),
+            new BoundBinaryOperator(SyntaxKind.GREATER_TOKEN,
+                    BoundBinaryOperatorKind.GREATER_THAN, Integer.class, Boolean.class),
+            new BoundBinaryOperator(SyntaxKind.GREATER_EQUAL_TOKEN,
+                    BoundBinaryOperatorKind.GREATER_EQUAL_THAN, Integer.class, Boolean.class)
     );
 
 

@@ -1,5 +1,7 @@
 package codeanalysis.binding;
 
+import codeanalysis.binding.clause.BoundElseClause;
+import codeanalysis.binding.clause.BoundForConditionClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -10,21 +12,18 @@ import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.scopes.BoundScope;
-import codeanalysis.binding.statement.BoundBlockStatement;
-import codeanalysis.binding.statement.BoundExpressionStatement;
-import codeanalysis.binding.statement.BoundStatement;
-import codeanalysis.binding.statement.BoundVariableDeclarationStatement;
+import codeanalysis.binding.statement.*;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.clause.ElseClauseSyntax;
+import codeanalysis.syntax.clause.ForConditionClause;
 import codeanalysis.syntax.expression.*;
-import codeanalysis.syntax.statements.BlockStatementSyntax;
-import codeanalysis.syntax.statements.ExpressionStatementSyntax;
-import codeanalysis.syntax.statements.StatementSyntax;
-import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
+import codeanalysis.syntax.statements.*;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -78,8 +77,51 @@ public class Binder {
             case EXPRESSION_STATEMENT -> bindExpressionStatement((ExpressionStatementSyntax) syntax);
             case VARIABLE_DECLARATION_STATEMENT ->
                     bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) syntax);
+            case IF_STATEMENT -> bindIfStatement((IfStatementSyntax) syntax);
+            case WHILE_STATEMENT -> bindWhileStatement((WhileStatementSyntax) syntax);
+            case FOR_STATEMENT -> bindForStatement((ForStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+    }
+
+    private BoundStatement bindForStatement(ForStatementSyntax syntax) throws Exception {
+        BoundForConditionClause clause = bindForConditionClause(syntax.getCondition());
+        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        return new BoundForStatement(clause, thenStatement);
+    }
+
+    private BoundForConditionClause bindForConditionClause(ForConditionClause condition) throws Exception {
+        BoundNode variable;
+        this.scope = new BoundScope(scope);
+        if (condition.getVariableNode().getKind() == SyntaxKind.VARIABLE_DECLARATION_STATEMENT)
+            variable = bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) condition.getVariableNode());
+        else
+            variable = bindNameExpression((NameExpressionSyntax) condition.getVariableNode());
+
+        BoundExpression conditionExpression = bindExpression(condition.getConditionExpression(), Boolean.class);
+        BoundExpression incrementExpression = bindExpression(condition.getIncrementExpression(), Integer.class);
+        return new BoundForConditionClause(variable, conditionExpression, incrementExpression);
+    }
+
+    private BoundStatement bindWhileStatement(WhileStatementSyntax syntax) throws Exception {
+        BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
+        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        return new BoundWhileStatement(condition, thenStatement);
+    }
+
+    private BoundStatement bindIfStatement(IfStatementSyntax syntax) throws Exception {
+        BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
+        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        BoundElseClause elseClause = bindElseClause(syntax.getElseClause());
+        return new BoundIfStatement(condition, thenStatement, elseClause);
+    }
+
+    private BoundElseClause bindElseClause(ElseClauseSyntax elseClause) throws Exception {
+        if (elseClause != null) {
+            BoundStatement thenStatement = bindStatement(elseClause.getThenStatement());
+            return new BoundElseClause(thenStatement);
+        }
+        return null;
     }
 
     private BoundStatement bindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax) throws Exception {
@@ -88,7 +130,7 @@ public class Binder {
         BoundExpression initializer = bindExpression(syntax.getInitializer());
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (!scope.declareVariable(variableSymbol))
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getKeyword().getSpan());
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
 
         return new BoundVariableDeclarationStatement(variableSymbol, initializer);
     }
@@ -110,7 +152,14 @@ public class Binder {
         return new BoundExpressionStatement(expression);
     }
 
-    public BoundExpression bindExpression(ExpressionSyntax syntax) throws Exception {
+    private BoundExpression bindExpression(ExpressionSyntax syntax, Type expectedType) throws Exception {
+        BoundExpression result = bindExpression(syntax);
+        if (!result.getType().equals(expectedType))
+            diagnostics.reportCannotConvert(syntax.getSpan(), expectedType, result.getType());
+        return result;
+    }
+
+    private BoundExpression bindExpression(ExpressionSyntax syntax) throws Exception {
         return switch (syntax.getKind()) {
             case PARENTHESIZED_EXPRESSION -> bindParenthesizedExpression((ParenthesizedExpressionSyntax) syntax);
             case LITERAL_EXPRESSION -> bindLiteralExpression((LiteralExpressionSyntax) syntax);
