@@ -8,10 +8,7 @@ import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.expression.*;
-import codeanalysis.syntax.statements.BlockStatementSyntax;
-import codeanalysis.syntax.statements.ExpressionStatementSyntax;
-import codeanalysis.syntax.statements.StatementSyntax;
-import codeanalysis.syntax.statements.VariableDeclarationStatementSyntax;
+import codeanalysis.syntax.statements.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +52,26 @@ public final class Parser {
         return switch (getCurrent().getKind()) {
             case OPEN_BRACE_TOKEN -> parseBlockStatement();
             case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
+            case IF_KEYWORD -> parseIfStatement();
             default -> parseExpressionStatement();
         };
+    }
+
+    private StatementSyntax parseIfStatement() {
+        SyntaxToken ifKeyword = matchToken(SyntaxKind.IF_KEYWORD);
+        ExpressionSyntax condition = parseParenthesizedExpression();
+        StatementSyntax thenStatement = parseStatement();
+        ElseClauseSyntax elseClause = parseElseClause();
+        return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
+    }
+
+    private ElseClauseSyntax parseElseClause() {
+        if (getCurrent().getKind() == SyntaxKind.ELSE_KEYWORD) {
+            SyntaxToken elseKeyword = matchToken(SyntaxKind.ELSE_KEYWORD);
+            StatementSyntax thenStatement = parseStatement();
+            return new ElseClauseSyntax(elseKeyword, thenStatement);
+        }
+        return null;
     }
 
     private StatementSyntax parseVariableDeclarationStatement() {
@@ -186,6 +201,7 @@ public final class Parser {
             return nextToken();
 
         diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
+        nextToken();
         return new SyntaxToken(type, getCurrent().getPosition(), null, null);
     }
 }

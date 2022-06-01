@@ -53,6 +53,10 @@ public final class SyntaxFacts {
                 return SyntaxKind.VAR_KEYWORD;
             case "let":
                 return SyntaxKind.LET_KEYWORD;
+            case "if":
+                return SyntaxKind.IF_KEYWORD;
+            case "else":
+                return SyntaxKind.ELSE_KEYWORD;
             default:
                 return SyntaxKind.IDENTIFIER_TOKEN;
 
@@ -105,6 +109,10 @@ public final class SyntaxFacts {
                 return "var";
             case LET_KEYWORD:
                 return "let";
+            case IF_KEYWORD:
+                return "if";
+            case ELSE_KEYWORD:
+                return "else";
             default:
                 return null;
         }

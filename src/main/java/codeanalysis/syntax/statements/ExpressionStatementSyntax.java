@@ -12,9 +12,12 @@ public class ExpressionStatementSyntax extends StatementSyntax {
 
     private final SyntaxKind kind;
 
+    private final List<SyntaxNode> children;
+
     public ExpressionStatementSyntax(ExpressionSyntax expression) {
         this.expression = expression;
         this.kind = SyntaxKind.EXPRESSION_STATEMENT;
+        this.children = Arrays.asList(expression);
     }
 
     public ExpressionSyntax getExpression() {
@@ -28,6 +31,6 @@ public class ExpressionStatementSyntax extends StatementSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(expression);
+        return children;
     }
 }

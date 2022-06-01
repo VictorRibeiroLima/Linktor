@@ -4,7 +4,7 @@ import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockStatementSyntax extends StatementSyntax {
@@ -15,17 +15,24 @@ public class BlockStatementSyntax extends StatementSyntax {
 
     private final SyntaxKind kind;
 
+    private final List<SyntaxNode> children;
+
     public BlockStatementSyntax(SyntaxToken openBrace, List<StatementSyntax> statements, SyntaxToken closeBrace) {
         this.openBrace = openBrace;
         this.statements = List.copyOf(statements);
         this.closeBrace = closeBrace;
         this.kind = SyntaxKind.BLOCK_STATEMENT;
+        ArrayList<SyntaxNode> children = new ArrayList<>();
+        children.add(openBrace);
+        children.addAll(statements);
+        children.add(closeBrace);
+        this.children = children;
     }
 
     public List<StatementSyntax> getStatements() {
         return statements;
     }
-    
+
     @Override
     public SyntaxKind getKind() {
         return kind;
@@ -33,6 +40,6 @@ public class BlockStatementSyntax extends StatementSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(openBrace, closeBrace);
+        return children;
     }
 }

@@ -81,7 +81,11 @@ class EvaluatorTest {
                 Arguments.of(getExpression("!!a"), false),
                 Arguments.of(getExpression("let b=10"), 10),
                 Arguments.of(getExpression("let c=25"), 25),
-                Arguments.of(getExpression("b+c"), 35)
+                Arguments.of(getExpression("b+c"), 35),
+                Arguments.of(getExpression("c>b"), true),
+                Arguments.of(getExpression("b<=c"), true),
+                Arguments.of(getExpression("c>100"), false),
+                Arguments.of(getExpression("b<=1"), false)
         );
     }
 

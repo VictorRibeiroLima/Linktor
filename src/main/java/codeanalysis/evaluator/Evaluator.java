@@ -6,10 +6,7 @@ import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
-import codeanalysis.binding.statement.BoundBlockStatement;
-import codeanalysis.binding.statement.BoundExpressionStatement;
-import codeanalysis.binding.statement.BoundStatement;
-import codeanalysis.binding.statement.BoundVariableDeclarationStatement;
+import codeanalysis.binding.statement.*;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;
@@ -32,21 +29,24 @@ public final class Evaluator {
 
     private void evaluateStatement(BoundStatement statement) throws Exception {
         switch (statement.getKind()) {
-            case BLOCK_STATEMENT -> {
-                evaluateBlockStatement((BoundBlockStatement) statement);
-                break;
-            }
-            case EXPRESSION_STATEMENT -> {
-                evaluateExpressionStatement((BoundExpressionStatement) statement);
-                break;
-            }
-            case VARIABLE_DECLARATION_STATEMENT -> {
-                evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
-                break;
-            }
-            default -> {
-                throw new Exception("Unexpected node " + statement.getKind());
+            case BLOCK_STATEMENT -> evaluateBlockStatement((BoundBlockStatement) statement);
+            case EXPRESSION_STATEMENT -> evaluateExpressionStatement((BoundExpressionStatement) statement);
+            case VARIABLE_DECLARATION_STATEMENT ->
+                    evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
+            case IF_STATEMENT -> evaluateIfStatement((BoundIfStatement) statement);
+            default -> throw new Exception("Unexpected node " + statement.getKind());
 
+
+        }
+    }
+
+    private void evaluateIfStatement(BoundIfStatement statement) throws Exception {
+        boolean condition = (boolean) evaluateExpression(statement.getCondition());
+        if (condition) {
+            evaluateStatement(statement.getThenStatement());
+        } else {
+            if (statement.getElseClause() != null) {
+                evaluateStatement(statement.getElseClause().getThenStatement());
             }
         }
     }
@@ -64,8 +64,7 @@ public final class Evaluator {
     }
 
     private void evaluateExpressionStatement(BoundExpressionStatement statement) throws Exception {
-        Object result = evaluateExpression(statement.getExpression());
-        lastValue = result;
+        lastValue = evaluateExpression(statement.getExpression());
     }
 
     private Object evaluateExpression(BoundExpression node) throws Exception {
@@ -84,8 +83,7 @@ public final class Evaluator {
     }
 
     private Object evaluateVariableExpression(BoundVariableExpression v) {
-        Object variable = variables.get(v.getVariable());
-        return variable;
+        return variables.get(v.getVariable());
     }
 
     private Object evaluateAssignmentExpression(BoundAssignmentExpression a) throws Exception {
@@ -96,16 +94,12 @@ public final class Evaluator {
 
     private Object evaluateUnaryExpression(BoundUnaryExpression u) throws Exception {
         Object value = evaluateExpression(u.getRight());
-        switch (u.getOperator().getKind()) {
-            case IDENTITY:
-                return value;
-            case NEGATION:
-                return -(int) value;
-            case LOGICAL_NEGATION:
-                return !(boolean) value;
-            default:
-                throw new Exception("Unexpected unary operation " + u.getOperator());
-        }
+        return switch (u.getOperator().getKind()) {
+            case IDENTITY -> value;
+            case NEGATION -> -(int) value;
+            case LOGICAL_NEGATION -> !(boolean) value;
+            default -> throw new Exception("Unexpected unary operation " + u.getOperator());
+        };
     }
 
     private Object evaluateBinaryExpression(BoundBinaryExpression b) throws Exception {
