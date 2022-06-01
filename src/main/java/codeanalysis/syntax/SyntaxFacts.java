@@ -36,12 +36,14 @@ public final class SyntaxFacts {
             case "if" -> SyntaxKind.IF_KEYWORD;
             case "else" -> SyntaxKind.ELSE_KEYWORD;
             case "while" -> SyntaxKind.WHILE_KEYWORD;
+            case "for" -> SyntaxKind.FOR_KEYWORD;
             default -> SyntaxKind.IDENTIFIER_TOKEN;
         };
     }
 
     public static String getText(SyntaxKind kind) {
         return switch (kind) {
+            case SEMICOLON_TOKEN -> ";";
             case PLUS_TOKEN -> "+";
             case MINUS_TOKEN -> "-";
             case SLASH_TOKEN -> "/";
@@ -67,6 +69,7 @@ public final class SyntaxFacts {
             case IF_KEYWORD -> "if";
             case ELSE_KEYWORD -> "else";
             case WHILE_KEYWORD -> "while";
+            case FOR_KEYWORD -> "for";
             default -> null;
         };
     }

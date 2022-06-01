@@ -3,15 +3,16 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.expression.ExpressionSyntax;
+import codeanalysis.syntax.clause.ForConditionClause;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WhileStatementSyntax extends StatementSyntax {
-    private final SyntaxToken whileKeyword;
+public class ForStatementSyntax extends StatementSyntax {
+    private final SyntaxToken forKeyword;
 
-    private final ExpressionSyntax condition;
+
+    private final ForConditionClause condition;
 
     private final StatementSyntax thenStatement;
 
@@ -20,23 +21,23 @@ public class WhileStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public WhileStatementSyntax(SyntaxToken whileKeyword, ExpressionSyntax condition, StatementSyntax thenStatement) {
-        this.whileKeyword = whileKeyword;
+    public ForStatementSyntax(SyntaxToken forKeyword, ForConditionClause condition, StatementSyntax thenStatement) {
+        this.forKeyword = forKeyword;
         this.condition = condition;
         this.thenStatement = thenStatement;
-        this.kind = SyntaxKind.WHILE_STATEMENT;
+        this.kind = SyntaxKind.FOR_STATEMENT;
         List<SyntaxNode> children = new ArrayList<>();
-        children.add(whileKeyword);
+        children.add(forKeyword);
         children.add(condition);
         children.add(thenStatement);
         this.children = List.copyOf(children);
     }
 
-    public SyntaxToken getWhileKeyworld() {
-        return whileKeyword;
+    public SyntaxToken getForKeyword() {
+        return forKeyword;
     }
 
-    public ExpressionSyntax getCondition() {
+    public ForConditionClause getCondition() {
         return condition;
     }
 

@@ -11,14 +11,7 @@ public record VariableSymbol(String name, Type type, boolean readOnly) {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof VariableSymbol))
-            return false;
-        VariableSymbol v = (VariableSymbol) o;
-        return v == this || v.name().equals(this.name);
+        return this == o;
     }
 
-    @Override
-    public int hashCode() {
-        return this.name.hashCode();
-    }
 }

@@ -1,5 +1,7 @@
 package codeanalysis.evaluator;
 
+import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.clause.BoundForConditionClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -35,9 +37,20 @@ public final class Evaluator {
                     evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
             case IF_STATEMENT -> evaluateIfStatement((BoundIfStatement) statement);
             case WHILE_STATEMENT -> evaluateWhileStatement((BoundWhileStatement) statement);
+            case FOR_STATEMENT -> evaluateForStatement((BoundForStatement) statement);
             default -> throw new Exception("Unexpected node " + statement.getKind());
 
 
+        }
+    }
+
+    private void evaluateForStatement(BoundForStatement statement) throws Exception {
+        BoundForConditionClause clause = statement.getCondition();
+        if (clause.getVariable().getKind() == BoundNodeKind.VARIABLE_DECLARATION_STATEMENT)
+            evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) clause.getVariable());
+        while ((boolean) evaluateExpression(clause.getConditionExpression())) {
+            evaluateStatement(statement.getThenStatement());
+            evaluateExpression(clause.getIncrementExpression());
         }
     }
 

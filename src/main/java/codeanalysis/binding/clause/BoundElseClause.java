@@ -1,7 +1,8 @@
-package codeanalysis.binding.statement;
+package codeanalysis.binding.clause;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.statement.BoundStatement;
 
 public class BoundElseClause extends BoundNode {
     private final BoundStatement thenStatement;

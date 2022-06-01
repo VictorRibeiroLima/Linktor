@@ -1,6 +1,7 @@
 package codeanalysis.binding.statement;
 
 import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.clause.BoundElseClause;
 import codeanalysis.binding.expression.BoundExpression;
 
 public class BoundIfStatement extends BoundStatement {

@@ -1,5 +1,7 @@
 package codeanalysis.binding;
 
+import codeanalysis.binding.clause.BoundElseClause;
+import codeanalysis.binding.clause.BoundForConditionClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -16,6 +18,8 @@ import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.clause.ElseClauseSyntax;
+import codeanalysis.syntax.clause.ForConditionClause;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.*;
 
@@ -75,8 +79,28 @@ public class Binder {
                     bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) syntax);
             case IF_STATEMENT -> bindIfStatement((IfStatementSyntax) syntax);
             case WHILE_STATEMENT -> bindWhileStatement((WhileStatementSyntax) syntax);
+            case FOR_STATEMENT -> bindForStatement((ForStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+    }
+
+    private BoundStatement bindForStatement(ForStatementSyntax syntax) throws Exception {
+        BoundForConditionClause clause = bindForConditionClause(syntax.getCondition());
+        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        return new BoundForStatement(clause, thenStatement);
+    }
+
+    private BoundForConditionClause bindForConditionClause(ForConditionClause condition) throws Exception {
+        BoundNode variable;
+        this.scope = new BoundScope(scope);
+        if (condition.getVariableNode().getKind() == SyntaxKind.VARIABLE_DECLARATION_STATEMENT)
+            variable = bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) condition.getVariableNode());
+        else
+            variable = bindNameExpression((NameExpressionSyntax) condition.getVariableNode());
+
+        BoundExpression conditionExpression = bindExpression(condition.getConditionExpression(), Boolean.class);
+        BoundExpression incrementExpression = bindExpression(condition.getIncrementExpression(), Integer.class);
+        return new BoundForConditionClause(variable, conditionExpression, incrementExpression);
     }
 
     private BoundStatement bindWhileStatement(WhileStatementSyntax syntax) throws Exception {

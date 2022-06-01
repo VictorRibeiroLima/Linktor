@@ -38,6 +38,10 @@ public final class Lexer {
             case '\0':
                 kind = SyntaxKind.END_OF_FILE_TOKEN;
                 break;
+            case ';':
+                kind = SyntaxKind.SEMICOLON_TOKEN;
+                next();
+                break;
             case '+':
                 kind = SyntaxKind.PLUS_TOKEN;
                 next();

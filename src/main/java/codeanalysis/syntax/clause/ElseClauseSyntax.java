@@ -1,8 +1,9 @@
-package codeanalysis.syntax.statements;
+package codeanalysis.syntax.clause;
 
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.statements.StatementSyntax;
 
 import java.util.Arrays;
 import java.util.List;

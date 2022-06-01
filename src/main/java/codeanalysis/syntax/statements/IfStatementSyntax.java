@@ -3,13 +3,14 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class IfStatementSyntax extends StatementSyntax {
-    private final SyntaxToken ifWorld;
+    private final SyntaxToken ifKeyword;
 
     private final ExpressionSyntax condition;
 
@@ -21,15 +22,15 @@ public class IfStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public IfStatementSyntax(SyntaxToken ifWorld, ExpressionSyntax condition, StatementSyntax thenStatement,
+    public IfStatementSyntax(SyntaxToken ifKeyword, ExpressionSyntax condition, StatementSyntax thenStatement,
                              ElseClauseSyntax elseClause) {
-        this.ifWorld = ifWorld;
+        this.ifKeyword = ifKeyword;
         this.condition = condition;
         this.thenStatement = thenStatement;
         this.kind = SyntaxKind.IF_STATEMENT;
         this.elseClause = elseClause;
         List<SyntaxNode> children = new ArrayList<>();
-        children.add(ifWorld);
+        children.add(ifKeyword);
         children.add(condition);
         children.add(thenStatement);
         if (elseClause != null) {
@@ -38,8 +39,8 @@ public class IfStatementSyntax extends StatementSyntax {
         this.children = List.copyOf(children);
     }
 
-    public SyntaxToken getIfWorld() {
-        return ifWorld;
+    public SyntaxToken getIfKeyword() {
+        return ifKeyword;
     }
 
     public ExpressionSyntax getCondition() {
