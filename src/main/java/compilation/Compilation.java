@@ -7,6 +7,7 @@ import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,5 +62,9 @@ public class Compilation {
         Evaluator evaluator = new Evaluator(globalScope.getStatement(), variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
+    }
+
+    public void emitTree(PrintWriter printWriter) throws Exception {
+        globalScope.get().getStatement().printTree(printWriter);
     }
 }

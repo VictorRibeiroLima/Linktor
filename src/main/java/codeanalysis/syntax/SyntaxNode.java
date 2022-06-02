@@ -51,12 +51,11 @@ public abstract class SyntaxNode {
         else
             color = ConsoleColors.PURPLE_BRIGHT;
 
-        out.print(color);
-
         String marker = isLast ? "└──" : "├──";
         out.print(indent);
         out.print(marker);
-        out.print(node.getKind());
+        out.print(color + node.getKind());
+        out.print(ConsoleColors.RESET);
         if (node instanceof SyntaxToken s && s.getValue() != null) {
             out.print(" ");
             out.print(s.getValue());

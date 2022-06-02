@@ -18,6 +18,7 @@ public class Linktor {
         final String redColor = "\033[0;31m";
         final String whiteColor = "\033[0m";
         boolean showTree = false;
+        boolean showProgram = false;
         StringBuilder input = new StringBuilder();
         Scanner console = new Scanner(System.in);
         Compilation previous = null;
@@ -40,6 +41,11 @@ public class Linktor {
                     variables.clear();
                     System.out.println("COMPILATION RESTARTED");
                     continue;
+                } else if (inLineInput.equals("#showProgram")) {
+                    showProgram = !showProgram;
+                    String isShowingTree = showProgram ? "Showing program tree" : "Not showing program tree";
+                    System.out.println(isShowingTree);
+                    continue;
                 }
 
 
@@ -49,15 +55,18 @@ public class Linktor {
                     input.append("\n");
                     continue;
                 }
-                if (showTree) {
-                    tree.getRoot().writeTo(new PrintWriter(System.out, true));
-                }
 
                 Compilation compilation = previous == null ? new Compilation(tree) : previous.continueWith(tree);
                 EvaluationResult evaluationResult = compilation.evaluate(variables);
 
                 List<Diagnostic> diagnostics = evaluationResult.diagnostics();
                 Object result = evaluationResult.result();
+                if (showTree) {
+                    tree.getRoot().writeTo(new PrintWriter(System.out, true));
+                }
+                if (showProgram) {
+                    compilation.emitTree(new PrintWriter(System.out, true));
+                }
 
                 if (diagnostics.isEmpty()) {
 
