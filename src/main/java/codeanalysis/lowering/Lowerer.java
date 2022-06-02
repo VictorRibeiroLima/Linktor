@@ -41,6 +41,7 @@ public final class Lowerer extends BoundTreeRewriter {
         BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock);
         statements.add(whileStatement);
 
-        return new BoundBlockStatement(List.copyOf(statements));
+        BoundBlockStatement block = new BoundBlockStatement(List.copyOf(statements));
+        return rewriteStatement(block);
     }
 }
