@@ -134,7 +134,7 @@ public abstract class BoundTreeRewriter {
         };
     }
 
-    private BoundExpression rewriteBinaryExpression(BoundBinaryExpression node) throws Exception {
+    protected BoundExpression rewriteBinaryExpression(BoundBinaryExpression node) throws Exception {
         BoundExpression left = rewriteExpression(node.getLeft());
         BoundExpression right = rewriteExpression(node.getRight());
         if (left.equals(node.getLeft()) && right.equals(node.getRight()))
@@ -142,25 +142,25 @@ public abstract class BoundTreeRewriter {
         return new BoundBinaryExpression(left, node.getOperator(), right);
     }
 
-    private BoundExpression rewriteAssignmentExpression(BoundAssignmentExpression node) throws Exception {
+    protected BoundExpression rewriteAssignmentExpression(BoundAssignmentExpression node) throws Exception {
         BoundExpression expression = rewriteExpression(node.getBoundExpression());
         if (expression.equals(node.getBoundExpression()))
             return node;
         return new BoundAssignmentExpression(node.getVariable(), expression);
     }
 
-    private BoundExpression rewriteUnaryExpression(BoundUnaryExpression node) throws Exception {
+    protected BoundExpression rewriteUnaryExpression(BoundUnaryExpression node) throws Exception {
         BoundExpression expression = rewriteExpression(node.getRight());
         if (expression.equals(node.getRight()))
             return node;
         return new BoundUnaryExpression(node.getOperator(), expression);
     }
 
-    private BoundExpression rewriteVariableExpression(BoundVariableExpression node) {
+    protected BoundExpression rewriteVariableExpression(BoundVariableExpression node) {
         return node;
     }
 
-    private BoundExpression rewriteLiteralExpression(BoundLiteralExpression node) {
+    protected BoundExpression rewriteLiteralExpression(BoundLiteralExpression node) {
         return node;
     }
 }
