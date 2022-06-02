@@ -115,8 +115,7 @@ public class Binder {
         return new BoundWhileStatement(condition, thenStatement);
     }
 
-
-    //test
+    
     private BoundStatement bindIfStatement(IfStatementSyntax syntax) throws Exception {
         BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
         BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
