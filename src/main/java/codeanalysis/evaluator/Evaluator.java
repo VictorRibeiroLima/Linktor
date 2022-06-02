@@ -1,14 +1,20 @@
 package codeanalysis.evaluator;
 
 import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.clause.BoundForConditionClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
-import codeanalysis.binding.statement.*;
+import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
+import codeanalysis.binding.statement.conditional.BoundIfStatement;
+import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
+import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.loop.BoundForConditionClause;
+import codeanalysis.binding.statement.loop.BoundForStatement;
+import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.Map;

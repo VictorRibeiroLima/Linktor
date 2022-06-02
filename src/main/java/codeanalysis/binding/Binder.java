@@ -1,7 +1,6 @@
 package codeanalysis.binding;
 
 import codeanalysis.binding.clause.BoundElseClause;
-import codeanalysis.binding.clause.BoundForConditionClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -12,7 +11,14 @@ import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.scopes.BoundScope;
-import codeanalysis.binding.statement.*;
+import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
+import codeanalysis.binding.statement.conditional.BoundIfStatement;
+import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
+import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.loop.BoundForConditionClause;
+import codeanalysis.binding.statement.loop.BoundForStatement;
+import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.symbol.VariableSymbol;

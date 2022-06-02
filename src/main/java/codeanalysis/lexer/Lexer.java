@@ -119,6 +119,9 @@ public final class Lexer {
                     kind = SyntaxKind.AMPERSAND_AMPERSAND_TOKEN;
                     next();
                 }
+                {
+                    kind = SyntaxKind.AMPERSAND_TOKEN;
+                }
                 next();
                 break;
             }
@@ -126,7 +129,19 @@ public final class Lexer {
                 if (lookahead() == '|') {
                     kind = SyntaxKind.PIPE_PIPE_TOKEN;
                     next();
+                } else {
+                    kind = SyntaxKind.PIPE_TOKEN;
                 }
+                next();
+                break;
+            }
+            case '~': {
+                kind = SyntaxKind.TILDE_TOKEN;
+                next();
+                break;
+            }
+            case '^': {
+                kind = SyntaxKind.HAT_TOKEN;
                 next();
                 break;
             }
