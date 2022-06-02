@@ -1,6 +1,7 @@
-package codeanalysis.binding.statement;
+package codeanalysis.binding.statement.block;
 
 import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.statement.BoundStatement;
 
 import java.util.List;
 

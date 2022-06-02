@@ -1,23 +1,20 @@
-package codeanalysis.binding.statement;
+package codeanalysis.binding.statement.loop;
 
 import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.clause.BoundElseClause;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.statement.BoundStatement;
 
-public class BoundIfStatement extends BoundStatement {
+public class BoundWhileStatement extends BoundStatement {
     private final BoundExpression condition;
 
     private final BoundStatement thenStatement;
 
-    private final BoundElseClause elseClause;
-
     private final BoundNodeKind kind;
 
-    public BoundIfStatement(BoundExpression condition, BoundStatement thenStatement, BoundElseClause elseClause) {
+    public BoundWhileStatement(BoundExpression condition, BoundStatement thenStatement) {
         this.condition = condition;
         this.thenStatement = thenStatement;
-        this.elseClause = elseClause;
-        this.kind = BoundNodeKind.IF_STATEMENT;
+        this.kind = BoundNodeKind.WHILE_STATEMENT;
     }
 
     public BoundExpression getCondition() {
@@ -26,10 +23,6 @@ public class BoundIfStatement extends BoundStatement {
 
     public BoundStatement getThenStatement() {
         return thenStatement;
-    }
-
-    public BoundElseClause getElseClause() {
-        return elseClause;
     }
 
     @Override

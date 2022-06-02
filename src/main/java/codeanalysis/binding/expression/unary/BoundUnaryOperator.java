@@ -15,7 +15,10 @@ public final class BoundUnaryOperator {
     private static final List<BoundUnaryOperator> operators = Arrays.asList(
             new BoundUnaryOperator(SyntaxKind.EXCLAMATION_TOKEN, BoundUnaryOperatorKind.LOGICAL_NEGATION, Boolean.class),
             new BoundUnaryOperator(SyntaxKind.MINUS_TOKEN, BoundUnaryOperatorKind.NEGATION, Integer.class),
-            new BoundUnaryOperator(SyntaxKind.PLUS_TOKEN, BoundUnaryOperatorKind.IDENTITY, Integer.class)
+            new BoundUnaryOperator(SyntaxKind.PLUS_TOKEN, BoundUnaryOperatorKind.IDENTITY, Integer.class),
+            new BoundUnaryOperator(SyntaxKind.TILDE_TOKEN, BoundUnaryOperatorKind.ONES_COMPLEMENT, Integer.class),
+            new BoundUnaryOperator(SyntaxKind.TILDE_TOKEN, BoundUnaryOperatorKind.ONES_COMPLEMENT, Boolean.class)
+
     );
 
 

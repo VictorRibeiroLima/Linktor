@@ -10,7 +10,7 @@ public final class SyntaxFacts {
 
     public static int getUnaryOperatorPrecedence(SyntaxKind kind) {
         return switch (kind) {
-            case PLUS_TOKEN, MINUS_TOKEN, EXCLAMATION_TOKEN -> 6;
+            case PLUS_TOKEN, MINUS_TOKEN, EXCLAMATION_TOKEN, TILDE_TOKEN -> 6;
             default -> 0;
         };
     }
@@ -21,8 +21,8 @@ public final class SyntaxFacts {
             case PLUS_TOKEN, MINUS_TOKEN -> 4;
             case EQUAL_EQUAL_TOKEN, EXCLAMATION_EQUAL_TOKEN, LESS_TOKEN, LESS_EQUAL_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN ->
                     3;
-            case AMPERSAND_AMPERSAND_TOKEN -> 2;
-            case PIPE_PIPE_TOKEN -> 1;
+            case AMPERSAND_AMPERSAND_TOKEN, AMPERSAND_TOKEN -> 2;
+            case PIPE_PIPE_TOKEN, PIPE_TOKEN, HAT_TOKEN -> 1;
             default -> 0;
         };
     }
@@ -61,7 +61,11 @@ public final class SyntaxFacts {
             case LESS_EQUAL_TOKEN -> "<=";
             case EXCLAMATION_TOKEN -> "!";
             case AMPERSAND_AMPERSAND_TOKEN -> "&&";
+            case AMPERSAND_TOKEN -> "&";
             case PIPE_PIPE_TOKEN -> "||";
+            case PIPE_TOKEN -> "|";
+            case HAT_TOKEN -> "^";
+            case TILDE_TOKEN -> "~";
             case FALSE_KEYWORD -> "false";
             case TRUE_KEYWORD -> "true";
             case VAR_KEYWORD -> "var";

@@ -168,6 +168,14 @@ class LexerTest {
             return true;
         if (k1 == SyntaxKind.LESS_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN)
             return true;
+        if (k1 == SyntaxKind.AMPERSAND_TOKEN && k2 == SyntaxKind.AMPERSAND_AMPERSAND_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.AMPERSAND_TOKEN && k2 == SyntaxKind.AMPERSAND_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_PIPE_TOKEN)
+            return true;
         return k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN;
     }
 

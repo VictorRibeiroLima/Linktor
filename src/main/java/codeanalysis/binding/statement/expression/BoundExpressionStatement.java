@@ -1,7 +1,8 @@
-package codeanalysis.binding.statement;
+package codeanalysis.binding.statement.expression;
 
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.statement.BoundStatement;
 
 public class BoundExpressionStatement extends BoundStatement {
     private final BoundExpression expression;

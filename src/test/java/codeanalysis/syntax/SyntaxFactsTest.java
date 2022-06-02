@@ -40,13 +40,13 @@ class SyntaxFactsTest {
     @Test
     void getUnaryOperatorKinds() {
         List<SyntaxKind> unaryOperators = SyntaxFacts.getUnaryOperatorKinds();
-        assertEquals(3, unaryOperators.size());
+        assertEquals(4, unaryOperators.size());
     }
 
     @Test
     void getBinaryOperatorKinds() {
         List<SyntaxKind> binaryOperatorKinds = SyntaxFacts.getBinaryOperatorKinds();
-        assertEquals(12, binaryOperatorKinds.size());
+        assertEquals(15, binaryOperatorKinds.size());
     }
 
     private static Stream<Arguments> provideKind() {

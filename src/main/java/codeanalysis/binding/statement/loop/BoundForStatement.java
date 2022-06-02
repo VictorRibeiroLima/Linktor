@@ -1,7 +1,7 @@
-package codeanalysis.binding.statement;
+package codeanalysis.binding.statement.loop;
 
 import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.clause.BoundForConditionClause;
+import codeanalysis.binding.statement.BoundStatement;
 
 public class BoundForStatement extends BoundStatement {
     private final BoundForConditionClause condition;
