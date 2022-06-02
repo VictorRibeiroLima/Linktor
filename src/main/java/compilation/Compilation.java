@@ -2,8 +2,10 @@ package compilation;
 
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.scopes.BoundGlobalScope;
+import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
+import codeanalysis.lowering.Lowerer;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 
@@ -59,12 +61,18 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        Evaluator evaluator = new Evaluator(globalScope.getStatement(), variables);
+        BoundStatement statement = getStatement();
+        Evaluator evaluator = new Evaluator(statement, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
     }
 
     public void emitTree(PrintWriter printWriter) throws Exception {
-        globalScope.get().getStatement().printTree(printWriter);
+        BoundStatement statement = getStatement();
+        statement.printTree(printWriter);
+    }
+
+    private BoundStatement getStatement() throws Exception {
+        return Lowerer.lower(globalScope.get().getStatement());
     }
 }
