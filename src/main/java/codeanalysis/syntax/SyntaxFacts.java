@@ -61,7 +61,11 @@ public final class SyntaxFacts {
             case LESS_EQUAL_TOKEN -> "<=";
             case EXCLAMATION_TOKEN -> "!";
             case AMPERSAND_AMPERSAND_TOKEN -> "&&";
+            case AMPERSAND_TOKEN -> "&";
             case PIPE_PIPE_TOKEN -> "||";
+            case PIPE_TOKEN -> "|";
+            case HAT_TOKEN -> "^";
+            case TILDE_TOKEN -> "~";
             case FALSE_KEYWORD -> "false";
             case TRUE_KEYWORD -> "true";
             case VAR_KEYWORD -> "var";

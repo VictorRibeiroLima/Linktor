@@ -118,8 +118,7 @@ public final class Lexer {
                 if (lookahead() == '&') {
                     kind = SyntaxKind.AMPERSAND_AMPERSAND_TOKEN;
                     next();
-                }
-                {
+                } else {
                     kind = SyntaxKind.AMPERSAND_TOKEN;
                 }
                 next();

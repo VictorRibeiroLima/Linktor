@@ -106,7 +106,16 @@ class EvaluatorTest {
                 Arguments.of(getExpression("c>b"), true),
                 Arguments.of(getExpression("b<=c"), true),
                 Arguments.of(getExpression("c>100"), false),
-                Arguments.of(getExpression("b<=1"), false)
+                Arguments.of(getExpression("b<=1"), false),
+                Arguments.of(getExpression("~false"), -1),
+                Arguments.of(getExpression("~true"), -2),
+                Arguments.of(getExpression("false|true"), true),
+                Arguments.of(getExpression("false&true"), false),
+                Arguments.of(getExpression("false^true"), true),
+                Arguments.of(getExpression("~123"), -124),
+                Arguments.of(getExpression("3 | 4"), 7),
+                Arguments.of(getExpression("3 & 4"), 0),
+                Arguments.of(getExpression("5 ^ 4"), 1)
         );
     }
 
