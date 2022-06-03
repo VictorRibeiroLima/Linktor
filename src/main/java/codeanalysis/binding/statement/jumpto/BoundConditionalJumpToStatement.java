@@ -11,18 +11,18 @@ import java.util.List;
 public class BoundConditionalJumpToStatement extends BoundStatement {
     private final LabelSymbol label;
     private final BoundExpression condition;
-    private final boolean jumpIfFalse;
+    private final boolean jumpIfTrue;
     private final BoundNodeKind kind;
     private final List<BoundNode> children;
 
     public BoundConditionalJumpToStatement(LabelSymbol label, BoundExpression condition) {
-        this(label, condition, false);
+        this(label, condition, true);
     }
 
-    public BoundConditionalJumpToStatement(LabelSymbol label, BoundExpression condition, boolean jumpIfFalse) {
+    public BoundConditionalJumpToStatement(LabelSymbol label, BoundExpression condition, boolean jumpIfTrue) {
         this.label = label;
         this.condition = condition;
-        this.jumpIfFalse = jumpIfFalse;
+        this.jumpIfTrue = jumpIfTrue;
         this.kind = BoundNodeKind.CONDITIONAL_JUMP_TO_STATEMENT;
         this.children = List.of(condition);
     }
@@ -35,8 +35,8 @@ public class BoundConditionalJumpToStatement extends BoundStatement {
         return condition;
     }
 
-    public boolean isJumpIfFalse() {
-        return jumpIfFalse;
+    public boolean isJumpIfTrue() {
+        return jumpIfTrue;
     }
 
     @Override

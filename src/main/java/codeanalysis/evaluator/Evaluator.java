@@ -55,7 +55,7 @@ public final class Evaluator {
                 case CONDITIONAL_JUMP_TO_STATEMENT -> {
                     BoundConditionalJumpToStatement jumpTo = (BoundConditionalJumpToStatement) statement;
                     boolean condition = (boolean) evaluateExpression(jumpTo.getCondition());
-                    if (condition && !jumpTo.isJumpIfFalse() || !condition && jumpTo.isJumpIfFalse())
+                    if (condition == jumpTo.isJumpIfTrue())
                         index = labelIndexes.get(jumpTo.getLabel());
                     else
                         index++;
