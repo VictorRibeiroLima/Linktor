@@ -2,11 +2,15 @@ package compilation;
 
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.scopes.BoundGlobalScope;
+import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
+import codeanalysis.lowering.Lowerer;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,8 +62,18 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        Evaluator evaluator = new Evaluator(globalScope.getStatement(), variables);
+        BoundBlockStatement statement = getStatement();
+        Evaluator evaluator = new Evaluator(statement, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
+    }
+
+    public void emitTree(PrintWriter printWriter) throws Exception {
+        BoundStatement statement = getStatement();
+        statement.printTree(printWriter);
+    }
+
+    private BoundBlockStatement getStatement() throws Exception {
+        return Lowerer.lower(getGlobalScope().getStatement());
     }
 }

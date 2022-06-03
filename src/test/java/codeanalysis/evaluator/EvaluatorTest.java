@@ -3,8 +3,10 @@ package codeanalysis.evaluator;
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.lowering.Lowerer;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
@@ -34,7 +36,7 @@ class EvaluatorTest {
 
     @ParameterizedTest
     @MethodSource("provideExpressions")
-    void evaluate(BoundStatement expression, Object expectedResult) throws Exception {
+    void evaluate(BoundBlockStatement expression, Object expectedResult) throws Exception {
         Evaluator evaluator = new Evaluator(expression, variables);
         Object result = evaluator.evaluate();
         assertEquals(expectedResult, result);
@@ -119,7 +121,7 @@ class EvaluatorTest {
         );
     }
 
-    static Stream<Arguments> provideDiagnostics() throws Exception {
+    static Stream<Arguments> provideDiagnostics() {
         return Stream.of(
                 Arguments.of("""
                                 {
@@ -145,7 +147,7 @@ class EvaluatorTest {
         BoundGlobalScope localGlobalScope = Binder.boundGlobalScope(tree.getRoot(), globalScope);
         globalScope = localGlobalScope;
         BoundStatement bound = localGlobalScope.getStatement();
-        return bound;
+        return Lowerer.lower(bound);
     }
 
 
