@@ -70,7 +70,7 @@ public final class Lowerer extends BoundTreeRewriter {
          */
             LabelSymbol endLabel = genLabel();
             BoundConditionalJumpToStatement jumpToFalse =
-                    new BoundConditionalJumpToStatement(endLabel, statement.getCondition(), true);
+                    new BoundConditionalJumpToStatement(endLabel, statement.getCondition(), false);
             BoundLabelDeclarationStatement end = new BoundLabelDeclarationStatement(endLabel);
             result = new BoundBlockStatement(List.of(jumpToFalse, statement.getThenStatement(), end));
         } else {
@@ -95,7 +95,7 @@ public final class Lowerer extends BoundTreeRewriter {
             LabelSymbol elseLabel = genLabel();
             LabelSymbol endLabel = genLabel();
             BoundConditionalJumpToStatement jumpToFalse =
-                    new BoundConditionalJumpToStatement(elseLabel, statement.getCondition(), true);
+                    new BoundConditionalJumpToStatement(elseLabel, statement.getCondition(), false);
             BoundJumpToStatement jumpToEnd = new BoundJumpToStatement(endLabel);
             BoundLabelDeclarationStatement elseS = new BoundLabelDeclarationStatement(elseLabel);
             BoundLabelDeclarationStatement end = new BoundLabelDeclarationStatement(endLabel);

@@ -47,21 +47,25 @@ public class Linktor {
                     System.out.print(".");
                 }
                 String inLineInput = console.nextLine();
-                if (inLineInput.equals("#showTree")) {
-                    showTree = !showTree;
-                    String isShowingTree = showTree ? "Showing parse tree" : "Not showing parse tree";
-                    System.out.println(isShowingTree);
-                    continue;
-                } else if (inLineInput.equals("#reset")) {
-                    previous = null;
-                    variables.clear();
-                    System.out.println("COMPILATION RESTARTED");
-                    continue;
-                } else if (inLineInput.equals("#showProgram")) {
-                    showProgram = !showProgram;
-                    String isShowingTree = showProgram ? "Showing program tree" : "Not showing program tree";
-                    System.out.println(isShowingTree);
-                    continue;
+                switch (inLineInput) {
+                    case "#showTree" -> {
+                        showTree = !showTree;
+                        String isShowingTree = showTree ? "Showing parse tree" : "Not showing parse tree";
+                        System.out.println(isShowingTree);
+                        continue;
+                    }
+                    case "#reset" -> {
+                        previous = null;
+                        variables.clear();
+                        System.out.println("COMPILATION RESTARTED");
+                        continue;
+                    }
+                    case "#showProgram" -> {
+                        showProgram = !showProgram;
+                        String isShowingTree = showProgram ? "Showing program tree" : "Not showing program tree";
+                        System.out.println(isShowingTree);
+                        continue;
+                    }
                 }
 
 

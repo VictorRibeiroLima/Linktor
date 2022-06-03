@@ -47,7 +47,7 @@ public abstract class BoundTreeRewriter {
         BoundExpression condition = rewriteExpression(statement.getCondition());
         if (condition.equals(statement.getCondition()))
             return statement;
-        return new BoundConditionalJumpToStatement(statement.getLabel(), condition, statement.isJumpIfFalse());
+        return new BoundConditionalJumpToStatement(statement.getLabel(), condition, statement.isJumpIfTrue());
     }
 
     protected BoundStatement rewriteJumpToStatement(BoundJumpToStatement statement) {
