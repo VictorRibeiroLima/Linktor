@@ -3,6 +3,7 @@ package compilation;
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.lowering.Lowerer;
@@ -61,7 +62,7 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        BoundStatement statement = getStatement();
+        BoundBlockStatement statement = getStatement();
         Evaluator evaluator = new Evaluator(statement, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
@@ -72,7 +73,7 @@ public class Compilation {
         statement.printTree(printWriter);
     }
 
-    private BoundStatement getStatement() throws Exception {
-        return Lowerer.lower(globalScope.get().getStatement());
+    private BoundBlockStatement getStatement() throws Exception {
+        return Lowerer.lower(getGlobalScope().getStatement());
     }
 }

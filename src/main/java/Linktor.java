@@ -57,19 +57,16 @@ public class Linktor {
                 }
 
                 Compilation compilation = previous == null ? new Compilation(tree) : previous.continueWith(tree);
-                EvaluationResult evaluationResult = compilation.evaluate(variables);
-
-                List<Diagnostic> diagnostics = evaluationResult.diagnostics();
-                Object result = evaluationResult.result();
                 if (showTree) {
                     tree.getRoot().writeTo(new PrintWriter(System.out, true));
                 }
                 if (showProgram) {
                     compilation.emitTree(new PrintWriter(System.out, true));
                 }
-
+                EvaluationResult evaluationResult = compilation.evaluate(variables);
+                List<Diagnostic> diagnostics = evaluationResult.diagnostics();
+                Object result = evaluationResult.result();
                 if (diagnostics.isEmpty()) {
-
                     System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
                     previous = compilation;
                 } else {

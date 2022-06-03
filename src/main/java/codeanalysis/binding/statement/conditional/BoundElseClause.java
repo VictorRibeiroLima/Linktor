@@ -1,4 +1,4 @@
-package codeanalysis.binding.clause;
+package codeanalysis.binding.statement.conditional;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;

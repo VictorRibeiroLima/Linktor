@@ -8,71 +8,69 @@ import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.binding.statement.block.BoundBlockStatement;
-import codeanalysis.binding.statement.conditional.BoundIfStatement;
+import codeanalysis.binding.statement.declaration.BoundLabelDeclarationStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
-import codeanalysis.binding.statement.loop.BoundWhileStatement;
+import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
+import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
+import codeanalysis.symbol.LabelSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public final class Evaluator {
-    private final BoundStatement root;
+    private final BoundBlockStatement root;
     private final Map<VariableSymbol, Object> variables;
 
     private Object lastValue;
 
-    public Evaluator(BoundStatement root, Map<VariableSymbol, Object> variables) {
+    public Evaluator(BoundBlockStatement root, Map<VariableSymbol, Object> variables) {
         this.root = root;
         this.variables = variables;
     }
 
     public Object evaluate() throws Exception {
-        evaluateStatement(root);
-        return lastValue;
-    }
-
-    private void evaluateStatement(BoundStatement statement) throws Exception {
-        switch (statement.getKind()) {
-            case BLOCK_STATEMENT -> evaluateBlockStatement((BoundBlockStatement) statement);
-            case EXPRESSION_STATEMENT -> evaluateExpressionStatement((BoundExpressionStatement) statement);
-            case VARIABLE_DECLARATION_STATEMENT ->
+        Map<LabelSymbol, Integer> labelIndexes = new HashMap<>();
+        for (int i = 0; i < root.getStatements().size(); i++) {
+            if (root.getStatements().get(i) instanceof BoundLabelDeclarationStatement l)
+                labelIndexes.put(l.getLabel(), i);
+        }
+        int index = 0;
+        while (index < root.getStatements().size()) {
+            BoundStatement statement = root.getStatements().get(index);
+            switch (statement.getKind()) {
+                case EXPRESSION_STATEMENT -> {
+                    evaluateExpressionStatement((BoundExpressionStatement) statement);
+                    index++;
+                }
+                case VARIABLE_DECLARATION_STATEMENT -> {
                     evaluateVariableDeclarationStatement((BoundVariableDeclarationStatement) statement);
-            case IF_STATEMENT -> evaluateIfStatement((BoundIfStatement) statement);
-            case WHILE_STATEMENT -> evaluateWhileStatement((BoundWhileStatement) statement);
-            default -> throw new Exception("Unexpected node " + statement.getKind());
-
-
-        }
-    }
-
-    private void evaluateWhileStatement(BoundWhileStatement statement) throws Exception {
-        while ((boolean) evaluateExpression(statement.getCondition())) {
-            evaluateStatement(statement.getThenStatement());
-        }
-    }
-
-    private void evaluateIfStatement(BoundIfStatement statement) throws Exception {
-        boolean condition = (boolean) evaluateExpression(statement.getCondition());
-        if (condition) {
-            evaluateStatement(statement.getThenStatement());
-        } else {
-            if (statement.getElseClause() != null) {
-                evaluateStatement(statement.getElseClause().getThenStatement());
+                    index++;
+                }
+                case JUMP_TO_STATEMENT -> {
+                    BoundJumpToStatement jumpTo = (BoundJumpToStatement) statement;
+                    index = labelIndexes.get(jumpTo.getLabel());
+                }
+                case CONDITIONAL_JUMP_TO_STATEMENT -> {
+                    BoundConditionalJumpToStatement jumpTo = (BoundConditionalJumpToStatement) statement;
+                    boolean condition = (boolean) evaluateExpression(jumpTo.getCondition());
+                    if (condition && !jumpTo.isJumpIfFalse() || !condition && jumpTo.isJumpIfFalse())
+                        index = labelIndexes.get(jumpTo.getLabel());
+                    else
+                        index++;
+                }
+                case LABEL_DECLARATION_STATEMENT -> index++;
+                default -> throw new Exception("Unexpected node " + statement.getKind());
             }
         }
+        return lastValue;
     }
 
     private void evaluateVariableDeclarationStatement(BoundVariableDeclarationStatement statement) throws Exception {
         Object value = evaluateExpression(statement.getInitializer());
         variables.put(statement.getVariable(), value);
         lastValue = value;
-    }
-
-    private void evaluateBlockStatement(BoundBlockStatement statement) throws Exception {
-        for (BoundStatement b : statement.getStatements()) {
-            evaluateStatement(b);
-        }
     }
 
     private void evaluateExpressionStatement(BoundExpressionStatement statement) throws Exception {

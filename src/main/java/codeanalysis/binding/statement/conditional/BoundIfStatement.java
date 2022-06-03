@@ -2,7 +2,6 @@ package codeanalysis.binding.statement.conditional;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
-import codeanalysis.binding.clause.BoundElseClause;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.statement.BoundStatement;
 
