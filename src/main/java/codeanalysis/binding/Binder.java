@@ -51,7 +51,7 @@ public class Binder {
     public static BoundGlobalScope boundGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
-        BoundStatement expression = binder.bindStatement(unit.getExpression());
+        BoundStatement expression = binder.bindStatement(unit.getStatement());
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
         return new BoundGlobalScope(previous, diagnostics, variables, expression);

@@ -63,7 +63,7 @@ public class LinktorRepl extends Repl {
             return false;
 
         SyntaxTree tree = SyntaxTree.parse(text);
-        return !tree.getDiagnostics().isEmpty();
+        return tree.getRoot().getStatement().getLastToken().isMissing();
     }
 
     protected boolean evaluateMetaCommand(String inLineInput) {

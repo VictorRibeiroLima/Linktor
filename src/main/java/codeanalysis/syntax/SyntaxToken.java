@@ -2,7 +2,6 @@ package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.text.TextSpan;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SyntaxToken extends SyntaxNode {
@@ -12,6 +11,7 @@ public class SyntaxToken extends SyntaxNode {
     private final Object value;
 
     private final TextSpan span;
+    private final List<SyntaxNode> children;
 
     public SyntaxToken(SyntaxKind kind, int position, String text, Object value) {
         this.kind = kind;
@@ -20,6 +20,7 @@ public class SyntaxToken extends SyntaxNode {
         this.value = value;
         int length = text != null ? text.length() : 0;
         span = new TextSpan(position, length);
+        children = List.of();
     }
 
     public SyntaxKind getKind() {
@@ -44,6 +45,11 @@ public class SyntaxToken extends SyntaxNode {
     }
 
     public List<SyntaxNode> getChildren() {
-        return new ArrayList<>();
+        return children;
     }
+
+    public boolean isMissing() {
+        return text == null;
+    }
+
 }
