@@ -42,7 +42,7 @@ public class Conversion {
                 return Conversion.EXPLICIT;
         }
         if (from == TypeSymbol.STRING) {
-            if (from == TypeSymbol.BOOLEAN || from == TypeSymbol.INTEGER)
+            if (to == TypeSymbol.BOOLEAN || to == TypeSymbol.INTEGER)
                 return Conversion.EXPLICIT;
         }
         return Conversion.NONE;

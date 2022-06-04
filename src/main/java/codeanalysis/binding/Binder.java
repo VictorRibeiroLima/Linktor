@@ -172,6 +172,9 @@ public class Binder {
 
     private BoundExpression bindExpression(ExpressionSyntax syntax, TypeSymbol expectedType) throws Exception {
         BoundExpression result = bindExpression(syntax);
+        Conversion conversion = Conversion.classify(result.getType(), expectedType);
+        if (conversion.isImplicit())
+            return new BoundConversionExpression(expectedType, result);
         if (
                 !result.getType().equals(expectedType) &&
                         !result.getType().equals(TypeSymbol.ERROR) &&
@@ -212,8 +215,10 @@ public class Binder {
         }
         List<BoundExpression> boundArgs = new ArrayList<>();
         for (ExpressionSyntax arg : syntax.getArgs()) {
-            boundArgs.add(bindExpression(arg));
-
+            BoundExpression expression = bindExpression(arg);
+            if (expression.getType() == TypeSymbol.ERROR)
+                return new BoundErrorExpression();
+            boundArgs.add(expression);
         }
         if (!scope.isFunctionPresent(syntax.getIdentifier().getText())) {
             diagnostics.reportUndefinedFunction(syntax.getIdentifier().getSpan(), syntax.getIdentifier().getText());
@@ -247,6 +252,13 @@ public class Binder {
     private BoundExpression bindConversion(TypeSymbol type, ExpressionSyntax syntax) throws Exception {
         BoundExpression expression = bindExpression(syntax);
         Conversion conversion = Conversion.classify(expression.getType(), type);
+        if (!conversion.isExists()) {
+            if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
+                diagnostics.reportCannotConvert(syntax.getSpan(), expression.getType(), type);
+            return new BoundErrorExpression();
+        }
+        if (conversion.isIdentity())
+            return expression;
         return new BoundConversionExpression(type, expression);
     }
 
@@ -269,21 +281,16 @@ public class Binder {
 
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
-        BoundExpression boundExpression = bindExpression(syntax.getExpression());
         if (!scope.isVariablePresent(name)) {
             diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
-            return boundExpression;
+            return new BoundErrorExpression();
 
         }
         VariableSymbol variable = scope.getVariableByIdentifier(name);
-        scope.declareVariable(variable);
         if (variable.isReadOnly()) {
             diagnostics.reportReadOnly(syntax.getEqualsToken().getSpan(), name);
         }
-        if (!boundExpression.getType().equals(variable.getType())) {
-            diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.getType());
-            return boundExpression;
-        }
+        BoundExpression boundExpression = bindExpression(syntax.getExpression(), variable.getType());
         return new BoundAssignmentExpression(variable, boundExpression);
     }
 

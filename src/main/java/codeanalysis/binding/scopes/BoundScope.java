@@ -44,8 +44,7 @@ public class BoundScope {
 
     public VariableSymbol getVariableByIdentifier(String identifier) {
         if (variables != null && variables.containsKey(identifier)) {
-            VariableSymbol variable = variables.get(identifier);
-            return variable;
+            return variables.get(identifier);
         }
         if (this.parent == null)
             return null;
@@ -55,8 +54,7 @@ public class BoundScope {
 
     public FunctionSymbol getFunctionsByIdentifier(String identifier) {
         if (functions != null && functions.containsKey(identifier)) {
-            FunctionSymbol variable = functions.get(identifier);
-            return variable;
+            return functions.get(identifier);
         }
         if (this.parent == null)
             return null;
@@ -68,8 +66,7 @@ public class BoundScope {
         if (variables == null)
             return null;
         if (variables.containsKey(identifier)) {
-            VariableSymbol variable = variables.get(identifier);
-            return variable;
+            return variables.get(identifier);
         }
         return null;
     }

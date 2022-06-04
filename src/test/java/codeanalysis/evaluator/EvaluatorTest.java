@@ -150,6 +150,13 @@ class EvaluatorTest {
                                 }
                                 """,
                         "ERROR: Unterminated string literal."
+                ), Arguments.of("""
+                                {
+                                    var a = 10;
+                                    a = ["20"]
+                                }
+                                """,
+                        "ERROR: Cannot convert 'string' into 'int'."
                 )
         );
     }

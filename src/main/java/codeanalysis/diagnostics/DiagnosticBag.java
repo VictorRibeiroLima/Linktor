@@ -85,7 +85,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportCannotConvert(TextSpan span, TypeSymbol expectedType, TypeSymbol actualType) {
-        String message = "ERROR: Cannot convert '" + expectedType + "' into '" + actualType + "'.";
+        String message = "ERROR: Cannot convert '" + actualType + "' into '" + expectedType + "'.";
         report(span, message);
     }
 
@@ -110,8 +110,8 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportWrongArgumentType(TextSpan span, String name, String argName, TypeSymbol expectedType, TypeSymbol actualType) {
-        String message = "ERROR: Wrong type of arguments for function '" + name + "' param'" + argName +
-                "' expected type:" + expectedType + "received:" + actualType + " .";
+        String message = "ERROR: Wrong type of arguments for function '" + name + "' on parameter '" + argName +
+                "'. Expected type:" + expectedType + " received: " + actualType + ".";
         report(span, message);
     }
 
