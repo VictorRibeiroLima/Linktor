@@ -11,10 +11,10 @@ import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatem
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
-import codeanalysis.symbol.LabelSymbol;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public final class Lowerer extends BoundTreeRewriter {
                 end:
             }
          */
-            LabelSymbol endLabel = genLabel();
+            BoundLabel endLabel = genLabel();
             BoundConditionalJumpToStatement jumpToFalse =
                     new BoundConditionalJumpToStatement(endLabel, statement.getCondition(), false);
             BoundLabelDeclarationStatement end = new BoundLabelDeclarationStatement(endLabel);
@@ -92,8 +92,8 @@ public final class Lowerer extends BoundTreeRewriter {
                 end:
             }
          */
-            LabelSymbol elseLabel = genLabel();
-            LabelSymbol endLabel = genLabel();
+            BoundLabel elseLabel = genLabel();
+            BoundLabel endLabel = genLabel();
             BoundConditionalJumpToStatement jumpToFalse =
                     new BoundConditionalJumpToStatement(elseLabel, statement.getCondition(), false);
             BoundJumpToStatement jumpToEnd = new BoundJumpToStatement(endLabel);
@@ -130,9 +130,9 @@ public final class Lowerer extends BoundTreeRewriter {
              jumpToTrue <condition> continue:
              end:
          */
-        LabelSymbol checkLabel = genLabel();
-        LabelSymbol continueLabel = genLabel();
-        LabelSymbol endLabel = genLabel();
+        BoundLabel checkLabel = genLabel();
+        BoundLabel continueLabel = genLabel();
+        BoundLabel endLabel = genLabel();
         BoundJumpToStatement jumpToCheck = new BoundJumpToStatement(checkLabel);
         BoundConditionalJumpToStatement jumpToTrue =
                 new BoundConditionalJumpToStatement(continueLabel, statement.getCondition());
@@ -168,8 +168,8 @@ public final class Lowerer extends BoundTreeRewriter {
         return rewriteStatement(block);
     }
 
-    private LabelSymbol genLabel() {
+    private BoundLabel genLabel() {
         String label = "Label" + (++labelCont);
-        return new LabelSymbol(label);
+        return new BoundLabel(label);
     }
 }

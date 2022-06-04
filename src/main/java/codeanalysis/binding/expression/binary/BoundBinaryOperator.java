@@ -14,6 +14,7 @@ public final class BoundBinaryOperator {
     private final Type resultType;
 
     private static final List<BoundBinaryOperator> operators = Arrays.asList(
+            new BoundBinaryOperator(SyntaxKind.PLUS_TOKEN, BoundBinaryOperatorKind.CONCATENATION, String.class),
             new BoundBinaryOperator(SyntaxKind.PLUS_TOKEN, BoundBinaryOperatorKind.ADDITION, Integer.class),
             new BoundBinaryOperator(SyntaxKind.MINUS_TOKEN, BoundBinaryOperatorKind.SUBTRACTION, Integer.class),
             new BoundBinaryOperator(SyntaxKind.STAR_TOKEN, BoundBinaryOperatorKind.MULTIPLICATION, Integer.class),

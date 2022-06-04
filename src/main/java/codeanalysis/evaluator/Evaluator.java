@@ -13,7 +13,7 @@ import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatem
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
-import codeanalysis.symbol.LabelSymbol;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public final class Evaluator {
     }
 
     public Object evaluate() throws Exception {
-        Map<LabelSymbol, Integer> labelIndexes = new HashMap<>();
+        Map<BoundLabel, Integer> labelIndexes = new HashMap<>();
         for (int i = 0; i < root.getStatements().size(); i++) {
             if (root.getStatements().get(i) instanceof BoundLabelDeclarationStatement l)
                 labelIndexes.put(l.getLabel(), i);
@@ -156,6 +156,8 @@ public final class Evaluator {
             }
             case ADDITION:
                 return (int) left + (int) right;
+            case CONCATENATION:
+                return left.toString() + right.toString();
             case SUBTRACTION:
                 return (int) left - (int) right;
             case DIVISION:
