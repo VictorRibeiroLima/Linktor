@@ -36,7 +36,7 @@ public abstract class Repl {
             if (evaluateMetaCommand(inLineInput)) continue;
 
             input.append(inLineInput);
-            if (isCompleteSubmission(inLineInput)) {
+            if (isCompleteSubmission(inLineInput, input)) {
                 input.append("\n");
                 continue;
             }
@@ -48,5 +48,5 @@ public abstract class Repl {
 
     protected abstract void evaluate(String input) throws Exception;
 
-    protected abstract boolean isCompleteSubmission(String text);
+    protected abstract boolean isCompleteSubmission(String text, StringBuilder input);
 }
