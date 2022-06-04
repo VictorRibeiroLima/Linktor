@@ -4,6 +4,7 @@ import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
+import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
@@ -22,8 +23,7 @@ import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.symbol.TypeSymbol;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.*;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
@@ -33,6 +33,7 @@ import codeanalysis.syntax.statements.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 public class Binder {
@@ -182,8 +183,47 @@ public class Binder {
             case ASSIGNMENT_EXPRESSION -> bindAssignmentExpression((AssignmentExpressionSyntax) syntax);
             case UNARY_EXPRESSION -> bindUnaryExpression((UnaryExpressionSyntax) syntax);
             case BINARY_EXPRESSION -> bindBinaryExpression((BinaryExpressionSyntax) syntax);
+            case CALL_EXPRESSION -> bindCallExpression((CallExpressionSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+    }
+
+    private BoundExpression bindCallExpression(CallExpressionSyntax syntax) throws Exception {
+        List<BoundExpression> boundArgs = new ArrayList<>();
+        for (ExpressionSyntax arg : syntax.getArgs()) {
+            boundArgs.add(bindExpression(arg));
+
+        }
+        List<FunctionSymbol> functions = BuildInFunctions.getAll();
+        Optional<FunctionSymbol> function = functions
+                .stream().filter(functionSymbol -> functionSymbol.getName().equals(syntax.getIdentifier().getText()))
+                .findFirst();
+        if (function.isEmpty()) {
+            diagnostics.reportUndefinedFunction(syntax.getIdentifier().getSpan(), syntax.getIdentifier().getText());
+            return new BoundErrorExpression();
+        }
+        if (function.get().getParameters().size() != syntax.getArgs().getCount()) {
+            diagnostics.reportWrongArgumentCount(
+                    syntax.getSpan(),
+                    syntax.getIdentifier().getText(),
+                    function.get().getParameters().size(),
+                    syntax.getArgs().getCount());
+            return new BoundErrorExpression();
+        }
+        for (int i = 0; i < syntax.getArgs().getCount(); i++) {
+            ParameterSymbol parameter = function.get().getParameters().get(i);
+            BoundExpression arg = boundArgs.get(i);
+            if (!arg.getType().equals(parameter.getType())) {
+                diagnostics.reportWrongArgumentType(
+                        syntax.getSpan(),
+                        syntax.getIdentifier().getText(),
+                        parameter.getName(),
+                        parameter.getType(),
+                        arg.getType());
+                return new BoundErrorExpression();
+            }
+        }
+        return new BoundCallExpression(function.get(), boundArgs);
     }
 
 

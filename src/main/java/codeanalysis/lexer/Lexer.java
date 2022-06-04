@@ -145,6 +145,10 @@ public final class Lexer {
                 next();
                 break;
             }
+            case ',':
+                kind = SyntaxKind.COMMA_TOKEN;
+                next();
+                break;
             case '\'':
             case '"':
                 readString();

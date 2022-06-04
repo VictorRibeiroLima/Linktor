@@ -47,9 +47,7 @@ public class Linktor {
         EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
         Object result = evaluationResult.result();
-        if (diagnostics.isEmpty()) {
-            System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
-        } else {
+        if (!diagnostics.isEmpty()) {
             SourceText text = tree.getText();
             for (Diagnostic diagnostic : diagnostics) {
                 int lineIndex = text.getLineIndex(diagnostic.span().start());

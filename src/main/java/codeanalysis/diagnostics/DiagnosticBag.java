@@ -95,7 +95,23 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportUnterminatedString(TextSpan span) {
-        String message = "ERROR: Unterminated string literal";
+        String message = "ERROR: Unterminated string literal.";
+        report(span, message);
+    }
+
+    public void reportUndefinedFunction(TextSpan span, String name) {
+        String message = "ERROR: Undefined function '" + name + "' .";
+        report(span, message);
+    }
+
+    public void reportWrongArgumentCount(TextSpan span, String name, int expectedSize, int actualSize) {
+        String message = "ERROR: Wrong number of arguments for function '" + name + "' expected:" + expectedSize + ",received:" + actualSize + " .";
+        report(span, message);
+    }
+
+    public void reportWrongArgumentType(TextSpan span, String name, String argName, TypeSymbol expectedType, TypeSymbol actualType) {
+        String message = "ERROR: Wrong type of arguments for function '" + name + "' param'" + argName +
+                "' expected type:" + expectedType + "received:" + actualType + " .";
         report(span, message);
     }
 }

@@ -5,6 +5,7 @@ import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
@@ -154,9 +155,31 @@ public abstract class BoundTreeRewriter {
             case ASSIGNMENT_EXPRESSION -> rewriteAssignmentExpression((BoundAssignmentExpression) expression);
             case UNARY_EXPRESSION -> rewriteUnaryExpression((BoundUnaryExpression) expression);
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
+            case CALL_EXPRESSION -> rewriteCallExpression((BoundCallExpression) expression);
             case ERROR_EXPRESSION -> rewriteErrorExpression((BoundErrorExpression) expression);
             default -> throw new Exception("Unexpected expression " + expression.getKind());
         };
+    }
+
+    private BoundExpression rewriteCallExpression(BoundCallExpression expression) throws Exception {
+        List<BoundExpression> expressions = null;
+        for (int i = 0; i < expression.getArgs().size(); i++) {
+            BoundExpression oldExpression = expression.getArgs().get(i);
+            BoundExpression newExpression = rewriteExpression(expression.getArgs().get(i));
+            if (!newExpression.equals(oldExpression)) {
+                if (expressions == null) {
+                    expressions = new ArrayList<>();
+                    for (int j = 0; j < i; j++)
+                        expressions.add(expression.getArgs().get(j));
+                }
+            }
+            if (expressions != null)
+                expressions.add(newExpression);
+        }
+
+        if (expressions == null)
+            return expression;
+        return new BoundCallExpression(expression.getFunction(), List.copyOf(expressions));
     }
 
     protected BoundExpression rewriteErrorExpression(BoundErrorExpression expression) {

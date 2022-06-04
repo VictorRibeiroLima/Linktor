@@ -185,7 +185,7 @@ public final class Parser {
             case TRUE_KEYWORD, FALSE_KEYWORD -> parseBooleanLiteralExpression();
             case NUMBER_TOKEN -> parseNumberLiteralExpression();
             case STRING_TOKEN -> parseStringLiteralExpression();
-            default -> parseNameExpression();
+            default -> parseIdentifierToken();
         };
 
     }
@@ -207,6 +207,34 @@ public final class Parser {
     private LiteralExpressionSyntax parseStringLiteralExpression() {
         SyntaxToken stringToken = matchToken(SyntaxKind.STRING_TOKEN);
         return new LiteralExpressionSyntax(stringToken);
+    }
+
+    private ExpressionSyntax parseIdentifierToken() {
+        if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN && peek(1).getKind() == SyntaxKind.OPEN_PARENTHESIS_TOKEN)
+            return parseCallExpression();
+        return parseNameExpression();
+    }
+
+    private ExpressionSyntax parseCallExpression() {
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        SyntaxToken open = matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
+        SeparatedSyntaxList<ExpressionSyntax> args = parseArguments();
+        SyntaxToken close = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
+        return new CallExpressionSyntax(identifier, open, args, close);
+    }
+
+    private SeparatedSyntaxList<ExpressionSyntax> parseArguments() {
+        List<SyntaxNode> nodes = new ArrayList<>();
+        while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN &&
+                getCurrent().getKind() != SyntaxKind.CLOSE_PARENTHESIS_TOKEN) {
+            ExpressionSyntax expression = parseExpression();
+            nodes.add(expression);
+            if (getCurrent().getKind() != SyntaxKind.CLOSE_PARENTHESIS_TOKEN) {
+                SyntaxToken comma = matchToken(SyntaxKind.COMMA_TOKEN);
+                nodes.add(comma);
+            }
+        }
+        return new SeparatedSyntaxList<>(nodes);
     }
 
     private NameExpressionSyntax parseNameExpression() {

@@ -34,6 +34,7 @@ public enum SyntaxKind {
     HAT_TOKEN,
     SEMICOLON_TOKEN,
     STRING_TOKEN,
+    COMMA_TOKEN,
 
     //EXPRESSIONS
     LITERAL_EXPRESSION,
@@ -62,5 +63,6 @@ public enum SyntaxKind {
     WHILE_STATEMENT,
     FOR_STATEMENT,
     FOR_CONDITION_CLAUSE,
+    CALL_EXPRESSION,
 
 }

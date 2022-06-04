@@ -35,7 +35,8 @@ public class LinktorRepl extends Repl {
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
         Object result = evaluationResult.result();
         if (diagnostics.isEmpty()) {
-            System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
+            if (result != null)
+                System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
             previous = compilation;
         } else {
             SourceText text = tree.getText();

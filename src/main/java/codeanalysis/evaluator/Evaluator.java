@@ -3,6 +3,7 @@ package codeanalysis.evaluator;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
@@ -14,11 +15,13 @@ import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
+import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public final class Evaluator {
     private final BoundBlockStatement root;
@@ -85,8 +88,26 @@ public final class Evaluator {
             case ASSIGNMENT_EXPRESSION -> evaluateAssignmentExpression((BoundAssignmentExpression) node);
             case UNARY_EXPRESSION -> evaluateUnaryExpression((BoundUnaryExpression) node);
             case BINARY_EXPRESSION -> evaluateBinaryExpression((BoundBinaryExpression) node);
+            case CALL_EXPRESSION -> evaluateCallExpression((BoundCallExpression) node);
             default -> throw new Exception("Unexpected node " + node.getKind());
         };
+    }
+
+    private Object evaluateCallExpression(BoundCallExpression node) throws Exception {
+        if (node.getFunction().equals(BuildInFunctions.READ)) {
+            Scanner scanner = new Scanner(System.in);
+            return scanner.nextLine();
+        } else if (node.getFunction().equals(BuildInFunctions.PRINT)) {
+            String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
+            System.out.print(message);
+            return null;
+        } else if (node.getFunction().equals(BuildInFunctions.PRINTF)) {
+            String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
+            System.out.println(message);
+            return null;
+        } else {
+            throw new Exception("Unexpected function:" + node.getFunction().getName());
+        }
     }
 
     private Object evaluateLiteralExpression(BoundLiteralExpression l) {

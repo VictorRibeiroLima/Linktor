@@ -74,6 +74,7 @@ public final class SyntaxFacts {
             case ELSE_KEYWORD -> "else";
             case WHILE_KEYWORD -> "while";
             case FOR_KEYWORD -> "for";
+            case COMMA_TOKEN -> ",";
             default -> null;
         };
     }

@@ -1,6 +1,7 @@
 package codeanalysis.symbol;
 
 public class TypeSymbol extends Symbol {
+    public static final TypeSymbol VOID = new TypeSymbol("void");
     private final String name;
     public static final TypeSymbol ERROR = new TypeSymbol("?");
     public static final TypeSymbol BOOLEAN = new TypeSymbol("boolean");
