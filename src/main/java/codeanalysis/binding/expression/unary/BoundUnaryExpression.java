@@ -3,8 +3,8 @@ package codeanalysis.binding.expression.unary;
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.symbol.TypeSymbol;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class BoundUnaryExpression extends BoundExpression {
@@ -13,7 +13,7 @@ public class BoundUnaryExpression extends BoundExpression {
     private final BoundNodeKind kind;
 
     private final List<BoundNode> children;
-    private final Type type;
+    private final TypeSymbol type;
 
     public BoundUnaryExpression(BoundUnaryOperator operator, BoundExpression right) {
         this.operator = operator;
@@ -42,7 +42,7 @@ public class BoundUnaryExpression extends BoundExpression {
     }
 
     @Override
-    public Type getType() {
+    public TypeSymbol getType() {
         return type;
     }
 }

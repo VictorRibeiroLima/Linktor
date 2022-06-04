@@ -4,6 +4,7 @@ import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
+import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryOperator;
@@ -21,6 +22,7 @@ import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
@@ -29,7 +31,6 @@ import codeanalysis.syntax.clause.ForConditionClause;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.*;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -104,20 +105,20 @@ public class Binder {
         else
             variable = bindNameExpression((NameExpressionSyntax) condition.getVariableNode());
 
-        BoundExpression conditionExpression = bindExpression(condition.getConditionExpression(), Boolean.class);
-        BoundExpression incrementExpression = bindExpression(condition.getIncrementExpression(), Integer.class);
+        BoundExpression conditionExpression = bindExpression(condition.getConditionExpression(), TypeSymbol.BOOLEAN);
+        BoundExpression incrementExpression = bindExpression(condition.getIncrementExpression(), TypeSymbol.INTEGER);
         return new BoundForConditionClause(variable, conditionExpression, incrementExpression);
     }
 
     private BoundStatement bindWhileStatement(WhileStatementSyntax syntax) throws Exception {
-        BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
+        BoundExpression condition = bindExpression(syntax.getCondition(), TypeSymbol.BOOLEAN);
         BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
         return new BoundWhileStatement(condition, thenStatement);
     }
 
 
     private BoundStatement bindIfStatement(IfStatementSyntax syntax) throws Exception {
-        BoundExpression condition = bindExpression(syntax.getCondition(), Boolean.class);
+        BoundExpression condition = bindExpression(syntax.getCondition(), TypeSymbol.BOOLEAN);
         BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
         BoundElseClause elseClause = bindElseClause(syntax.getElseClause());
         return new BoundIfStatement(condition, thenStatement, elseClause);
@@ -159,7 +160,7 @@ public class Binder {
         return new BoundExpressionStatement(expression);
     }
 
-    private BoundExpression bindExpression(ExpressionSyntax syntax, Type expectedType) throws Exception {
+    private BoundExpression bindExpression(ExpressionSyntax syntax, TypeSymbol expectedType) throws Exception {
         BoundExpression result = bindExpression(syntax);
         if (!result.getType().equals(expectedType))
             diagnostics.reportCannotConvert(syntax.getSpan(), expectedType, result.getType());
@@ -185,12 +186,14 @@ public class Binder {
 
     private BoundExpression bindNameExpression(NameExpressionSyntax syntax) {
         String name = syntax.getIdentifierToken().getText();
+        if (name == null || name.isEmpty())
+            return new BoundErrorExpression();
         VariableSymbol variable = scope.getVariableByIdentifier(name);
-        if (variable != null) {
-            return new BoundVariableExpression(variable);
+        if (variable == null) {
+            diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
+            return new BoundErrorExpression();
         }
-        diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
-        return new BoundLiteralExpression(0);
+        return new BoundVariableExpression(variable);
     }
 
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
@@ -221,11 +224,13 @@ public class Binder {
 
     private BoundExpression bindUnaryExpression(UnaryExpressionSyntax syntax) throws Exception {
         BoundExpression right = bindExpression(syntax.getRight());
+        if (right.getType().equals(TypeSymbol.ERROR))
+            return new BoundErrorExpression();
         BoundUnaryOperator operator = BoundUnaryOperator.bind(syntax.getOperatorToken().getKind(), right.getType());
         if (operator == null) {
             diagnostics.reportUndefinedUnaryOperator(syntax.getOperatorToken().getSpan(),
                     syntax.getOperatorToken().getText(), right.getType());
-            return right;
+            return new BoundErrorExpression();
         }
         return new BoundUnaryExpression(operator, right);
     }
@@ -233,12 +238,14 @@ public class Binder {
     private BoundExpression bindBinaryExpression(BinaryExpressionSyntax syntax) throws Exception {
         BoundExpression left = bindExpression(syntax.getLeft());
         BoundExpression right = bindExpression(syntax.getRight());
+        if (left.getType().equals(TypeSymbol.ERROR) || right.getType().equals(TypeSymbol.ERROR))
+            return new BoundErrorExpression();
         BoundBinaryOperator operator = BoundBinaryOperator.bind(syntax.getOperatorToken().getKind(), left.getType(), right.getType());
         if (operator == null) {
             diagnostics.reportUndefinedBinaryOperator(syntax.getOperatorToken().getSpan(),
                     syntax.getOperatorToken().getText(), left.getType(), right.getType());
 
-            return left;
+            return new BoundErrorExpression();
         }
         return new BoundBinaryExpression(left, operator, right);
     }

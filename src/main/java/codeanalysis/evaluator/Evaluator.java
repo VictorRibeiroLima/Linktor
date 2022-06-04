@@ -14,6 +14,7 @@ import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.HashMap;
@@ -112,7 +113,7 @@ public final class Evaluator {
             case LOGICAL_NEGATION:
                 return !(boolean) value;
             case ONES_COMPLEMENT: {
-                if (u.getType().equals(Boolean.class)) {
+                if (u.getType().equals(TypeSymbol.BOOLEAN)) {
                     boolean isTrue = (boolean) value;
                     return isTrue ? ~1 : ~0;
                 } else
@@ -130,7 +131,7 @@ public final class Evaluator {
             case LOGICAL_AND:
                 return (boolean) left && (boolean) right;
             case BITWISE_AND: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left & (boolean) right;
                 else
                     return (int) left & (int) right;
@@ -138,7 +139,7 @@ public final class Evaluator {
             case LOGICAL_OR:
                 return (boolean) left || (boolean) right;
             case BITWISE_OR: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left | (boolean) right;
                 else
                     return (int) left | (int) right;
@@ -149,7 +150,7 @@ public final class Evaluator {
                 return !left.equals(right);
 
             case BITWISE_XOR: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left ^ (boolean) right;
                 else
                     return (int) left ^ (int) right;

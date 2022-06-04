@@ -2,9 +2,10 @@ package codeanalysis.symbol;
 
 public class TypeSymbol implements ISymbol {
     private final String name;
-    public static final TypeSymbol bool = new TypeSymbol("boolean");
-    public static final TypeSymbol integer = new TypeSymbol("int");
-    public static final TypeSymbol string = new TypeSymbol("string");
+    public static final TypeSymbol ERROR = new TypeSymbol("?");
+    public static final TypeSymbol BOOLEAN = new TypeSymbol("boolean");
+    public static final TypeSymbol INTEGER = new TypeSymbol("int");
+    public static final TypeSymbol STRING = new TypeSymbol("string");
 
     private TypeSymbol(String name) {
         this.name = name;

@@ -3,8 +3,8 @@ package codeanalysis.binding.expression.binary;
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.symbol.TypeSymbol;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class BoundBinaryExpression extends BoundExpression {
@@ -16,7 +16,7 @@ public class BoundBinaryExpression extends BoundExpression {
 
     private final BoundNodeKind kind;
 
-    private final Type type;
+    private final TypeSymbol type;
 
     public BoundBinaryExpression(BoundExpression left, BoundBinaryOperator operator, BoundExpression right) {
         this.left = left;
@@ -50,7 +50,7 @@ public class BoundBinaryExpression extends BoundExpression {
     }
 
     @Override
-    public Type getType() {
+    public TypeSymbol getType() {
         return this.type;
     }
 }

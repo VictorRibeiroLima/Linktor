@@ -3,9 +3,9 @@ package codeanalysis.binding.expression.assignment;
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class BoundAssignmentExpression extends BoundExpression {
@@ -14,13 +14,13 @@ public class BoundAssignmentExpression extends BoundExpression {
     private final BoundExpression boundExpression;
     private final BoundNodeKind kind;
     private final List<BoundNode> children;
-    private final Type type;
+    private final TypeSymbol type;
 
     public BoundAssignmentExpression(VariableSymbol variable, BoundExpression boundExpression) {
         this.variable = variable;
         this.boundExpression = boundExpression;
         this.kind = BoundNodeKind.ASSIGNMENT_EXPRESSION;
-        this.type = variable.type();
+        this.type = boundExpression.getType();
         this.children = List.of(boundExpression);
     }
 
@@ -35,7 +35,7 @@ public class BoundAssignmentExpression extends BoundExpression {
     }
 
     @Override
-    public Type getType() {
+    public TypeSymbol getType() {
         return this.type;
     }
 

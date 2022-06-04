@@ -1,8 +1,6 @@
 package codeanalysis.symbol;
 
-import java.lang.reflect.Type;
-
-public record VariableSymbol(String name, Type type, boolean readOnly) implements ISymbol {
+public record VariableSymbol(String name, TypeSymbol type, boolean readOnly) implements ISymbol {
 
     @Override
     public String toString() {

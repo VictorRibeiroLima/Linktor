@@ -1,9 +1,9 @@
 package codeanalysis.diagnostics;
 
 import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.syntax.SyntaxKind;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +37,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
 
-    public void reportInvalidType(TextSpan span, String text, Type type) {
+    public void reportInvalidType(TextSpan span, String text, TypeSymbol type) {
         String message = "ERROR: The number " + text + "is not a valid representation of " + type + ".";
         report(span, message);
     }
@@ -58,12 +58,12 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
-    public void reportUndefinedUnaryOperator(TextSpan span, String text, Type type) {
+    public void reportUndefinedUnaryOperator(TextSpan span, String text, TypeSymbol type) {
         String message = "ERROR: Unary operator " + text + " is not defined for type " + type + ".";
         report(span, message);
     }
 
-    public void reportUndefinedBinaryOperator(TextSpan span, String text, Type leftType, Type rightType) {
+    public void reportUndefinedBinaryOperator(TextSpan span, String text, TypeSymbol leftType, TypeSymbol rightType) {
         String message = "ERROR: Binary operator " + text +
                 " is not defined for type " + leftType + " and " + rightType + ".";
 
@@ -84,7 +84,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         return List.copyOf(diagnostics);
     }
 
-    public void reportCannotConvert(TextSpan span, Type expectedType, Type actualType) {
+    public void reportCannotConvert(TextSpan span, TypeSymbol expectedType, TypeSymbol actualType) {
         String message = "ERROR: Cannot convert '" + expectedType + "' into '" + actualType + "'.";
         report(span, message);
     }
