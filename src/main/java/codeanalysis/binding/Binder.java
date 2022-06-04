@@ -158,7 +158,7 @@ public class Binder {
     }
 
     private BoundExpressionStatement bindExpressionStatement(ExpressionStatementSyntax syntax) throws Exception {
-        BoundExpression expression = bindExpression(syntax.getExpression());
+        BoundExpression expression = bindExpression(syntax.getExpression(), true);
         return new BoundExpressionStatement(expression);
     }
 
@@ -176,7 +176,11 @@ public class Binder {
     }
 
     private BoundExpression bindExpression(ExpressionSyntax syntax) throws Exception {
-        return switch (syntax.getKind()) {
+        return bindExpression(syntax, false);
+    }
+
+    private BoundExpression bindExpression(ExpressionSyntax syntax, boolean canBeVoid) throws Exception {
+        BoundExpression result = switch (syntax.getKind()) {
             case PARENTHESIZED_EXPRESSION -> bindParenthesizedExpression((ParenthesizedExpressionSyntax) syntax);
             case LITERAL_EXPRESSION -> bindLiteralExpression((LiteralExpressionSyntax) syntax);
             case NAME_EXPRESSION -> bindNameExpression((NameExpressionSyntax) syntax);
@@ -186,6 +190,11 @@ public class Binder {
             case CALL_EXPRESSION -> bindCallExpression((CallExpressionSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+        if (!canBeVoid && result.getType() == TypeSymbol.VOID) {
+            diagnostics.reportExpressionMustHaveValue(syntax.getSpan());
+            return new BoundErrorExpression();
+        }
+        return result;
     }
 
     private BoundExpression bindCallExpression(CallExpressionSyntax syntax) throws Exception {

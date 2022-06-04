@@ -114,4 +114,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
                 "' expected type:" + expectedType + "received:" + actualType + " .";
         report(span, message);
     }
+
+    public void reportExpressionMustHaveValue(TextSpan span) {
+        String message = "ERROR: Expression must have a value.";
+        report(span, message);
+    }
 }
