@@ -3,9 +3,9 @@ package codeanalysis.binding.expression.variable;
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class BoundVariableExpression extends BoundExpression {
@@ -13,7 +13,7 @@ public class BoundVariableExpression extends BoundExpression {
 
     private final BoundNodeKind kind;
 
-    private final Type type;
+    private final TypeSymbol type;
 
     private final List<BoundNode> children;
 
@@ -35,7 +35,7 @@ public class BoundVariableExpression extends BoundExpression {
     }
 
     @Override
-    public Type getType() {
+    public TypeSymbol getType() {
         return this.type;
     }
 

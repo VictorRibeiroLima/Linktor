@@ -58,12 +58,12 @@ public class LinktorRepl extends Repl {
         }
     }
 
-    protected boolean isCompleteSubmission(String text) {
+    protected boolean isCompleteSubmission(String text, StringBuilder input) {
         if (text == null || text.isEmpty())
             return false;
 
-        SyntaxTree tree = SyntaxTree.parse(text);
-        return !tree.getDiagnostics().isEmpty();
+        SyntaxTree tree = SyntaxTree.parse(input.toString());
+        return tree.getRoot().getStatement().getLastToken().isMissing();
     }
 
     protected boolean evaluateMetaCommand(String inLineInput) {

@@ -7,17 +7,17 @@ import java.util.List;
 
 public class CompilationUnitSyntax extends SyntaxNode {
     private final SyntaxKind kind;
-    private final StatementSyntax expression;
+    private final StatementSyntax statement;
     private final SyntaxToken endOfFileToken;
 
-    public CompilationUnitSyntax(StatementSyntax expression, SyntaxToken endOfFileToken) {
+    public CompilationUnitSyntax(StatementSyntax statement, SyntaxToken endOfFileToken) {
         this.kind = SyntaxKind.COMPILATION_UNIT;
-        this.expression = expression;
+        this.statement = statement;
         this.endOfFileToken = endOfFileToken;
     }
 
-    public StatementSyntax getExpression() {
-        return expression;
+    public StatementSyntax getStatement() {
+        return statement;
     }
 
     public SyntaxToken getEndOfFileToken() {
@@ -31,6 +31,6 @@ public class CompilationUnitSyntax extends SyntaxNode {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(expression, endOfFileToken);
+        return Arrays.asList(statement, endOfFileToken);
     }
 }

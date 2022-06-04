@@ -22,6 +22,13 @@ public abstract class SyntaxNode {
         return TextSpan.fromBounds(first.start(), last.end());
     }
 
+    public SyntaxToken getLastToken() {
+        if (this instanceof SyntaxToken t)
+            return t;
+
+        return this.getChildren().get(this.getChildren().size() - 1).getLastToken();
+    }
+
     public void writeTo(PrintWriter out) {
         printTree(out, this);
     }

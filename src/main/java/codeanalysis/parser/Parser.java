@@ -184,6 +184,7 @@ public final class Parser {
             case OPEN_PARENTHESIS_TOKEN -> parseParenthesizedExpression();
             case TRUE_KEYWORD, FALSE_KEYWORD -> parseBooleanLiteralExpression();
             case NUMBER_TOKEN -> parseNumberLiteralExpression();
+            case STRING_TOKEN -> parseStringLiteralExpression();
             default -> parseNameExpression();
         };
 
@@ -201,6 +202,11 @@ public final class Parser {
         SyntaxToken token = isTrue ? matchToken(SyntaxKind.TRUE_KEYWORD) :
                 matchToken(SyntaxKind.FALSE_KEYWORD);
         return new LiteralExpressionSyntax(token, isTrue);
+    }
+
+    private LiteralExpressionSyntax parseStringLiteralExpression() {
+        SyntaxToken stringToken = matchToken(SyntaxKind.STRING_TOKEN);
+        return new LiteralExpressionSyntax(stringToken);
     }
 
     private NameExpressionSyntax parseNameExpression() {

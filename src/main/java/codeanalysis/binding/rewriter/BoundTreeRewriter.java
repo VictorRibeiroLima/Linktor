@@ -5,6 +5,7 @@ import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
@@ -153,8 +154,13 @@ public abstract class BoundTreeRewriter {
             case ASSIGNMENT_EXPRESSION -> rewriteAssignmentExpression((BoundAssignmentExpression) expression);
             case UNARY_EXPRESSION -> rewriteUnaryExpression((BoundUnaryExpression) expression);
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
+            case ERROR_EXPRESSION -> rewriteErrorExpression((BoundErrorExpression) expression);
             default -> throw new Exception("Unexpected expression " + expression.getKind());
         };
+    }
+
+    protected BoundExpression rewriteErrorExpression(BoundErrorExpression expression) {
+        return expression;
     }
 
     protected BoundExpression rewriteBinaryExpression(BoundBinaryExpression node) throws Exception {

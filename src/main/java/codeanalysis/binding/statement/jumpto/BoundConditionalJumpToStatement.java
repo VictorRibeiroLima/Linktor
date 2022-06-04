@@ -4,22 +4,21 @@ import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.statement.BoundStatement;
-import codeanalysis.symbol.LabelSymbol;
 
 import java.util.List;
 
 public class BoundConditionalJumpToStatement extends BoundStatement {
-    private final LabelSymbol label;
+    private final BoundLabel label;
     private final BoundExpression condition;
     private final boolean jumpIfTrue;
     private final BoundNodeKind kind;
     private final List<BoundNode> children;
 
-    public BoundConditionalJumpToStatement(LabelSymbol label, BoundExpression condition) {
+    public BoundConditionalJumpToStatement(BoundLabel label, BoundExpression condition) {
         this(label, condition, true);
     }
 
-    public BoundConditionalJumpToStatement(LabelSymbol label, BoundExpression condition, boolean jumpIfTrue) {
+    public BoundConditionalJumpToStatement(BoundLabel label, BoundExpression condition, boolean jumpIfTrue) {
         this.label = label;
         this.condition = condition;
         this.jumpIfTrue = jumpIfTrue;
@@ -27,7 +26,7 @@ public class BoundConditionalJumpToStatement extends BoundStatement {
         this.children = List.of(condition);
     }
 
-    public LabelSymbol getLabel() {
+    public BoundLabel getLabel() {
         return label;
     }
 

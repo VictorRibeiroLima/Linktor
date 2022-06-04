@@ -138,6 +138,18 @@ class EvaluatorTest {
                                 }
                                 """,
                         "ERROR: Variable 'a' is read only and cannot be assigned."
+                ), Arguments.of("""
+                                {
+                                    let a = [']10;
+                                }
+                                """,
+                        "ERROR: Unterminated string literal"
+                ), Arguments.of("""
+                                {
+                                    let a = ["]10;
+                                }
+                                """,
+                        "ERROR: Unterminated string literal"
                 )
         );
     }

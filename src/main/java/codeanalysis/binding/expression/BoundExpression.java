@@ -1,9 +1,8 @@
 package codeanalysis.binding.expression;
 
 import codeanalysis.binding.BoundNode;
-
-import java.lang.reflect.Type;
+import codeanalysis.symbol.TypeSymbol;
 
 public abstract class BoundExpression extends BoundNode {
-    public abstract Type getType();
+    public abstract TypeSymbol getType();
 }

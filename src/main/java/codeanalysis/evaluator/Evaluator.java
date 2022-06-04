@@ -13,7 +13,8 @@ import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatem
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
-import codeanalysis.symbol.LabelSymbol;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public final class Evaluator {
     }
 
     public Object evaluate() throws Exception {
-        Map<LabelSymbol, Integer> labelIndexes = new HashMap<>();
+        Map<BoundLabel, Integer> labelIndexes = new HashMap<>();
         for (int i = 0; i < root.getStatements().size(); i++) {
             if (root.getStatements().get(i) instanceof BoundLabelDeclarationStatement l)
                 labelIndexes.put(l.getLabel(), i);
@@ -112,7 +113,7 @@ public final class Evaluator {
             case LOGICAL_NEGATION:
                 return !(boolean) value;
             case ONES_COMPLEMENT: {
-                if (u.getType().equals(Boolean.class)) {
+                if (u.getType().equals(TypeSymbol.BOOLEAN)) {
                     boolean isTrue = (boolean) value;
                     return isTrue ? ~1 : ~0;
                 } else
@@ -130,7 +131,7 @@ public final class Evaluator {
             case LOGICAL_AND:
                 return (boolean) left && (boolean) right;
             case BITWISE_AND: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left & (boolean) right;
                 else
                     return (int) left & (int) right;
@@ -138,7 +139,7 @@ public final class Evaluator {
             case LOGICAL_OR:
                 return (boolean) left || (boolean) right;
             case BITWISE_OR: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left | (boolean) right;
                 else
                     return (int) left | (int) right;
@@ -149,13 +150,15 @@ public final class Evaluator {
                 return !left.equals(right);
 
             case BITWISE_XOR: {
-                if (b.getType().equals(Boolean.class))
+                if (b.getType().equals(TypeSymbol.BOOLEAN))
                     return (boolean) left ^ (boolean) right;
                 else
                     return (int) left ^ (int) right;
             }
             case ADDITION:
                 return (int) left + (int) right;
+            case CONCATENATION:
+                return left.toString() + right.toString();
             case SUBTRACTION:
                 return (int) left - (int) right;
             case DIVISION:
