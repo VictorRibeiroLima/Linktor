@@ -134,10 +134,11 @@ public class Binder {
 
     private BoundStatement bindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax) throws Exception {
         boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
-        String name = syntax.getIdentifier().getText();
+        String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
+        boolean declare = !syntax.getIdentifier().isMissing();
         BoundExpression initializer = bindExpression(syntax.getInitializer());
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
-        if (!scope.declareVariable(variableSymbol))
+        if (declare && !scope.declareVariable(variableSymbol))
             diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
 
         return new BoundVariableDeclarationStatement(variableSymbol, initializer);
@@ -162,8 +163,14 @@ public class Binder {
 
     private BoundExpression bindExpression(ExpressionSyntax syntax, TypeSymbol expectedType) throws Exception {
         BoundExpression result = bindExpression(syntax);
-        if (!result.getType().equals(expectedType))
+        if (
+                !result.getType().equals(expectedType) &&
+                        !result.getType().equals(TypeSymbol.ERROR) &&
+                        !expectedType.equals(TypeSymbol.ERROR)
+        ) {
             diagnostics.reportCannotConvert(syntax.getSpan(), expectedType, result.getType());
+        }
+
         return result;
     }
 
@@ -186,7 +193,7 @@ public class Binder {
 
     private BoundExpression bindNameExpression(NameExpressionSyntax syntax) {
         String name = syntax.getIdentifierToken().getText();
-        if (name == null || name.isEmpty())
+        if (syntax.getIdentifierToken().isMissing())
             return new BoundErrorExpression();
         VariableSymbol variable = scope.getVariableByIdentifier(name);
         if (variable == null) {

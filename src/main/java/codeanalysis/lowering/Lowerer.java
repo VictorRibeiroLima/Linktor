@@ -78,7 +78,7 @@ public final class Lowerer extends BoundTreeRewriter {
         /*
             {
                 if<condition>
-                    <then>
+                    <then>s
                 else
                     <elseThen>
             }
