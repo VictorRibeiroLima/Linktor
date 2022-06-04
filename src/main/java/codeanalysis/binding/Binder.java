@@ -1,5 +1,7 @@
 package codeanalysis.binding;
 
+import codeanalysis.binding.conversion.BoundConversionExpression;
+import codeanalysis.binding.conversion.Conversion;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -204,6 +206,10 @@ public class Binder {
     }
 
     private BoundExpression bindCallExpression(CallExpressionSyntax syntax) throws Exception {
+        TypeSymbol type = lookupType(syntax.getIdentifier().getText());
+        if (syntax.getArgs().getCount() == 1 && type != null) {
+            return bindConversion(type, syntax.getArgs().get(0));
+        }
         List<BoundExpression> boundArgs = new ArrayList<>();
         for (ExpressionSyntax arg : syntax.getArgs()) {
             boundArgs.add(bindExpression(arg));
@@ -236,6 +242,12 @@ public class Binder {
             }
         }
         return new BoundCallExpression(function, boundArgs);
+    }
+
+    private BoundExpression bindConversion(TypeSymbol type, ExpressionSyntax syntax) throws Exception {
+        BoundExpression expression = bindExpression(syntax);
+        Conversion conversion = Conversion.classify(expression.getType(), type);
+        return new BoundConversionExpression(type, expression);
     }
 
 
@@ -307,5 +319,14 @@ public class Binder {
             return new BoundErrorExpression();
         }
         return new BoundBinaryExpression(left, operator, right);
+    }
+
+    private TypeSymbol lookupType(String name) {
+        return switch (name) {
+            case "boolean" -> TypeSymbol.BOOLEAN;
+            case "int" -> TypeSymbol.INTEGER;
+            case "string" -> TypeSymbol.STRING;
+            default -> null;
+        };
     }
 }

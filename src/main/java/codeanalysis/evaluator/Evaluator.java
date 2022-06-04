@@ -1,5 +1,6 @@
 package codeanalysis.evaluator;
 
+import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -91,8 +92,23 @@ public final class Evaluator {
             case UNARY_EXPRESSION -> evaluateUnaryExpression((BoundUnaryExpression) node);
             case BINARY_EXPRESSION -> evaluateBinaryExpression((BoundBinaryExpression) node);
             case CALL_EXPRESSION -> evaluateCallExpression((BoundCallExpression) node);
+            case CONVERSION_EXPRESSION -> evaluateConversionExpression((BoundConversionExpression) node);
             default -> throw new Exception("Unexpected node " + node.getKind());
         };
+    }
+
+    private Object evaluateConversionExpression(BoundConversionExpression node) throws Exception {
+        Object result = evaluateExpression(node.getExpression());
+        TypeSymbol type = node.getType();
+        if (type == TypeSymbol.BOOLEAN) {
+            return Boolean.parseBoolean(result.toString());
+        } else if (type == TypeSymbol.INTEGER) {
+            return Integer.parseInt(result.toString());
+        } else if (type == TypeSymbol.STRING) {
+            return result.toString();
+        } else
+            throw new Exception("Unexpected type " + type);
+
     }
 
     private Object evaluateCallExpression(BoundCallExpression node) throws Exception {

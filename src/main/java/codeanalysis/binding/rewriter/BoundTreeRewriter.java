@@ -2,6 +2,7 @@ package codeanalysis.binding.rewriter;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
@@ -157,8 +158,16 @@ public abstract class BoundTreeRewriter {
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
             case CALL_EXPRESSION -> rewriteCallExpression((BoundCallExpression) expression);
             case ERROR_EXPRESSION -> rewriteErrorExpression((BoundErrorExpression) expression);
+            case CONVERSION_EXPRESSION -> rewriteConversionExpression((BoundConversionExpression) expression);
             default -> throw new Exception("Unexpected expression " + expression.getKind());
         };
+    }
+
+    private BoundExpression rewriteConversionExpression(BoundConversionExpression expression) throws Exception {
+        BoundExpression newExpression = rewriteExpression(expression.getExpression());
+        if (newExpression.equals(expression.getExpression()))
+            return expression;
+        return new BoundConversionExpression(expression.getType(), newExpression);
     }
 
     private BoundExpression rewriteCallExpression(BoundCallExpression expression) throws Exception {
