@@ -125,7 +125,11 @@ class LexerTest {
                 Arguments.of(SyntaxKind.NUMBER_TOKEN, "1"),
                 Arguments.of(SyntaxKind.NUMBER_TOKEN, "123"),
                 Arguments.of(SyntaxKind.IDENTIFIER_TOKEN, "a"),
-                Arguments.of(SyntaxKind.IDENTIFIER_TOKEN, "abc")
+                Arguments.of(SyntaxKind.IDENTIFIER_TOKEN, "abc"),
+                Arguments.of(SyntaxKind.STRING_TOKEN, "'abc'"),
+                Arguments.of(SyntaxKind.STRING_TOKEN, "\"abc\""),
+                Arguments.of(SyntaxKind.STRING_TOKEN, "'\"abc\"'"),
+                Arguments.of(SyntaxKind.STRING_TOKEN, "\"'abc'\"")
         );
 
         return Stream.concat(fixedValues, dynamicValues);

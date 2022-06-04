@@ -93,4 +93,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         String message = "ERROR: Variable '" + name + "' is read only and cannot be assigned.";
         report(span, message);
     }
+
+    public void reportUnterminatedString(TextSpan span) {
+        String message = "ERROR: Unterminated string literal";
+        report(span, message);
+    }
 }

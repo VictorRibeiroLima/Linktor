@@ -2,6 +2,7 @@ package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
@@ -144,6 +145,10 @@ public final class Lexer {
                 next();
                 break;
             }
+            case '\'':
+            case '"':
+                readString();
+                break;
             case '0':
             case '1':
             case '2':
@@ -179,6 +184,32 @@ public final class Lexer {
             text = this.text.toString(start, position);
         }
         return new SyntaxToken(kind, start, text, value);
+    }
+
+    private void readString() {
+        char stringStarter = getCurrent();
+        boolean done = false;
+        StringBuilder builder = new StringBuilder();
+        next();
+        while (!done) {
+            if (getCurrent() == '\\') {
+                next();
+                builder.append(getCurrent());
+                next();
+            } else if (getCurrent() == '\0' || getCurrent() == '\n' || getCurrent() == '\r') {
+                TextSpan span = new TextSpan(start, 1);
+                done = true;
+                diagnostics.reportUnterminatedString(span);
+            } else if (getCurrent() == stringStarter) {
+                done = true;
+                next();
+            } else {
+                builder.append(getCurrent());
+                next();
+            }
+        }
+        kind = SyntaxKind.STRING_TOKEN;
+        value = builder.toString();
     }
 
     private void readNumberToken() {
