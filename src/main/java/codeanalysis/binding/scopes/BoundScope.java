@@ -1,5 +1,6 @@
 package codeanalysis.binding.scopes;
 
+import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.VariableSymbol;
 
 import java.util.HashMap;
@@ -8,7 +9,8 @@ import java.util.Map;
 
 public class BoundScope {
 
-    private final Map<String, VariableSymbol> variables = new HashMap<>();
+    private Map<String, VariableSymbol> variables;
+    private Map<String, FunctionSymbol> functions;
 
     private final BoundScope parent;
 
@@ -21,6 +23,8 @@ public class BoundScope {
     }
 
     public boolean declareVariable(VariableSymbol variable) {
+        if (variables == null)
+            variables = new HashMap<>();
         if (variables.containsKey(variable.getName()))
             return false;
 
@@ -28,8 +32,18 @@ public class BoundScope {
         return true;
     }
 
+    public boolean declareFunction(FunctionSymbol function) {
+        if (functions == null)
+            functions = new HashMap<>();
+        if (functions.containsKey(function.getName()))
+            return false;
+
+        functions.put(function.getName(), function);
+        return true;
+    }
+
     public VariableSymbol getVariableByIdentifier(String identifier) {
-        if (variables.containsKey(identifier)) {
+        if (variables != null && variables.containsKey(identifier)) {
             VariableSymbol variable = variables.get(identifier);
             return variable;
         }
@@ -39,7 +53,20 @@ public class BoundScope {
         return parent.getVariableByIdentifier(identifier);
     }
 
+    public FunctionSymbol getFunctionsByIdentifier(String identifier) {
+        if (functions != null && functions.containsKey(identifier)) {
+            FunctionSymbol variable = functions.get(identifier);
+            return variable;
+        }
+        if (this.parent == null)
+            return null;
+
+        return parent.getFunctionsByIdentifier(identifier);
+    }
+
     public VariableSymbol getLocalVariableByIdentifier(String identifier) {
+        if (variables == null)
+            return null;
         if (variables.containsKey(identifier)) {
             VariableSymbol variable = variables.get(identifier);
             return variable;
@@ -47,9 +74,18 @@ public class BoundScope {
         return null;
     }
 
+    public FunctionSymbol getLocalFunctionByIdentifier(String identifier) {
+        if (functions == null)
+            return null;
+        if (functions.containsKey(identifier)) {
+            FunctionSymbol variable = functions.get(identifier);
+            return variable;
+        }
+        return null;
+    }
+
     public boolean isVariablePresent(String identifier) {
-        if (variables.containsKey(identifier)) {
-            VariableSymbol variable = variables.get(identifier);
+        if (variables != null && variables.containsKey(identifier)) {
             return true;
         }
         if (this.parent == null)
@@ -58,7 +94,25 @@ public class BoundScope {
         return parent.isVariablePresent(identifier);
     }
 
+    public boolean isFunctionPresent(String identifier) {
+        if (functions != null && functions.containsKey(identifier)) {
+            return true;
+        }
+        if (this.parent == null)
+            return false;
+
+        return parent.isFunctionPresent(identifier);
+    }
+
     public List<VariableSymbol> getDeclaredVariables() {
+        if (variables == null)
+            return List.of();
         return List.copyOf(variables.values());
+    }
+
+    public List<FunctionSymbol> getDeclaredFunctions() {
+        if (functions == null)
+            return List.of();
+        return List.copyOf(functions.values());
     }
 }

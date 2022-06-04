@@ -33,7 +33,6 @@ import codeanalysis.syntax.statements.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 
 public class Binder {
@@ -66,7 +65,7 @@ public class Binder {
             previous = previous.getPrevious();
         }
 
-        BoundScope parentScope = null;
+        BoundScope parentScope = genRootScope();
 
         while (!stack.empty()) {
             previous = stack.pop();
@@ -77,6 +76,13 @@ public class Binder {
             parentScope = scope;
         }
         return parentScope;
+    }
+
+    private static BoundScope genRootScope() {
+        BoundScope root = new BoundScope(null);
+        for (FunctionSymbol f : BuildInFunctions.getAll())
+            root.declareFunction(f);
+        return root;
     }
 
     public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
@@ -203,24 +209,21 @@ public class Binder {
             boundArgs.add(bindExpression(arg));
 
         }
-        List<FunctionSymbol> functions = BuildInFunctions.getAll();
-        Optional<FunctionSymbol> function = functions
-                .stream().filter(functionSymbol -> functionSymbol.getName().equals(syntax.getIdentifier().getText()))
-                .findFirst();
-        if (function.isEmpty()) {
+        if (!scope.isFunctionPresent(syntax.getIdentifier().getText())) {
             diagnostics.reportUndefinedFunction(syntax.getIdentifier().getSpan(), syntax.getIdentifier().getText());
             return new BoundErrorExpression();
         }
-        if (function.get().getParameters().size() != syntax.getArgs().getCount()) {
+        FunctionSymbol function = scope.getFunctionsByIdentifier(syntax.getIdentifier().getText());
+        if (function.getParameters().size() != syntax.getArgs().getCount()) {
             diagnostics.reportWrongArgumentCount(
                     syntax.getSpan(),
                     syntax.getIdentifier().getText(),
-                    function.get().getParameters().size(),
+                    function.getParameters().size(),
                     syntax.getArgs().getCount());
             return new BoundErrorExpression();
         }
         for (int i = 0; i < syntax.getArgs().getCount(); i++) {
-            ParameterSymbol parameter = function.get().getParameters().get(i);
+            ParameterSymbol parameter = function.getParameters().get(i);
             BoundExpression arg = boundArgs.get(i);
             if (!arg.getType().equals(parameter.getType())) {
                 diagnostics.reportWrongArgumentType(
@@ -232,7 +235,7 @@ public class Binder {
                 return new BoundErrorExpression();
             }
         }
-        return new BoundCallExpression(function.get(), boundArgs);
+        return new BoundCallExpression(function, boundArgs);
     }
 
 
