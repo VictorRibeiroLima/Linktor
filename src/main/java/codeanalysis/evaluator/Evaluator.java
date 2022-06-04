@@ -27,6 +27,8 @@ public final class Evaluator {
     private final BoundBlockStatement root;
     private final Map<VariableSymbol, Object> variables;
 
+    private Scanner scanner;
+
     private Object lastValue;
 
     public Evaluator(BoundBlockStatement root, Map<VariableSymbol, Object> variables) {
@@ -95,7 +97,7 @@ public final class Evaluator {
 
     private Object evaluateCallExpression(BoundCallExpression node) throws Exception {
         if (node.getFunction().equals(BuildInFunctions.READ)) {
-            Scanner scanner = new Scanner(System.in);
+            scanner = new Scanner(System.in);
             return scanner.nextLine();
         } else if (node.getFunction().equals(BuildInFunctions.PRINT)) {
             String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
@@ -105,6 +107,9 @@ public final class Evaluator {
             String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
             System.out.println(message);
             return null;
+        } else if (node.getFunction().equals(BuildInFunctions.RANDOM)) {
+            int max = (int) evaluateExpression(node.getArgs().get(0));
+            return (int) Math.floor(Math.random() * (max + 1));
         } else {
             throw new Exception("Unexpected function:" + node.getFunction().getName());
         }
