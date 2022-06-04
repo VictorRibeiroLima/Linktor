@@ -213,11 +213,11 @@ public class Binder {
         }
         VariableSymbol variable = scope.getVariableByIdentifier(name);
         scope.declareVariable(variable);
-        if (variable.readOnly()) {
+        if (variable.isReadOnly()) {
             diagnostics.reportReadOnly(syntax.getEqualsToken().getSpan(), name);
         }
-        if (!boundExpression.getType().equals(variable.type())) {
-            diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.type());
+        if (!boundExpression.getType().equals(variable.getType())) {
+            diagnostics.reportCannotConvert(syntax.getExpression().getSpan(), boundExpression.getType(), variable.getType());
             return boundExpression;
         }
         return new BoundAssignmentExpression(variable, boundExpression);

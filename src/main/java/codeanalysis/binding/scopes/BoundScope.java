@@ -21,10 +21,10 @@ public class BoundScope {
     }
 
     public boolean declareVariable(VariableSymbol variable) {
-        if (variables.containsKey(variable.name()))
+        if (variables.containsKey(variable.getName()))
             return false;
 
-        variables.put(variable.name(), variable);
+        variables.put(variable.getName(), variable);
         return true;
     }
 

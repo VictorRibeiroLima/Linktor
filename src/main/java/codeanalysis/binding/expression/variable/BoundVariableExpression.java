@@ -20,7 +20,7 @@ public class BoundVariableExpression extends BoundExpression {
     public BoundVariableExpression(VariableSymbol variable) {
         this.variable = variable;
         this.kind = BoundNodeKind.VARIABLE_EXPRESSION;
-        this.type = variable.type();
+        this.type = variable.getType();
         this.children = List.of();
     }
 

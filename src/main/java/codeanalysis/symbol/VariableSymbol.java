@@ -1,6 +1,21 @@
 package codeanalysis.symbol;
 
-public record VariableSymbol(String name, TypeSymbol type, boolean readOnly) implements ISymbol {
+public class VariableSymbol extends Symbol {
+    private final String name;
+
+    private final TypeSymbol type;
+
+    private final boolean readOnly;
+
+    private final SymbolKind kind;
+
+    public VariableSymbol(String name, TypeSymbol type, boolean readOnly) {
+        this.name = name;
+        this.type = type;
+        this.readOnly = readOnly;
+        this.kind = SymbolKind.VARIABLE;
+
+    }
 
     @Override
     public String toString() {
@@ -12,8 +27,23 @@ public record VariableSymbol(String name, TypeSymbol type, boolean readOnly) imp
         return this == o;
     }
 
-    public SymbolKind kind() {
-        return SymbolKind.VARIABLE;
+    @Override
+    public SymbolKind getKind() {
+        return kind;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public TypeSymbol getType() {
+        return type;
     }
 
 }
