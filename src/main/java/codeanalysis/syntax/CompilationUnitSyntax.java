@@ -1,23 +1,29 @@
 package codeanalysis.syntax;
 
-import codeanalysis.syntax.statements.StatementSyntax;
+import codeanalysis.syntax.member.MemberSyntax;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CompilationUnitSyntax extends SyntaxNode {
     private final SyntaxKind kind;
-    private final StatementSyntax statement;
+    private final List<MemberSyntax> members;
     private final SyntaxToken endOfFileToken;
 
-    public CompilationUnitSyntax(StatementSyntax statement, SyntaxToken endOfFileToken) {
+    private final List<SyntaxNode> children;
+
+    public CompilationUnitSyntax(List<MemberSyntax> members, SyntaxToken endOfFileToken) {
         this.kind = SyntaxKind.COMPILATION_UNIT;
-        this.statement = statement;
+        this.members = List.copyOf(members);
         this.endOfFileToken = endOfFileToken;
+        List<SyntaxNode> children = new ArrayList<>();
+        children.addAll(members);
+        children.add(endOfFileToken);
+        this.children = children;
     }
 
-    public StatementSyntax getStatement() {
-        return statement;
+    public List<MemberSyntax> getMembers() {
+        return members;
     }
 
     public SyntaxToken getEndOfFileToken() {
@@ -31,6 +37,6 @@ public class CompilationUnitSyntax extends SyntaxNode {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(statement, endOfFileToken);
+        return children;
     }
 }

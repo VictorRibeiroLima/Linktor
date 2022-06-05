@@ -14,6 +14,7 @@ import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.binding.scopes.BoundScope;
+import codeanalysis.binding.scopes.identifier.FunctionIdentifier;
 import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.binding.statement.conditional.BoundElseClause;
@@ -25,40 +26,101 @@ import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.symbol.*;
+import codeanalysis.lowering.Lowerer;
+import codeanalysis.symbol.BuildInFunctions;
+import codeanalysis.symbol.FunctionSymbol;
+import codeanalysis.symbol.ParameterSymbol;
+import codeanalysis.symbol.TypeSymbol;
+import codeanalysis.symbol.variable.GlobalVariableSymbol;
+import codeanalysis.symbol.variable.LocalVariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
+import codeanalysis.syntax.clause.ParameterClauseSyntax;
 import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.*;
+import codeanalysis.syntax.member.FunctionMemberSyntax;
+import codeanalysis.syntax.member.GlobalMemberSyntax;
 import codeanalysis.syntax.statements.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Binder {
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
     private BoundScope scope;
+    private final FunctionSymbol function;
 
     private Binder(BoundScope parent) {
+        this(parent, null);
+    }
+
+    private Binder(BoundScope parent, FunctionSymbol function) {
         scope = new BoundScope(parent);
+        this.function = function;
+        if (function != null) {
+            for (ParameterSymbol p : function.getParameters())
+                scope.declareVariable(p);
+        }
     }
 
     public DiagnosticBag getDiagnostics() {
         return diagnostics;
     }
 
-    public static BoundGlobalScope boundGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
+    public static BoundGlobalScope bindGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
-        BoundStatement expression = binder.bindStatement(unit.getStatement());
+        List<BoundStatement> statements = getBoundStatements(unit, binder);
+        List<BoundStatement> statement = List.copyOf(statements);
+        List<FunctionSymbol> functions = binder.scope.getDeclaredFunctions();
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
-        return new BoundGlobalScope(previous, diagnostics, variables, expression);
+
+        return new BoundGlobalScope(previous, diagnostics, variables, functions, statement);
+    }
+
+    public static BoundProgram bindProgram(BoundGlobalScope global) throws Exception {
+        BoundScope parent = createParentScope(global);
+        Map<FunctionSymbol, BoundBlockStatement> functionsBodies = new HashMap<>();
+        DiagnosticBag diagnostics = new DiagnosticBag();
+
+        BoundGlobalScope scope = global;
+        while (scope != null) {
+            for (FunctionSymbol function : scope.getFunctions()) {
+                Binder binder = new Binder(parent, function);
+                BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
+                BoundBlockStatement loweredBody = Lowerer.lower(body);
+                functionsBodies.put(function, loweredBody);
+                diagnostics.addAll(binder.getDiagnostics());
+            }
+            scope = scope.getPrevious();
+        }
+        BoundBlockStatement statement = Lowerer.lower(new BoundBlockStatement(global.getStatements()));
+        return new BoundProgram(statement, diagnostics, functionsBodies);
+    }
+
+    private static List<BoundStatement> getBoundStatements(CompilationUnitSyntax unit, Binder binder) throws Exception {
+        List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
+        List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
+        List<BoundStatement> statements = new ArrayList<>();
+        unit.getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof FunctionMemberSyntax f)
+                functionMembers.add(f);
+            else if (memberSyntax instanceof GlobalMemberSyntax g)
+                globalMembers.add(g);
+        });
+        for (FunctionMemberSyntax f : functionMembers)
+            binder.bindFunctionDeclaration(f);
+
+        for (GlobalMemberSyntax g : globalMembers) {
+            BoundStatement s = binder.bindStatement(g.getStatement());
+            statements.add(s);
+        }
+        return statements;
     }
 
     private static BoundScope createParentScope(BoundGlobalScope previous) {
@@ -76,6 +138,9 @@ public class Binder {
             for (VariableSymbol variable : previous.getVariables()) {
                 scope.declareVariable(variable);
             }
+            for (FunctionSymbol function : previous.getFunctions()) {
+                scope.declareFunction(function);
+            }
             parentScope = scope;
         }
         return parentScope;
@@ -86,6 +151,34 @@ public class Binder {
         for (FunctionSymbol f : BuildInFunctions.getAll())
             root.declareFunction(f);
         return root;
+    }
+
+    private void bindFunctionDeclaration(FunctionMemberSyntax f) {
+        List<ParameterSymbol> params = new ArrayList<>();
+        Set<String> seeParamNames = new HashSet<>();
+        List<TypeSymbol> paramsTypes = new ArrayList<>();
+        for (ParameterClauseSyntax param : f.getParams()) {
+            String name = param.getIdentifier().getText();
+            TypeSymbol type = bindTypeClause(param.getType());
+            if (!seeParamNames.add(name)) {
+                diagnostics.reportDuplicatedParam(param.getSpan(), name);
+            } else {
+                ParameterSymbol parameter = new ParameterSymbol(name, type);
+                paramsTypes.add(type);
+                params.add(parameter);
+            }
+        }
+        TypeSymbol funcType = bindTypeClause(f.getType());
+        if (funcType == null)
+            funcType = TypeSymbol.VOID;
+        FunctionIdentifier identifier = new FunctionIdentifier(f.getIdentifier().getText(), paramsTypes);
+        FunctionSymbol function = new FunctionSymbol(f.getIdentifier().getText(), params, funcType, f);
+        if (scope.isFunctionPresent(identifier)) {
+            diagnostics.reportFunctionAlreadyDeclared(f.getIdentifier().getSpan(), f.getIdentifier().getText(), paramsTypes);
+        } else {
+            scope.declareFunction(function);
+        }
+
     }
 
     public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
@@ -143,15 +236,23 @@ public class Binder {
     }
 
     private BoundStatement bindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax) throws Exception {
-        boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
-        String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
-        boolean declare = !syntax.getIdentifier().isMissing();
         BoundExpression initializer = bindInitializer(syntax);
-        VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
-        if (declare && !scope.declareVariable(variableSymbol))
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
+        VariableSymbol variableSymbol = bindVariable(syntax, initializer);
 
         return new BoundVariableDeclarationStatement(variableSymbol, initializer);
+    }
+
+    private VariableSymbol bindVariable(VariableDeclarationStatementSyntax syntax, BoundExpression initializer) {
+        boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
+        boolean declare = !syntax.getIdentifier().isMissing();
+        String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
+
+        VariableSymbol variableSymbol = function != null
+                ? new LocalVariableSymbol(name, initializer.getType(), isReadOnly)
+                : new GlobalVariableSymbol(name, initializer.getType(), isReadOnly);
+        if (declare && !scope.declareVariable(variableSymbol))
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
+        return variableSymbol;
     }
 
     private BoundExpression bindInitializer(VariableDeclarationStatementSyntax syntax) throws Exception {
@@ -168,7 +269,7 @@ public class Binder {
         if (clause == null)
             return null;
         TypeSymbol type = lookupType(clause.getIdentifierToken().getText());
-        if (type == null)
+        if (type == TypeSymbol.ERROR)
             diagnostics.reportUndefinedType(clause.getSpan(), clause.getIdentifierToken().getText());
 
         return type;
@@ -230,43 +331,29 @@ public class Binder {
     }
 
     private BoundExpression bindCallExpression(CallExpressionSyntax syntax) throws Exception {
+
+        //this generates the conversion methods string() int() boolean() etc..
         TypeSymbol type = lookupType(syntax.getIdentifier().getText());
-        if (syntax.getArgs().getCount() == 1 && type != null) {
+        if (syntax.getArgs().getCount() == 1 && type != TypeSymbol.ERROR)
             return bindConversion(type, syntax.getArgs().get(0));
-        }
+
+        
         List<BoundExpression> boundArgs = new ArrayList<>();
+        List<TypeSymbol> usedTypes = new ArrayList<>();
+
         for (ExpressionSyntax arg : syntax.getArgs()) {
             BoundExpression expression = bindExpression(arg);
             if (expression.getType() == TypeSymbol.ERROR)
                 return new BoundErrorExpression();
             boundArgs.add(expression);
+            usedTypes.add(expression.getType());
         }
-        if (!scope.isFunctionPresent(syntax.getIdentifier().getText())) {
-            diagnostics.reportUndefinedFunction(syntax.getIdentifier().getSpan(), syntax.getIdentifier().getText());
+        FunctionIdentifier identifier = new FunctionIdentifier(syntax.getIdentifier().getText(), usedTypes);
+        if (!scope.isFunctionPresent(identifier)) {
+            diagnostics.reportUndefinedFunction(syntax.getSpan(), syntax.getIdentifier().getText(), usedTypes);
             return new BoundErrorExpression();
         }
-        FunctionSymbol function = scope.getFunctionsByIdentifier(syntax.getIdentifier().getText());
-        if (function.getParameters().size() != syntax.getArgs().getCount()) {
-            diagnostics.reportWrongArgumentCount(
-                    syntax.getSpan(),
-                    syntax.getIdentifier().getText(),
-                    function.getParameters().size(),
-                    syntax.getArgs().getCount());
-            return new BoundErrorExpression();
-        }
-        for (int i = 0; i < syntax.getArgs().getCount(); i++) {
-            ParameterSymbol parameter = function.getParameters().get(i);
-            BoundExpression arg = boundArgs.get(i);
-            if (!arg.getType().equals(parameter.getType())) {
-                diagnostics.reportWrongArgumentType(
-                        syntax.getSpan(),
-                        syntax.getIdentifier().getText(),
-                        parameter.getName(),
-                        parameter.getType(),
-                        arg.getType());
-                return new BoundErrorExpression();
-            }
-        }
+        FunctionSymbol function = scope.getFunctionsByIdentifier(identifier);
         return new BoundCallExpression(function, boundArgs);
     }
 
@@ -350,11 +437,13 @@ public class Binder {
     }
 
     private TypeSymbol lookupType(String name) {
+        if (name == null)
+            return TypeSymbol.ERROR;
         return switch (name) {
             case "boolean" -> TypeSymbol.BOOLEAN;
             case "int" -> TypeSymbol.INTEGER;
             case "string" -> TypeSymbol.STRING;
-            default -> null;
+            default -> TypeSymbol.ERROR;
         };
     }
 }

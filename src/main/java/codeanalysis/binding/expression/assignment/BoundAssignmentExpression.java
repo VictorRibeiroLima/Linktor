@@ -4,7 +4,7 @@ import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.symbol.TypeSymbol;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 
 import java.util.List;
 

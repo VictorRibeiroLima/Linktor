@@ -3,7 +3,7 @@ package repl;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.diagnostics.text.TextLine;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
 import compilation.EvaluationResult;
@@ -64,7 +64,7 @@ public class LinktorRepl extends Repl {
             return false;
 
         SyntaxTree tree = SyntaxTree.parse(input.toString());
-        return tree.getRoot().getStatement().getLastToken().isMissing();
+        return tree.getRoot().getMembers().get(tree.getRoot().getMembers().size() - 1).getLastToken().isMissing();
     }
 
     protected boolean evaluateMetaCommand(String inLineInput) {

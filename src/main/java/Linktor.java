@@ -1,7 +1,7 @@
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.diagnostics.text.TextLine;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
 import compilation.EvaluationResult;

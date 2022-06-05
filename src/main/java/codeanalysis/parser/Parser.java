@@ -6,8 +6,12 @@ import codeanalysis.lexer.Lexer;
 import codeanalysis.syntax.*;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
+import codeanalysis.syntax.clause.ParameterClauseSyntax;
 import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.*;
+import codeanalysis.syntax.member.FunctionMemberSyntax;
+import codeanalysis.syntax.member.GlobalMemberSyntax;
+import codeanalysis.syntax.member.MemberSyntax;
 import codeanalysis.syntax.statements.*;
 
 import java.util.ArrayList;
@@ -39,9 +43,61 @@ public final class Parser {
     }
 
     public CompilationUnitSyntax parseCompilationUnit() {
-        StatementSyntax expression = parseStatement();
+        List<MemberSyntax> members = parseMembers();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
-        return new CompilationUnitSyntax(expression, endOfFileToken);
+        return new CompilationUnitSyntax(members, endOfFileToken);
+    }
+
+    private List<MemberSyntax> parseMembers() {
+        List<MemberSyntax> members = new ArrayList<>();
+        while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN) {
+            MemberSyntax member = parseMember();
+            members.add(member);
+        }
+        return List.copyOf(members);
+    }
+
+    private MemberSyntax parseMember() {
+        if (getCurrent().getKind() == SyntaxKind.FUNCTION_KEYWORD)
+            return parseFunctionDeclaration();
+        return parseGlobalStatement();
+
+    }
+
+    private MemberSyntax parseFunctionDeclaration() {
+        SyntaxToken function = matchToken(SyntaxKind.FUNCTION_KEYWORD);
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        SyntaxToken open = matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
+        SeparatedSyntaxList<ParameterClauseSyntax> params = parseParameterList();
+        SyntaxToken close = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
+        TypeClauseSyntax type = parseOptionalType();
+        BlockStatementSyntax body = parseBlockStatement();
+        return new FunctionMemberSyntax(function, identifier, open, params, close, type, body);
+    }
+
+    private SeparatedSyntaxList<ParameterClauseSyntax> parseParameterList() {
+        List<SyntaxNode> nodes = new ArrayList<>();
+        while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN &&
+                getCurrent().getKind() != SyntaxKind.CLOSE_PARENTHESIS_TOKEN) {
+            ParameterClauseSyntax parameter = parseParameter();
+            nodes.add(parameter);
+            if (getCurrent().getKind() != SyntaxKind.CLOSE_PARENTHESIS_TOKEN) {
+                SyntaxToken comma = matchToken(SyntaxKind.COMMA_TOKEN);
+                nodes.add(comma);
+            }
+        }
+        return new SeparatedSyntaxList<>(nodes);
+    }
+
+    private ParameterClauseSyntax parseParameter() {
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        TypeClauseSyntax type = parseType();
+        return new ParameterClauseSyntax(identifier, type);
+    }
+
+    private MemberSyntax parseGlobalStatement() {
+        StatementSyntax statement = parseStatement();
+        return new GlobalMemberSyntax(statement);
     }
 
 
@@ -122,12 +178,16 @@ public final class Parser {
     private TypeClauseSyntax parseOptionalType() {
         if (getCurrent().getKind() != SyntaxKind.COLON_TOKEN)
             return null;
+        return parseType();
+    }
+
+    private TypeClauseSyntax parseType() {
         SyntaxToken colon = matchToken(SyntaxKind.COLON_TOKEN);
         SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
         return new TypeClauseSyntax(colon, identifier);
     }
 
-    private StatementSyntax parseBlockStatement() {
+    private BlockStatementSyntax parseBlockStatement() {
         SyntaxToken open = matchToken(SyntaxKind.OPEN_BRACE_TOKEN);
         List<StatementSyntax> statements = new ArrayList<>();
         while (getCurrent().getKind() != SyntaxKind.END_OF_FILE_TOKEN &&

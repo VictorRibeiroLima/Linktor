@@ -1,19 +1,19 @@
-package codeanalysis.symbol;
+package codeanalysis.symbol.variable;
 
-public class VariableSymbol extends Symbol {
+import codeanalysis.symbol.Symbol;
+import codeanalysis.symbol.TypeSymbol;
+
+public abstract class VariableSymbol extends Symbol {
     private final String name;
 
     private final TypeSymbol type;
 
     private final boolean readOnly;
 
-    private final SymbolKind kind;
-
     public VariableSymbol(String name, TypeSymbol type, boolean readOnly) {
         this.name = name;
         this.type = type;
         this.readOnly = readOnly;
-        this.kind = SymbolKind.VARIABLE;
 
     }
 
@@ -27,10 +27,6 @@ public class VariableSymbol extends Symbol {
         return this == o;
     }
 
-    @Override
-    public SymbolKind getKind() {
-        return kind;
-    }
 
     @Override
     public String getName() {

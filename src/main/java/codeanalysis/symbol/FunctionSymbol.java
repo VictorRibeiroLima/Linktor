@@ -1,5 +1,7 @@
 package codeanalysis.symbol;
 
+import codeanalysis.syntax.member.FunctionMemberSyntax;
+
 import java.util.List;
 
 public class FunctionSymbol extends Symbol {
@@ -9,11 +11,22 @@ public class FunctionSymbol extends Symbol {
 
     private final List<ParameterSymbol> parameters;
 
+    private final FunctionMemberSyntax declaration;
+
     public FunctionSymbol(String name, List<ParameterSymbol> parameters, TypeSymbol type) {
+        this(name, parameters, type, null);
+    }
+
+    public FunctionSymbol(String name, List<ParameterSymbol> parameters, TypeSymbol type, FunctionMemberSyntax declaration) {
         this.name = name;
         this.type = type;
         this.parameters = List.copyOf(parameters);
         this.kind = SymbolKind.FUNCTION;
+        this.declaration = declaration;
+    }
+
+    public FunctionMemberSyntax getDeclaration() {
+        return declaration;
     }
 
     @Override
@@ -37,5 +50,10 @@ public class FunctionSymbol extends Symbol {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
     }
 }

@@ -37,6 +37,7 @@ public final class SyntaxFacts {
             case "else" -> SyntaxKind.ELSE_KEYWORD;
             case "while" -> SyntaxKind.WHILE_KEYWORD;
             case "for" -> SyntaxKind.FOR_KEYWORD;
+            case "function" -> SyntaxKind.FUNCTION_KEYWORD;
             default -> SyntaxKind.IDENTIFIER_TOKEN;
         };
     }
@@ -76,6 +77,7 @@ public final class SyntaxFacts {
             case FOR_KEYWORD -> "for";
             case COMMA_TOKEN -> ",";
             case COLON_TOKEN -> ":";
+            case FUNCTION_KEYWORD -> "function";
             default -> null;
         };
     }

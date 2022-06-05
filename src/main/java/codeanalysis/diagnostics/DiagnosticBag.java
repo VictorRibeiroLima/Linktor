@@ -99,19 +99,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
-    public void reportUndefinedFunction(TextSpan span, String name) {
-        String message = "ERROR: Undefined function '" + name + "' .";
-        report(span, message);
-    }
-
-    public void reportWrongArgumentCount(TextSpan span, String name, int expectedSize, int actualSize) {
-        String message = "ERROR: Wrong number of arguments for function '" + name + "' expected:" + expectedSize + ",received:" + actualSize + " .";
-        report(span, message);
-    }
-
-    public void reportWrongArgumentType(TextSpan span, String name, String argName, TypeSymbol expectedType, TypeSymbol actualType) {
-        String message = "ERROR: Wrong type of arguments for function '" + name + "' on parameter '" + argName +
-                "'. Expected type:" + expectedType + " received: " + actualType + ".";
+    public void reportUndefinedFunction(TextSpan span, String name, List<TypeSymbol> types) {
+        String usedTypes = parseTypesList(types);
+        String message = "ERROR: Undefined function '" + name + "' with parameters" + usedTypes + ".";
         report(span, message);
     }
 
@@ -123,5 +113,28 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     public void reportUndefinedType(TextSpan span, String text) {
         String message = "ERROR: Undefined type '" + text + "'.";
         report(span, message);
+    }
+
+    public void reportDuplicatedParam(TextSpan span, String name) {
+        String message = "ERROR: duplicated param name '" + name + "'.";
+        report(span, message);
+    }
+
+    public void reportFunctionAlreadyDeclared(TextSpan span, String name, List<TypeSymbol> paramTypes) {
+        String usedTypes = parseTypesList(paramTypes);
+
+        String message = "ERROR: Function '" + name + "' with parameters" + usedTypes + " already declared.";
+        report(span, message);
+    }
+
+    private String parseTypesList(List<TypeSymbol> paramTypes) {
+        StringBuilder usedTypes = new StringBuilder("[");
+        for (int i = 0; i < paramTypes.size(); i++) {
+            if (i > 0)
+                usedTypes.append(",");
+            usedTypes.append(paramTypes.get(i));
+        }
+        usedTypes.append("]");
+        return usedTypes.toString();
     }
 }
