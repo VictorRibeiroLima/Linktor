@@ -6,7 +6,7 @@ import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.List;
 
-public class ForConditionClause extends SyntaxNode {
+public class ForConditionClauseSyntax extends SyntaxNode {
 
     private final SyntaxNode variableNode;
     private final ExpressionSyntax conditionExpression;
@@ -14,7 +14,7 @@ public class ForConditionClause extends SyntaxNode {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public ForConditionClause(SyntaxNode variableNode, ExpressionSyntax conditionExpression, ExpressionSyntax incrementExpression) {
+    public ForConditionClauseSyntax(SyntaxNode variableNode, ExpressionSyntax conditionExpression, ExpressionSyntax incrementExpression) {
         this.variableNode = variableNode;
         this.conditionExpression = conditionExpression;
         this.incrementExpression = incrementExpression;

@@ -29,7 +29,8 @@ import codeanalysis.symbol.*;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
-import codeanalysis.syntax.clause.ForConditionClause;
+import codeanalysis.syntax.clause.ForConditionClauseSyntax;
+import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.*;
 
@@ -106,7 +107,7 @@ public class Binder {
         return new BoundForStatement(clause, thenStatement);
     }
 
-    private BoundForConditionClause bindForConditionClause(ForConditionClause condition) throws Exception {
+    private BoundForConditionClause bindForConditionClause(ForConditionClauseSyntax condition) throws Exception {
         BoundNode variable;
         this.scope = new BoundScope(scope);
         if (condition.getVariableNode().getKind() == SyntaxKind.VARIABLE_DECLARATION_STATEMENT)
@@ -145,12 +146,32 @@ public class Binder {
         boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
         String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
         boolean declare = !syntax.getIdentifier().isMissing();
-        BoundExpression initializer = bindExpression(syntax.getInitializer());
+        BoundExpression initializer = bindInitializer(syntax);
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (declare && !scope.declareVariable(variableSymbol))
             diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
 
         return new BoundVariableDeclarationStatement(variableSymbol, initializer);
+    }
+
+    private BoundExpression bindInitializer(VariableDeclarationStatementSyntax syntax) throws Exception {
+        TypeSymbol type = bindTypeClause(syntax.getType());
+        BoundExpression initializer;
+        if (type != null)
+            initializer = bindExpression(syntax.getInitializer(), type);
+        else
+            initializer = bindExpression(syntax.getInitializer());
+        return initializer;
+    }
+
+    private TypeSymbol bindTypeClause(TypeClauseSyntax clause) {
+        if (clause == null)
+            return null;
+        TypeSymbol type = lookupType(clause.getIdentifierToken().getText());
+        if (type == null)
+            diagnostics.reportUndefinedType(clause.getSpan(), clause.getIdentifierToken().getText());
+
+        return type;
     }
 
     private BoundBlockStatement bindBlockStatement(BlockStatementSyntax syntax) throws Exception {

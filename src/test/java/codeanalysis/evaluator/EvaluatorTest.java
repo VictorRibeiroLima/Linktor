@@ -157,6 +157,20 @@ class EvaluatorTest {
                                 }
                                 """,
                         "ERROR: Cannot convert 'string' into 'int'."
+                ), Arguments.of("""
+                                {
+                                    var a:int = ["10"];
+                                }
+                                """,
+                        "ERROR: Cannot convert 'string' into 'int'."
+                ), Arguments.of("""
+                                {
+                                   for(var i:string = [0];i<10;i=i+1){
+                                    
+                                   }
+                                }
+                                """,
+                        "ERROR: Cannot convert 'int' into 'string'."
                 )
         );
     }

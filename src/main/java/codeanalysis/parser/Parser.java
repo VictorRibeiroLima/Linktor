@@ -5,7 +5,8 @@ import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.syntax.*;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
-import codeanalysis.syntax.clause.ForConditionClause;
+import codeanalysis.syntax.clause.ForConditionClauseSyntax;
+import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.statements.*;
 
@@ -60,12 +61,12 @@ public final class Parser {
 
     private StatementSyntax parseForStatement() {
         SyntaxToken forKeyWord = matchToken(SyntaxKind.FOR_KEYWORD);
-        ForConditionClause condition = parseForConditionClause();
+        ForConditionClauseSyntax condition = parseForConditionClause();
         StatementSyntax thenStatement = parseStatement();
         return new ForStatementSyntax(forKeyWord, condition, thenStatement);
     }
 
-    private ForConditionClause parseForConditionClause() {
+    private ForConditionClauseSyntax parseForConditionClause() {
         matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
         SyntaxNode variableExpression;
         switch (getCurrent().getKind()) {
@@ -81,7 +82,7 @@ public final class Parser {
         matchToken(SyntaxKind.SEMICOLON_TOKEN);
         ExpressionSyntax increment = parseExpression();
         matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-        return new ForConditionClause(variableExpression, condition, increment);
+        return new ForConditionClauseSyntax(variableExpression, condition, increment);
     }
 
     private StatementSyntax parseWhileStatement() {
@@ -111,10 +112,19 @@ public final class Parser {
     private StatementSyntax parseVariableDeclarationStatement() {
         SyntaxToken keyword = matchToken(getCurrent().getKind());
         SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        TypeClauseSyntax type = parseOptionalType();
         SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
         ExpressionSyntax initializer = parseExpression();
-        return new VariableDeclarationStatementSyntax(keyword, identifier, equals, initializer);
+        return new VariableDeclarationStatementSyntax(keyword, identifier, type, equals, initializer);
 
+    }
+
+    private TypeClauseSyntax parseOptionalType() {
+        if (getCurrent().getKind() != SyntaxKind.COLON_TOKEN)
+            return null;
+        SyntaxToken colon = matchToken(SyntaxKind.COLON_TOKEN);
+        SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        return new TypeClauseSyntax(colon, identifier);
     }
 
     private StatementSyntax parseBlockStatement() {

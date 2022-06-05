@@ -119,4 +119,9 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         String message = "ERROR: Expression must have a value.";
         report(span, message);
     }
+
+    public void reportUndefinedType(TextSpan span, String text) {
+        String message = "ERROR: Undefined type '" + text + "'.";
+        report(span, message);
+    }
 }
