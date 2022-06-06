@@ -19,6 +19,7 @@ public final class BoundBinaryOperator {
             new BoundBinaryOperator(SyntaxKind.MINUS_TOKEN, BoundBinaryOperatorKind.SUBTRACTION, TypeSymbol.INTEGER),
             new BoundBinaryOperator(SyntaxKind.STAR_TOKEN, BoundBinaryOperatorKind.MULTIPLICATION, TypeSymbol.INTEGER),
             new BoundBinaryOperator(SyntaxKind.SLASH_TOKEN, BoundBinaryOperatorKind.DIVISION, TypeSymbol.INTEGER),
+            new BoundBinaryOperator(SyntaxKind.PERCENTAGE_TOKEN, BoundBinaryOperatorKind.MOD, TypeSymbol.INTEGER),
             new BoundBinaryOperator(SyntaxKind.HAT_TOKEN, BoundBinaryOperatorKind.BITWISE_XOR, TypeSymbol.INTEGER),
             new BoundBinaryOperator(SyntaxKind.PIPE_TOKEN, BoundBinaryOperatorKind.BITWISE_OR,
                     TypeSymbol.BOOLEAN),

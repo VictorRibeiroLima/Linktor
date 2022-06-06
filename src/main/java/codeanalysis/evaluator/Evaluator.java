@@ -231,6 +231,8 @@ public final class Evaluator {
                 return (int) left - (int) right;
             case DIVISION:
                 return (int) left / (int) right;
+            case MOD:
+                return (int) left % (int) right;
             case MULTIPLICATION:
                 return (int) left * (int) right;
             case LESS_THAN:

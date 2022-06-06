@@ -17,7 +17,7 @@ public final class SyntaxFacts {
 
     public static int getBinaryOperatorPrecedence(SyntaxKind kind) {
         return switch (kind) {
-            case STAR_TOKEN, SLASH_TOKEN -> 5;
+            case STAR_TOKEN, SLASH_TOKEN, PERCENTAGE_TOKEN -> 5;
             case PLUS_TOKEN, MINUS_TOKEN -> 4;
             case EQUAL_EQUAL_TOKEN, EXCLAMATION_EQUAL_TOKEN, LESS_TOKEN, LESS_EQUAL_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN ->
                     3;
@@ -78,6 +78,7 @@ public final class SyntaxFacts {
             case COMMA_TOKEN -> ",";
             case COLON_TOKEN -> ":";
             case FUNCTION_KEYWORD -> "function";
+            case PERCENTAGE_TOKEN -> "%";
             default -> null;
         };
     }
