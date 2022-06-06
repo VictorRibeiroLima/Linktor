@@ -31,8 +31,6 @@ import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
-import codeanalysis.symbol.variable.GlobalVariableSymbol;
-import codeanalysis.symbol.variable.LocalVariableSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
@@ -52,7 +50,6 @@ public class Binder {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
     private BoundScope scope;
-    private final FunctionSymbol function;
 
     private Binder(BoundScope parent) {
         this(parent, null);
@@ -60,7 +57,6 @@ public class Binder {
 
     private Binder(BoundScope parent, FunctionSymbol function) {
         scope = new BoundScope(parent);
-        this.function = function;
         if (function != null) {
             for (ParameterSymbol p : function.getParameters())
                 scope.declareVariable(p);
@@ -247,9 +243,7 @@ public class Binder {
         boolean declare = !syntax.getIdentifier().isMissing();
         String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
 
-        VariableSymbol variableSymbol = function != null
-                ? new LocalVariableSymbol(name, initializer.getType(), isReadOnly)
-                : new GlobalVariableSymbol(name, initializer.getType(), isReadOnly);
+        VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (declare && !scope.declareVariable(variableSymbol))
             diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
         return variableSymbol;
@@ -337,7 +331,7 @@ public class Binder {
         if (syntax.getArgs().getCount() == 1 && type != TypeSymbol.ERROR)
             return bindConversion(type, syntax.getArgs().get(0));
 
-        
+
         List<BoundExpression> boundArgs = new ArrayList<>();
         List<TypeSymbol> usedTypes = new ArrayList<>();
 

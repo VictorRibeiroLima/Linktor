@@ -19,7 +19,6 @@ import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.ParameterSymbol;
-import codeanalysis.symbol.SymbolKind;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 
@@ -30,18 +29,16 @@ import java.util.Stack;
 
 public final class Evaluator {
     private final BoundProgram root;
-    private final Map<VariableSymbol, Object> variables;
-
-    private final Stack<Map<VariableSymbol, Object>> locals = new Stack<>();
 
     private Scanner scanner;
 
     private Object lastValue;
 
+    private final Stack<Map<VariableSymbol, Object>> callStack = new Stack<>();
+
     public Evaluator(BoundProgram root, Map<VariableSymbol, Object> variables) {
         this.root = root;
-        this.variables = variables;
-        this.locals.add(new HashMap<>());
+        callStack.add(variables);
     }
 
     public Object evaluate() throws Exception {
@@ -92,12 +89,8 @@ public final class Evaluator {
 
     private void evaluateVariableDeclarationStatement(BoundVariableDeclarationStatement statement) throws Exception {
         Object value = evaluateExpression(statement.getInitializer());
-        if (statement.getVariable().getKind() != SymbolKind.GLOBAL_VARIABLE) {
-            Map<VariableSymbol, Object> locals = this.locals.peek();
-            locals.put(statement.getVariable(), value);
-        } else {
-            variables.put(statement.getVariable(), value);
-        }
+        Map<VariableSymbol, Object> variables = callStack.peek();
+        variables.put(statement.getVariable(), value);
         lastValue = value;
     }
 
@@ -148,16 +141,16 @@ public final class Evaluator {
             int max = (int) evaluateExpression(node.getArgs().get(0));
             return (int) Math.floor(Math.random() * (max + 1));
         } else {
-            Map<VariableSymbol, Object> locals = new HashMap<>();
+            Map<VariableSymbol, Object> variables = new HashMap<>(callStack.get(0));
             for (int i = 0; i < node.getArgs().size(); i++) {
                 ParameterSymbol param = node.getFunction().getParameters().get(i);
                 Object value = evaluateExpression(node.getArgs().get(i));
-                locals.put(param, value);
+                variables.put(param, value);
             }
-            this.locals.add(locals);
+            callStack.add(variables);
             BoundBlockStatement statement = root.getFunctionsBodies().get(node.getFunction());
             Object result = evaluateBlockStatement(statement);
-            this.locals.pop();
+            callStack.pop();
             return result;
         }
     }
@@ -167,24 +160,14 @@ public final class Evaluator {
     }
 
     private Object evaluateVariableExpression(BoundVariableExpression v) {
-
-        if (v.getVariable().getKind() != SymbolKind.GLOBAL_VARIABLE) {
-            if (!locals.isEmpty()) {
-                Map<VariableSymbol, Object> local = this.locals.peek();
-                return local.get(v.getVariable());
-            }
-        }
+        Map<VariableSymbol, Object> variables = callStack.peek();
         return variables.get(v.getVariable());
     }
 
     private Object evaluateAssignmentExpression(BoundAssignmentExpression a) throws Exception {
+        Map<VariableSymbol, Object> variables = callStack.peek();
         Object value = evaluateExpression(a.getBoundExpression());
-        if (a.getVariable().getKind() != SymbolKind.GLOBAL_VARIABLE) {
-            Map<VariableSymbol, Object> local = this.locals.peek();
-            local.put(a.getVariable(), value);
-        } else {
-            variables.put(a.getVariable(), value);
-        }
+        variables.put(a.getVariable(), value);
         return value;
     }
 
