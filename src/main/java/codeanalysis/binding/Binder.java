@@ -199,14 +199,15 @@ public class Binder {
     }
 
     private BoundStatement bindForStatement(ForStatementSyntax syntax) throws Exception {
+        this.scope = new BoundScope(scope);
         BoundForConditionClause clause = bindForConditionClause(syntax.getCondition());
         BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        scope = scope.getParent();
         return new BoundForStatement(clause, thenStatement);
     }
 
     private BoundForConditionClause bindForConditionClause(ForConditionClauseSyntax condition) throws Exception {
         BoundNode variable;
-        this.scope = new BoundScope(scope);
         if (condition.getVariableNode().getKind() == SyntaxKind.VARIABLE_DECLARATION_STATEMENT)
             variable = bindVariableDeclarationStatement((VariableDeclarationStatementSyntax) condition.getVariableNode());
         else
