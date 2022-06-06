@@ -70,13 +70,26 @@ public class Binder {
     public static BoundGlobalScope bindGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
+        List<FunctionSymbol> functionSymbols = getBoundFunctions(unit, binder);
         List<BoundStatement> statements = getBoundStatements(unit, binder);
         List<BoundStatement> statement = List.copyOf(statements);
-        List<FunctionSymbol> functions = binder.scope.getDeclaredFunctions();
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
 
-        return new BoundGlobalScope(previous, diagnostics, variables, functions, statement);
+        return new BoundGlobalScope(previous, diagnostics, variables, functionSymbols, statement);
+    }
+
+    private static List<FunctionSymbol> getBoundFunctions(CompilationUnitSyntax unit, Binder binder) {
+        List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
+        unit.getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof FunctionMemberSyntax f)
+                functionMembers.add(f);
+        });
+        for (FunctionMemberSyntax f : functionMembers)
+            binder.bindFunctionDeclaration(f);
+
+        return binder.scope.getDeclaredFunctions();
+
     }
 
     public static BoundProgram bindProgram(BoundGlobalScope global) throws Exception {
@@ -100,17 +113,12 @@ public class Binder {
     }
 
     private static List<BoundStatement> getBoundStatements(CompilationUnitSyntax unit, Binder binder) throws Exception {
-        List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
         List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
         List<BoundStatement> statements = new ArrayList<>();
         unit.getMembers().forEach(memberSyntax -> {
-            if (memberSyntax instanceof FunctionMemberSyntax f)
-                functionMembers.add(f);
-            else if (memberSyntax instanceof GlobalMemberSyntax g)
+            if (memberSyntax instanceof GlobalMemberSyntax g)
                 globalMembers.add(g);
         });
-        for (FunctionMemberSyntax f : functionMembers)
-            binder.bindFunctionDeclaration(f);
 
         for (GlobalMemberSyntax g : globalMembers) {
             BoundStatement s = binder.bindStatement(g.getStatement());
