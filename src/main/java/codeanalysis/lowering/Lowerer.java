@@ -43,8 +43,7 @@ public final class Lowerer extends BoundTreeRewriter {
             if (current instanceof BoundBlockStatement b) {
                 List<BoundStatement> statementsCopy = new ArrayList<>(b.getStatements());
                 Collections.reverse(statementsCopy);
-                for (BoundStatement s : statementsCopy)
-                    stack.add(s);
+                stack.addAll(statementsCopy);
             } else {
                 statements.add(current);
             }
@@ -54,7 +53,7 @@ public final class Lowerer extends BoundTreeRewriter {
 
     @Override
     protected BoundStatement rewriteIfStatement(BoundIfStatement statement) throws Exception {
-        BoundBlockStatement result = null;
+        BoundBlockStatement result;
         if (statement.getElseClause() == null) {
             /*
             {
@@ -122,26 +121,28 @@ public final class Lowerer extends BoundTreeRewriter {
                 }
              }
              ----->
-
-             jumpTo check
              continue:
+             jumpTo check
+             body:
              <loop>
              check:
              jumpToTrue <condition> continue:
              end:
          */
-        BoundLabel checkLabel = genLabel();
         BoundLabel continueLabel = statement.getContinueLabel();
+        BoundLabel checkLabel = genLabel();
+        BoundLabel bodyLabel = genLabel();
         BoundLabel endLabel = statement.getBreakLabel();
         BoundJumpToStatement jumpToCheck = new BoundJumpToStatement(checkLabel);
         BoundConditionalJumpToStatement jumpToTrue =
-                new BoundConditionalJumpToStatement(continueLabel, statement.getCondition());
-        BoundLabelDeclarationStatement check = new BoundLabelDeclarationStatement(checkLabel);
+                new BoundConditionalJumpToStatement(bodyLabel, statement.getCondition());
         BoundLabelDeclarationStatement continueS = new BoundLabelDeclarationStatement(continueLabel);
+        BoundLabelDeclarationStatement check = new BoundLabelDeclarationStatement(checkLabel);
+        BoundLabelDeclarationStatement bodyS = new BoundLabelDeclarationStatement(bodyLabel);
         BoundLabelDeclarationStatement end = new BoundLabelDeclarationStatement(endLabel);
 
         BoundBlockStatement result = new BoundBlockStatement(
-                List.of(jumpToCheck, continueS, statement.getThenStatement(), check, jumpToTrue, end)
+                List.of(continueS, jumpToCheck, bodyS, statement.getThenStatement(), check, jumpToTrue, end)
         );
         return rewriteStatement(result);
     }
