@@ -46,7 +46,7 @@ class SyntaxFactsTest {
     @Test
     void getBinaryOperatorKinds() {
         List<SyntaxKind> binaryOperatorKinds = SyntaxFacts.getBinaryOperatorKinds();
-        assertEquals(15, binaryOperatorKinds.size());
+        assertEquals(16, binaryOperatorKinds.size());
     }
 
     private static Stream<Arguments> provideKind() {

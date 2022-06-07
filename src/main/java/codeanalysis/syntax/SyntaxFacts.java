@@ -81,6 +81,8 @@ public final class SyntaxFacts {
             case COLON_TOKEN -> ":";
             case FUNCTION_KEYWORD -> "function";
             case PERCENTAGE_TOKEN -> "%";
+            case BREAK_KEYWORD -> "break";
+            case CONTINUE_KEYWORD -> "continue";
             default -> null;
         };
     }
