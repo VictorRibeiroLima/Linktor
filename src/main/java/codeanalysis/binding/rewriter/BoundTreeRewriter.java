@@ -67,7 +67,7 @@ public abstract class BoundTreeRewriter {
         if (clause.equals(statement.getCondition()) && then.equals(statement.getThenStatement()))
             return statement;
 
-        return new BoundForStatement(clause, then);
+        return new BoundForStatement(clause, then, statement.getBreakLabel(), statement.getContinueLabel());
     }
 
     protected BoundStatement rewriteWhileStatement(BoundWhileStatement statement) throws Exception {
@@ -76,7 +76,7 @@ public abstract class BoundTreeRewriter {
         if (condition.equals(statement.getCondition()) && then.equals(statement.getThenStatement()))
             return statement;
 
-        return new BoundWhileStatement(condition, then);
+        return new BoundWhileStatement(condition, then, statement.getBreakLabel(), statement.getContinueLabel());
     }
 
     protected BoundStatement rewriteIfStatement(BoundIfStatement statement) throws Exception {

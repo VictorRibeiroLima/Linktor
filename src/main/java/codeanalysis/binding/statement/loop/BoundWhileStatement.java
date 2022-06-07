@@ -4,10 +4,11 @@ import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.statement.BoundStatement;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
 
 import java.util.List;
 
-public class BoundWhileStatement extends BoundStatement {
+public class BoundWhileStatement extends BoundLoopStatement {
     private final BoundExpression condition;
 
     private final BoundStatement thenStatement;
@@ -16,7 +17,8 @@ public class BoundWhileStatement extends BoundStatement {
 
     private final List<BoundNode> children;
 
-    public BoundWhileStatement(BoundExpression condition, BoundStatement thenStatement) {
+    public BoundWhileStatement(BoundExpression condition, BoundStatement thenStatement, BoundLabel breakLabel, BoundLabel continueLabel) {
+        super(breakLabel, continueLabel);
         this.condition = condition;
         this.thenStatement = thenStatement;
         this.kind = BoundNodeKind.WHILE_STATEMENT;

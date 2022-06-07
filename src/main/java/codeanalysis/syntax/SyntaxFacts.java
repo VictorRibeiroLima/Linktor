@@ -38,6 +38,8 @@ public final class SyntaxFacts {
             case "while" -> SyntaxKind.WHILE_KEYWORD;
             case "for" -> SyntaxKind.FOR_KEYWORD;
             case "function" -> SyntaxKind.FUNCTION_KEYWORD;
+            case "continue" -> SyntaxKind.CONTINUE_KEYWORD;
+            case "break" -> SyntaxKind.BREAK_KEYWORD;
             default -> SyntaxKind.IDENTIFIER_TOKEN;
         };
     }

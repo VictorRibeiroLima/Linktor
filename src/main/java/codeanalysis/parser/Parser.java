@@ -108,6 +108,8 @@ public final class Parser {
             case IF_KEYWORD -> parseIfStatement();
             case WHILE_KEYWORD -> parseWhileStatement();
             case FOR_KEYWORD -> parseForStatement();
+            case BREAK_KEYWORD -> parseBreakStatement();
+            case CONTINUE_KEYWORD -> parseContinueStatement();
             default -> parseExpressionStatement();
         };
         if (getCurrent().getKind() == SyntaxKind.SEMICOLON_TOKEN)
@@ -173,6 +175,16 @@ public final class Parser {
         ExpressionSyntax initializer = parseExpression();
         return new VariableDeclarationStatementSyntax(keyword, identifier, type, equals, initializer);
 
+    }
+
+    private StatementSyntax parseBreakStatement() {
+        SyntaxToken breakKeyword = matchToken(SyntaxKind.BREAK_KEYWORD);
+        return new BreakStatementSyntax(breakKeyword);
+    }
+
+    private StatementSyntax parseContinueStatement() {
+        SyntaxToken continueKeyword = matchToken(SyntaxKind.CONTINUE_KEYWORD);
+        return new ContinueStatementSyntax(continueKeyword);
     }
 
     private TypeClauseSyntax parseOptionalType() {

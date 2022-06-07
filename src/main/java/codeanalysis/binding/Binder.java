@@ -21,6 +21,8 @@ import codeanalysis.binding.statement.conditional.BoundElseClause;
 import codeanalysis.binding.statement.conditional.BoundIfStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
@@ -46,10 +48,15 @@ import codeanalysis.syntax.statements.*;
 import java.util.*;
 
 public class Binder {
+    private record LoopStack(BoundLabel breakLabel, BoundLabel continueLabel) {
+    }
 
+    private final Stack<LoopStack> loopStack = new Stack<>();
+    private int labelCount = 0;
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
     private BoundScope scope;
+
 
     private Binder(BoundScope parent) {
         this(parent, null);
@@ -185,6 +192,10 @@ public class Binder {
 
     }
 
+    private BoundStatement bindErrorStatement() {
+        return new BoundExpressionStatement(new BoundErrorExpression());
+    }
+
     public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
         return switch (syntax.getKind()) {
             case BLOCK_STATEMENT -> bindBlockStatement((BlockStatementSyntax) syntax);
@@ -194,6 +205,8 @@ public class Binder {
             case IF_STATEMENT -> bindIfStatement((IfStatementSyntax) syntax);
             case WHILE_STATEMENT -> bindWhileStatement((WhileStatementSyntax) syntax);
             case FOR_STATEMENT -> bindForStatement((ForStatementSyntax) syntax);
+            case CONTINUE_STATEMENT -> bindContinueStatement((ContinueStatementSyntax) syntax);
+            case BREAK_STATEMENT -> bindBreakStatement((BreakStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
     }
@@ -201,9 +214,12 @@ public class Binder {
     private BoundStatement bindForStatement(ForStatementSyntax syntax) throws Exception {
         this.scope = new BoundScope(scope);
         BoundForConditionClause clause = bindForConditionClause(syntax.getCondition());
-        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
+        BoundLabel[] labels = genLoopLabels();
+        BoundLabel breakLabel = labels[0];
+        BoundLabel continueLabel = labels[1];
+        BoundStatement body = bindLoopBody(syntax.getThenStatement(), breakLabel, continueLabel);
         scope = scope.getParent();
-        return new BoundForStatement(clause, thenStatement);
+        return new BoundForStatement(clause, body, breakLabel, continueLabel);
     }
 
     private BoundForConditionClause bindForConditionClause(ForConditionClauseSyntax condition) throws Exception {
@@ -220,8 +236,41 @@ public class Binder {
 
     private BoundStatement bindWhileStatement(WhileStatementSyntax syntax) throws Exception {
         BoundExpression condition = bindExpression(syntax.getCondition(), TypeSymbol.BOOLEAN);
-        BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
-        return new BoundWhileStatement(condition, thenStatement);
+        BoundLabel[] labels = genLoopLabels();
+        BoundLabel breakLabel = labels[0];
+        BoundLabel continueLabel = labels[1];
+        BoundStatement body = bindLoopBody(syntax.getThenStatement(), breakLabel, continueLabel);
+        return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
+    }
+
+    private BoundLabel[] genLoopLabels() {
+        labelCount++;
+        BoundLabel breakLabel = new BoundLabel("break" + labelCount);
+        BoundLabel continueLabel = new BoundLabel("continue" + labelCount);
+        return new BoundLabel[]{breakLabel, continueLabel};
+    }
+
+    private BoundStatement bindLoopBody(StatementSyntax syntax, BoundLabel breakLabel, BoundLabel continueLabel) throws Exception {
+        loopStack.push(new LoopStack(breakLabel, continueLabel));
+        BoundStatement body = bindStatement(syntax);
+        loopStack.pop();
+        return body;
+    }
+
+    private BoundStatement bindBreakStatement(BreakStatementSyntax syntax) {
+        if (loopStack.isEmpty()) {
+            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getSpan(), syntax.getKeyword().getText());
+            return bindErrorStatement();
+        }
+        return new BoundJumpToStatement(loopStack.peek().breakLabel());
+    }
+
+    private BoundStatement bindContinueStatement(ContinueStatementSyntax syntax) {
+        if (loopStack.isEmpty()) {
+            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getSpan(), syntax.getKeyword().getText());
+            return bindErrorStatement();
+        }
+        return new BoundJumpToStatement(loopStack.peek().continueLabel());
     }
 
 

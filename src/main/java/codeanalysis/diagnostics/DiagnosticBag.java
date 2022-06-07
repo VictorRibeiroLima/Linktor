@@ -127,6 +127,11 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
+    public void reportInvalidBreakOrContinue(TextSpan span, String text) {
+        String message = "ERROR: Keyword '" + text + "' outside loop.";
+        report(span, message);
+    }
+
     private String parseTypesList(List<TypeSymbol> paramTypes) {
         StringBuilder usedTypes = new StringBuilder("[");
         for (int i = 0; i < paramTypes.size(); i++) {

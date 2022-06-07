@@ -131,8 +131,8 @@ public final class Lowerer extends BoundTreeRewriter {
              end:
          */
         BoundLabel checkLabel = genLabel();
-        BoundLabel continueLabel = genLabel();
-        BoundLabel endLabel = genLabel();
+        BoundLabel continueLabel = statement.getContinueLabel();
+        BoundLabel endLabel = statement.getBreakLabel();
         BoundJumpToStatement jumpToCheck = new BoundJumpToStatement(checkLabel);
         BoundConditionalJumpToStatement jumpToTrue =
                 new BoundConditionalJumpToStatement(continueLabel, statement.getCondition());
@@ -157,11 +157,15 @@ public final class Lowerer extends BoundTreeRewriter {
             statements.add(variableDeclaration);
         }
         BoundExpression condition = clause.getConditionExpression();
+        BoundLabelDeclarationStatement continueLabel = new BoundLabelDeclarationStatement(statement.getContinueLabel());
         BoundStatement increment = new BoundExpressionStatement(clause.getIncrementExpression());
         BoundBlockStatement whileBlock = new BoundBlockStatement(
-                List.of(statement.getThenStatement(), increment)
+                List.of(
+                        statement.getThenStatement(),
+                        continueLabel,
+                        increment)
         );
-        BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock);
+        BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock, statement.getBreakLabel(), genLabel());
         statements.add(whileStatement);
 
         BoundBlockStatement block = new BoundBlockStatement(List.copyOf(statements));
