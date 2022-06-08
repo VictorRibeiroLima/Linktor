@@ -54,7 +54,7 @@ class LexerTest {
     void lexTokenPairs(SyntaxKind k1, String t1, SyntaxKind k2, String t2) {
         String text = t1 + t2;
         List<SyntaxToken> tokens = SyntaxTree.parseTokens(text);
-        assertEquals(tokens.size(), 2);
+        assertEquals(2, tokens.size());
         assertEquals(tokens.get(0).getKind(), k1);
         assertEquals(tokens.get(0).getText(), t1);
         assertEquals(tokens.get(1).getKind(), k2);
@@ -178,9 +178,27 @@ class LexerTest {
             return true;
         if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_TOKEN)
             return true;
+        if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_PIPE_TOKEN)
+            return true;
         if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.MINUS_MINUS_TOKEN)
             return true;
+        if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.MINUS_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.PLUS_TOKEN)
+            return true;
         if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.PLUS_PLUS_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.EQUAL_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.PLUS_EQUALS_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.EQUAL_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.MINUS_EQUALS_TOKEN)
             return true;
         return k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN;
     }

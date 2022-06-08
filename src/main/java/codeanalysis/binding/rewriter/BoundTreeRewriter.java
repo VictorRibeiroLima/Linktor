@@ -5,6 +5,7 @@ import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
@@ -156,6 +157,8 @@ public abstract class BoundTreeRewriter {
             case LITERAL_EXPRESSION -> rewriteLiteralExpression((BoundLiteralExpression) expression);
             case VARIABLE_EXPRESSION -> rewriteVariableExpression((BoundVariableExpression) expression);
             case ASSIGNMENT_EXPRESSION -> rewriteAssignmentExpression((BoundAssignmentExpression) expression);
+            case OPERATION_ASSIGNMENT_EXPRESSION ->
+                    rewriteOperationAssignmentExpression((BoundOperationAssignmentExpression) expression);
             case UNARY_EXPRESSION -> rewriteUnaryExpression((BoundUnaryExpression) expression);
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
             case CALL_EXPRESSION -> rewriteCallExpression((BoundCallExpression) expression);
@@ -167,11 +170,11 @@ public abstract class BoundTreeRewriter {
         };
     }
 
-    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) {
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) throws Exception {
         return expression;
     }
 
-    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) {
+    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) throws Exception {
         return expression;
     }
 
@@ -216,6 +219,13 @@ public abstract class BoundTreeRewriter {
     }
 
     protected BoundExpression rewriteAssignmentExpression(BoundAssignmentExpression node) throws Exception {
+        BoundExpression expression = rewriteExpression(node.getBoundExpression());
+        if (expression.equals(node.getBoundExpression()))
+            return node;
+        return new BoundAssignmentExpression(node.getVariable(), expression);
+    }
+
+    protected BoundExpression rewriteOperationAssignmentExpression(BoundOperationAssignmentExpression node) throws Exception {
         BoundExpression expression = rewriteExpression(node.getBoundExpression());
         if (expression.equals(node.getBoundExpression()))
             return node;

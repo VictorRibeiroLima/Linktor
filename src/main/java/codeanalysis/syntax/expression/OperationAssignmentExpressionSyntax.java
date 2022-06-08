@@ -6,10 +6,10 @@ import codeanalysis.syntax.SyntaxToken;
 
 import java.util.List;
 
-public class AssignmentExpressionSyntax extends ExpressionSyntax {
+public class OperationAssignmentExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken identifierToken;
 
-    private final SyntaxToken equalsToken;
+    private final SyntaxToken operationToken;
 
     private final ExpressionSyntax expression;
 
@@ -17,11 +17,11 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
 
     private final List<SyntaxNode> children;
 
-    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken equalsToken, ExpressionSyntax expression) {
+    public OperationAssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken equalsToken, ExpressionSyntax expression) {
         this.identifierToken = identifierToken;
-        this.equalsToken = equalsToken;
+        this.operationToken = equalsToken;
         this.expression = expression;
-        this.kind = SyntaxKind.ASSIGNMENT_EXPRESSION;
+        this.kind = SyntaxKind.OPERATION_ASSIGNMENT_EXPRESSION;
         this.children = List.of(identifierToken, equalsToken, expression);
     }
 
@@ -29,8 +29,8 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
         return identifierToken;
     }
 
-    public SyntaxToken getEqualsToken() {
-        return equalsToken;
+    public SyntaxToken getOperationToken() {
+        return operationToken;
     }
 
     public ExpressionSyntax getExpression() {

@@ -126,15 +126,10 @@ public final class Parser {
 
     private ForConditionClauseSyntax parseForConditionClause() {
         matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
-        SyntaxNode variableExpression;
-        switch (getCurrent().getKind()) {
-            case VAR_KEYWORD:
-            case LET_KEYWORD:
-                variableExpression = parseVariableDeclarationStatement();
-                break;
-            default:
-                variableExpression = parseNameExpression();
-        }
+        SyntaxNode variableExpression = switch (getCurrent().getKind()) {
+            case VAR_KEYWORD, LET_KEYWORD -> parseVariableDeclarationStatement();
+            default -> parseNameExpression();
+        };
         matchToken(SyntaxKind.SEMICOLON_TOKEN);
         ExpressionSyntax condition = parseExpression();
         matchToken(SyntaxKind.SEMICOLON_TOKEN);
@@ -221,13 +216,20 @@ public final class Parser {
     }
 
     private ExpressionSyntax parseAssignmentExpression() {
-        if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN &&
-                peek(1).getKind() == SyntaxKind.EQUAL_TOKEN) {
-            SyntaxToken identifier = nextToken();
-            SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
-            ExpressionSyntax right = parseAssignmentExpression();
-            return new AssignmentExpressionSyntax(identifier, equals, right);
+        if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN) {
+            if (peek(1).getKind() == SyntaxKind.EQUAL_TOKEN) {
+                var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+                var equals = matchToken(SyntaxKind.EQUAL_TOKEN);
+                var right = parseAssignmentExpression();
+                return new AssignmentExpressionSyntax(identifier, equals, right);
+            } else if (peek(1).getKind() == SyntaxKind.PLUS_EQUALS_TOKEN || peek(1).getKind() == SyntaxKind.MINUS_EQUALS_TOKEN) {
+                var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+                var operation = matchToken(getCurrent().getKind());
+                var right = parseAssignmentExpression();
+                return new OperationAssignmentExpressionSyntax(identifier, operation, right);
+            }
         }
+
         return parseBinaryExpression();
     }
 

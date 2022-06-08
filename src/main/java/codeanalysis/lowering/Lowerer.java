@@ -3,6 +3,8 @@ package codeanalysis.lowering;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentOperatorKind;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
@@ -60,7 +62,25 @@ public final class Lowerer extends BoundTreeRewriter {
         return new BoundBlockStatement(List.copyOf(statements));
     }
 
-    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) {
+    protected BoundExpression rewriteOperationAssignmentExpression(BoundOperationAssignmentExpression node) throws Exception {
+        /*
+            a += 2;
+            a=a+2;
+         */
+        var left = new BoundVariableExpression(node.getVariable());
+        BoundBinaryOperator operator;
+        var right = node.getBoundExpression();
+        if (node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.INCREMENT || node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.CONCATENATION)
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        else
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(node.getVariable(), binary);
+        return rewriteExpression(assignment);
+    }
+
+    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) throws Exception {
         /*
             i++
             --------
@@ -80,11 +100,12 @@ public final class Lowerer extends BoundTreeRewriter {
         var binary = new BoundBinaryExpression(left, operator, right);
 
         var assignment = new BoundAssignmentExpression(expression.getLeft(), binary);
-        return new BoundBinaryExpression(assignment, returnOperator, right);
+        var result = new BoundBinaryExpression(assignment, returnOperator, right);
+        return rewriteExpression(result);
     }
 
     @Override
-    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) {
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) throws Exception {
         /*
             i++
             --------
@@ -99,7 +120,8 @@ public final class Lowerer extends BoundTreeRewriter {
             operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
         var binary = new BoundBinaryExpression(left, operator, right);
 
-        return new BoundAssignmentExpression(expression.getRight(), binary);
+        var assignment = new BoundAssignmentExpression(expression.getRight(), binary);
+        return rewriteExpression(assignment);
     }
 
     @Override

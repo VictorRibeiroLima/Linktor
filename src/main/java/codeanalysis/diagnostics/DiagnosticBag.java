@@ -105,6 +105,11 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
+    public void reportUndefinedOperator(TextSpan span, String name, TypeSymbol type) {
+        String message = "ERROR: Undefined operator '" + name + "' for type '" + type + "'.";
+        report(span, message);
+    }
+
     public void reportExpressionMustHaveValue(TextSpan span) {
         String message = "ERROR: Expression must have a value.";
         report(span, message);

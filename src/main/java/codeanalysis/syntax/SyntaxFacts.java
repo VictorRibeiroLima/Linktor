@@ -49,8 +49,10 @@ public final class SyntaxFacts {
             case SEMICOLON_TOKEN -> ";";
             case PLUS_TOKEN -> "+";
             case PLUS_PLUS_TOKEN -> "++";
+            case PLUS_EQUALS_TOKEN -> "+=";
             case MINUS_TOKEN -> "-";
             case MINUS_MINUS_TOKEN -> "--";
+            case MINUS_EQUALS_TOKEN -> "-=";
             case SLASH_TOKEN -> "/";
             case STAR_TOKEN -> "*";
             case OPEN_PARENTHESIS_TOKEN -> "(";

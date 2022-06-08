@@ -47,6 +47,9 @@ public final class Lexer {
                 if (lookahead() == '+') {
                     kind = SyntaxKind.PLUS_PLUS_TOKEN;
                     next();
+                } else if (lookahead() == '=') {
+                    kind = SyntaxKind.PLUS_EQUALS_TOKEN;
+                    next();
                 } else {
                     kind = SyntaxKind.PLUS_TOKEN;
                 }
@@ -56,6 +59,9 @@ public final class Lexer {
             case '-': {
                 if (lookahead() == '-') {
                     kind = SyntaxKind.MINUS_MINUS_TOKEN;
+                    next();
+                } else if (lookahead() == '=') {
+                    kind = SyntaxKind.MINUS_EQUALS_TOKEN;
                     next();
                 } else {
                     kind = SyntaxKind.MINUS_TOKEN;

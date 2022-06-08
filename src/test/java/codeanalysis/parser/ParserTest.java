@@ -298,6 +298,10 @@ class ParserTest {
         List<Arguments> args = new ArrayList<>();
         for (SyntaxKind bo1 : bos1) {
             for (SyntaxKind bo2 : bos2) {
+                if (bo1 == SyntaxKind.PLUS_TOKEN && bo2 == SyntaxKind.PLUS_TOKEN)
+                    continue;
+                else if (bo1 == SyntaxKind.MINUS_TOKEN && bo2 == SyntaxKind.MINUS_TOKEN)
+                    continue;
                 args.add(Arguments.of(bo1, bo2));
             }
         }
@@ -310,6 +314,10 @@ class ParserTest {
         List<Arguments> args = new ArrayList<>();
         for (SyntaxKind bo1 : bos1) {
             for (SyntaxKind bo2 : bos2) {
+                if (bo1 == SyntaxKind.PLUS_TOKEN && bo2 == SyntaxKind.PLUS_TOKEN)
+                    continue;
+                else if (bo1 == SyntaxKind.MINUS_TOKEN && bo2 == SyntaxKind.MINUS_TOKEN)
+                    continue;
                 args.add(Arguments.of(bo1, bo2));
             }
         }
