@@ -1,6 +1,7 @@
 package codeanalysis.symbol;
 
-public class TypeSymbol implements ISymbol {
+public class TypeSymbol extends Symbol {
+    public static final TypeSymbol VOID = new TypeSymbol("void");
     private final String name;
     public static final TypeSymbol ERROR = new TypeSymbol("?");
     public static final TypeSymbol BOOLEAN = new TypeSymbol("boolean");
@@ -18,11 +19,11 @@ public class TypeSymbol implements ISymbol {
     }
 
     @Override
-    public SymbolKind kind() {
+    public SymbolKind getKind() {
         return SymbolKind.TYPE;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 }

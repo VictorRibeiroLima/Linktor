@@ -1,8 +1,11 @@
 package codeanalysis.evaluator;
 
+import codeanalysis.binding.BoundProgram;
+import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
@@ -14,32 +17,39 @@ import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
+import codeanalysis.symbol.BuildInFunctions;
+import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Stack;
 
 public final class Evaluator {
-    private final BoundBlockStatement root;
-    private final Map<VariableSymbol, Object> variables;
+    private final BoundProgram root;
+
+    private Scanner scanner;
 
     private Object lastValue;
 
-    public Evaluator(BoundBlockStatement root, Map<VariableSymbol, Object> variables) {
+    private final Stack<Map<VariableSymbol, Object>> callStack = new Stack<>();
+
+    public Evaluator(BoundProgram root, Map<VariableSymbol, Object> variables) {
         this.root = root;
-        this.variables = variables;
+        callStack.add(variables);
     }
 
     public Object evaluate() throws Exception {
-        Map<BoundLabel, Integer> labelIndexes = new HashMap<>();
-        for (int i = 0; i < root.getStatements().size(); i++) {
-            if (root.getStatements().get(i) instanceof BoundLabelDeclarationStatement l)
-                labelIndexes.put(l.getLabel(), i);
-        }
+        return evaluateBlockStatement(root.getStatement());
+    }
+
+    private Object evaluateBlockStatement(BoundBlockStatement body) throws Exception {
+        Map<BoundLabel, Integer> labelIndexes = mapLabels(body);
         int index = 0;
-        while (index < root.getStatements().size()) {
-            BoundStatement statement = root.getStatements().get(index);
+        while (index < body.getStatements().size()) {
+            BoundStatement statement = body.getStatements().get(index);
             switch (statement.getKind()) {
                 case EXPRESSION_STATEMENT -> {
                     evaluateExpressionStatement((BoundExpressionStatement) statement);
@@ -68,8 +78,18 @@ public final class Evaluator {
         return lastValue;
     }
 
+    private Map<BoundLabel, Integer> mapLabels(BoundBlockStatement body) {
+        Map<BoundLabel, Integer> labelIndexes = new HashMap<>();
+        for (int i = 0; i < body.getStatements().size(); i++) {
+            if (body.getStatements().get(i) instanceof BoundLabelDeclarationStatement l)
+                labelIndexes.put(l.getLabel(), i);
+        }
+        return labelIndexes;
+    }
+
     private void evaluateVariableDeclarationStatement(BoundVariableDeclarationStatement statement) throws Exception {
         Object value = evaluateExpression(statement.getInitializer());
+        Map<VariableSymbol, Object> variables = callStack.peek();
         variables.put(statement.getVariable(), value);
         lastValue = value;
     }
@@ -85,8 +105,54 @@ public final class Evaluator {
             case ASSIGNMENT_EXPRESSION -> evaluateAssignmentExpression((BoundAssignmentExpression) node);
             case UNARY_EXPRESSION -> evaluateUnaryExpression((BoundUnaryExpression) node);
             case BINARY_EXPRESSION -> evaluateBinaryExpression((BoundBinaryExpression) node);
+            case CALL_EXPRESSION -> evaluateCallExpression((BoundCallExpression) node);
+            case CONVERSION_EXPRESSION -> evaluateConversionExpression((BoundConversionExpression) node);
             default -> throw new Exception("Unexpected node " + node.getKind());
         };
+    }
+
+    private Object evaluateConversionExpression(BoundConversionExpression node) throws Exception {
+        Object result = evaluateExpression(node.getExpression());
+        TypeSymbol type = node.getType();
+        if (type == TypeSymbol.BOOLEAN) {
+            return Boolean.parseBoolean(result.toString());
+        } else if (type == TypeSymbol.INTEGER) {
+            return Integer.parseInt(result.toString());
+        } else if (type == TypeSymbol.STRING) {
+            return result.toString();
+        } else
+            throw new Exception("Unexpected type " + type);
+
+    }
+
+    private Object evaluateCallExpression(BoundCallExpression node) throws Exception {
+        if (node.getFunction().equals(BuildInFunctions.READ)) {
+            scanner = new Scanner(System.in);
+            return scanner.nextLine();
+        } else if (node.getFunction().equals(BuildInFunctions.PRINT)) {
+            String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
+            System.out.print(message);
+            return null;
+        } else if (node.getFunction().equals(BuildInFunctions.PRINTF)) {
+            String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
+            System.out.println(message);
+            return null;
+        } else if (node.getFunction().equals(BuildInFunctions.RANDOM)) {
+            int max = (int) evaluateExpression(node.getArgs().get(0));
+            return (int) Math.floor(Math.random() * (max + 1));
+        } else {
+            Map<VariableSymbol, Object> variables = new HashMap<>(callStack.get(0));
+            for (int i = 0; i < node.getArgs().size(); i++) {
+                ParameterSymbol param = node.getFunction().getParameters().get(i);
+                Object value = evaluateExpression(node.getArgs().get(i));
+                variables.put(param, value);
+            }
+            callStack.add(variables);
+            BoundBlockStatement statement = root.getFunctionsBodies().get(node.getFunction());
+            Object result = evaluateBlockStatement(statement);
+            callStack.pop();
+            return result;
+        }
     }
 
     private Object evaluateLiteralExpression(BoundLiteralExpression l) {
@@ -94,10 +160,12 @@ public final class Evaluator {
     }
 
     private Object evaluateVariableExpression(BoundVariableExpression v) {
+        Map<VariableSymbol, Object> variables = callStack.peek();
         return variables.get(v.getVariable());
     }
 
     private Object evaluateAssignmentExpression(BoundAssignmentExpression a) throws Exception {
+        Map<VariableSymbol, Object> variables = callStack.peek();
         Object value = evaluateExpression(a.getBoundExpression());
         variables.put(a.getVariable(), value);
         return value;
@@ -163,6 +231,8 @@ public final class Evaluator {
                 return (int) left - (int) right;
             case DIVISION:
                 return (int) left / (int) right;
+            case MOD:
+                return (int) left % (int) right;
             case MULTIPLICATION:
                 return (int) left * (int) right;
             case LESS_THAN:

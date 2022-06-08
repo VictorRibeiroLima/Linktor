@@ -2,11 +2,16 @@ package codeanalysis.binding.rewriter;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
+import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundSuffixExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.statement.BoundStatement;
@@ -65,7 +70,7 @@ public abstract class BoundTreeRewriter {
         if (clause.equals(statement.getCondition()) && then.equals(statement.getThenStatement()))
             return statement;
 
-        return new BoundForStatement(clause, then);
+        return new BoundForStatement(clause, then, statement.getBreakLabel(), statement.getContinueLabel());
     }
 
     protected BoundStatement rewriteWhileStatement(BoundWhileStatement statement) throws Exception {
@@ -74,7 +79,7 @@ public abstract class BoundTreeRewriter {
         if (condition.equals(statement.getCondition()) && then.equals(statement.getThenStatement()))
             return statement;
 
-        return new BoundWhileStatement(condition, then);
+        return new BoundWhileStatement(condition, then, statement.getBreakLabel(), statement.getContinueLabel());
     }
 
     protected BoundStatement rewriteIfStatement(BoundIfStatement statement) throws Exception {
@@ -152,11 +157,53 @@ public abstract class BoundTreeRewriter {
             case LITERAL_EXPRESSION -> rewriteLiteralExpression((BoundLiteralExpression) expression);
             case VARIABLE_EXPRESSION -> rewriteVariableExpression((BoundVariableExpression) expression);
             case ASSIGNMENT_EXPRESSION -> rewriteAssignmentExpression((BoundAssignmentExpression) expression);
+            case OPERATION_ASSIGNMENT_EXPRESSION ->
+                    rewriteOperationAssignmentExpression((BoundOperationAssignmentExpression) expression);
             case UNARY_EXPRESSION -> rewriteUnaryExpression((BoundUnaryExpression) expression);
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
+            case CALL_EXPRESSION -> rewriteCallExpression((BoundCallExpression) expression);
             case ERROR_EXPRESSION -> rewriteErrorExpression((BoundErrorExpression) expression);
+            case CONVERSION_EXPRESSION -> rewriteConversionExpression((BoundConversionExpression) expression);
+            case PREFIX_EXPRESSION -> rewritePrefixExpression((BoundPrefixExpression) expression);
+            case SUFFIX_EXPRESSION -> rewriteSuffixExpression((BoundSuffixExpression) expression);
             default -> throw new Exception("Unexpected expression " + expression.getKind());
         };
+    }
+
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) throws Exception {
+        return expression;
+    }
+
+    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) throws Exception {
+        return expression;
+    }
+
+    private BoundExpression rewriteConversionExpression(BoundConversionExpression expression) throws Exception {
+        BoundExpression newExpression = rewriteExpression(expression.getExpression());
+        if (newExpression.equals(expression.getExpression()))
+            return expression;
+        return new BoundConversionExpression(expression.getType(), newExpression);
+    }
+
+    private BoundExpression rewriteCallExpression(BoundCallExpression expression) throws Exception {
+        List<BoundExpression> expressions = null;
+        for (int i = 0; i < expression.getArgs().size(); i++) {
+            BoundExpression oldExpression = expression.getArgs().get(i);
+            BoundExpression newExpression = rewriteExpression(expression.getArgs().get(i));
+            if (!newExpression.equals(oldExpression)) {
+                if (expressions == null) {
+                    expressions = new ArrayList<>();
+                    for (int j = 0; j < i; j++)
+                        expressions.add(expression.getArgs().get(j));
+                }
+            }
+            if (expressions != null)
+                expressions.add(newExpression);
+        }
+
+        if (expressions == null)
+            return expression;
+        return new BoundCallExpression(expression.getFunction(), List.copyOf(expressions));
     }
 
     protected BoundExpression rewriteErrorExpression(BoundErrorExpression expression) {
@@ -172,6 +219,13 @@ public abstract class BoundTreeRewriter {
     }
 
     protected BoundExpression rewriteAssignmentExpression(BoundAssignmentExpression node) throws Exception {
+        BoundExpression expression = rewriteExpression(node.getBoundExpression());
+        if (expression.equals(node.getBoundExpression()))
+            return node;
+        return new BoundAssignmentExpression(node.getVariable(), expression);
+    }
+
+    protected BoundExpression rewriteOperationAssignmentExpression(BoundOperationAssignmentExpression node) throws Exception {
         BoundExpression expression = rewriteExpression(node.getBoundExpression());
         if (expression.equals(node.getBoundExpression()))
             return node;

@@ -1,5 +1,5 @@
 package codeanalysis.symbol;
 
 public enum SymbolKind {
-    TYPE, VARIABLE
+    TYPE, PARAMETER, FUNCTION, VARIABLE
 }

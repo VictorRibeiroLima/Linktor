@@ -4,7 +4,7 @@ import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.symbol.TypeSymbol;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class BoundVariableExpression extends BoundExpression {
     public BoundVariableExpression(VariableSymbol variable) {
         this.variable = variable;
         this.kind = BoundNodeKind.VARIABLE_EXPRESSION;
-        this.type = variable.type();
+        this.type = variable.getType();
         this.children = List.of();
     }
 

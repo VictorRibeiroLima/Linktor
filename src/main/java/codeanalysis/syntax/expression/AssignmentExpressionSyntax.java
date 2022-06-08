@@ -4,7 +4,6 @@ import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class AssignmentExpressionSyntax extends ExpressionSyntax {
@@ -16,11 +15,14 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
 
     private final SyntaxKind kind;
 
+    private final List<SyntaxNode> children;
+
     public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken equalsToken, ExpressionSyntax expression) {
         this.identifierToken = identifierToken;
         this.equalsToken = equalsToken;
         this.expression = expression;
         this.kind = SyntaxKind.ASSIGNMENT_EXPRESSION;
+        this.children = List.of(identifierToken, equalsToken, expression);
     }
 
     public SyntaxToken getIdentifierToken() {
@@ -41,6 +43,6 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(identifierToken, equalsToken, expression);
+        return children;
     }
 }

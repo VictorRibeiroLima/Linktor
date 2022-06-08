@@ -2,9 +2,9 @@ package codeanalysis.binding.scopes;
 
 import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.diagnostics.Diagnostic;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.FunctionSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 
-import java.util.Collections;
 import java.util.List;
 
 public class BoundGlobalScope {
@@ -13,14 +13,16 @@ public class BoundGlobalScope {
     private final List<Diagnostic> diagnostics;
 
     private final List<VariableSymbol> variables;
+    private final List<FunctionSymbol> functions;
 
-    private final BoundStatement statement;
+    private final List<BoundStatement> statements;
 
-    public BoundGlobalScope(BoundGlobalScope previous, List<Diagnostic> diagnostics, List<VariableSymbol> variables, BoundStatement statement) {
+    public BoundGlobalScope(BoundGlobalScope previous, List<Diagnostic> diagnostics, List<VariableSymbol> variables, List<FunctionSymbol> functions, List<BoundStatement> statement) {
         this.previous = previous;
-        this.diagnostics = Collections.unmodifiableList(diagnostics);
-        this.variables = Collections.unmodifiableList(variables);
-        this.statement = statement;
+        this.diagnostics = List.copyOf(diagnostics);
+        this.variables = List.copyOf(variables);
+        this.functions = List.copyOf(functions);
+        this.statements = List.copyOf(statement);
     }
 
     public BoundGlobalScope getPrevious() {
@@ -31,11 +33,15 @@ public class BoundGlobalScope {
         return diagnostics;
     }
 
+    public List<FunctionSymbol> getFunctions() {
+        return functions;
+    }
+
     public List<VariableSymbol> getVariables() {
         return variables;
     }
 
-    public BoundStatement getStatement() {
-        return statement;
+    public List<BoundStatement> getStatements() {
+        return statements;
     }
 }

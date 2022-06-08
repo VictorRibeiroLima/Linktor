@@ -3,7 +3,7 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
-import codeanalysis.syntax.clause.ForConditionClause;
+import codeanalysis.syntax.clause.ForConditionClauseSyntax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ public class ForStatementSyntax extends StatementSyntax {
     private final SyntaxToken forKeyword;
 
 
-    private final ForConditionClause condition;
+    private final ForConditionClauseSyntax condition;
 
     private final StatementSyntax thenStatement;
 
@@ -21,7 +21,7 @@ public class ForStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public ForStatementSyntax(SyntaxToken forKeyword, ForConditionClause condition, StatementSyntax thenStatement) {
+    public ForStatementSyntax(SyntaxToken forKeyword, ForConditionClauseSyntax condition, StatementSyntax thenStatement) {
         this.forKeyword = forKeyword;
         this.condition = condition;
         this.thenStatement = thenStatement;
@@ -37,7 +37,7 @@ public class ForStatementSyntax extends StatementSyntax {
         return forKeyword;
     }
 
-    public ForConditionClause getCondition() {
+    public ForConditionClauseSyntax getCondition() {
         return condition;
     }
 

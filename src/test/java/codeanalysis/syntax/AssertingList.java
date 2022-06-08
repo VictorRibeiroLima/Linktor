@@ -37,8 +37,9 @@ public class AssertingList {
             SyntaxNode n = stack.pop();
             nodes.add(n);
             List<SyntaxNode> children = n.getChildren();
-            Collections.reverse(children);
-            for (SyntaxNode child : children) {
+            var copyArray = new ArrayList<>(children);
+            Collections.reverse(copyArray);
+            for (SyntaxNode child : copyArray) {
                 stack.push(child);
             }
         }

@@ -2,6 +2,16 @@ package codeanalysis.lowering;
 
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
+import codeanalysis.binding.expression.assignment.BoundOperationAssignmentOperatorKind;
+import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryOperator;
+import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixSuffixOperatorKind;
+import codeanalysis.binding.expression.sufixpreffix.BoundSuffixExpression;
+import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.rewriter.BoundTreeRewriter;
 import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.binding.statement.block.BoundBlockStatement;
@@ -15,6 +25,7 @@ import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
+import codeanalysis.syntax.SyntaxKind;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,8 +54,7 @@ public final class Lowerer extends BoundTreeRewriter {
             if (current instanceof BoundBlockStatement b) {
                 List<BoundStatement> statementsCopy = new ArrayList<>(b.getStatements());
                 Collections.reverse(statementsCopy);
-                for (BoundStatement s : statementsCopy)
-                    stack.add(s);
+                stack.addAll(statementsCopy);
             } else {
                 statements.add(current);
             }
@@ -52,9 +62,71 @@ public final class Lowerer extends BoundTreeRewriter {
         return new BoundBlockStatement(List.copyOf(statements));
     }
 
+    protected BoundExpression rewriteOperationAssignmentExpression(BoundOperationAssignmentExpression node) throws Exception {
+        /*
+            a += 2;
+            a=a+2;
+         */
+        var left = new BoundVariableExpression(node.getVariable());
+        BoundBinaryOperator operator;
+        var right = node.getBoundExpression();
+        if (node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.INCREMENT || node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.CONCATENATION)
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        else
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(node.getVariable(), binary);
+        return rewriteExpression(assignment);
+    }
+
+    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) throws Exception {
+        /*
+            i++
+            --------
+            (i=i+1)-1
+         */
+        var left = new BoundVariableExpression(expression.getLeft());
+        BoundBinaryOperator operator;
+        BoundBinaryOperator returnOperator;
+        var right = new BoundLiteralExpression(1);
+        if (expression.getOperator().getKind() == BoundPrefixSuffixOperatorKind.INCREMENT) {
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+            returnOperator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        } else {
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+            returnOperator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        }
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(expression.getLeft(), binary);
+        var result = new BoundBinaryExpression(assignment, returnOperator, right);
+        return rewriteExpression(result);
+    }
+
+    @Override
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) throws Exception {
+        /*
+            i++
+            --------
+            i=i+1
+         */
+        var left = new BoundVariableExpression(expression.getRight());
+        BoundBinaryOperator operator;
+        var right = new BoundLiteralExpression(1);
+        if (expression.getOperator().getKind() == BoundPrefixSuffixOperatorKind.INCREMENT)
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        else
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(expression.getRight(), binary);
+        return rewriteExpression(assignment);
+    }
+
     @Override
     protected BoundStatement rewriteIfStatement(BoundIfStatement statement) throws Exception {
-        BoundBlockStatement result = null;
+        BoundBlockStatement result;
         if (statement.getElseClause() == null) {
             /*
             {
@@ -122,26 +194,28 @@ public final class Lowerer extends BoundTreeRewriter {
                 }
              }
              ----->
-
-             jumpTo check
              continue:
+             jumpTo check
+             body:
              <loop>
              check:
              jumpToTrue <condition> continue:
              end:
          */
+        BoundLabel continueLabel = statement.getContinueLabel();
         BoundLabel checkLabel = genLabel();
-        BoundLabel continueLabel = genLabel();
-        BoundLabel endLabel = genLabel();
+        BoundLabel bodyLabel = genLabel();
+        BoundLabel endLabel = statement.getBreakLabel();
         BoundJumpToStatement jumpToCheck = new BoundJumpToStatement(checkLabel);
         BoundConditionalJumpToStatement jumpToTrue =
-                new BoundConditionalJumpToStatement(continueLabel, statement.getCondition());
-        BoundLabelDeclarationStatement check = new BoundLabelDeclarationStatement(checkLabel);
+                new BoundConditionalJumpToStatement(bodyLabel, statement.getCondition());
         BoundLabelDeclarationStatement continueS = new BoundLabelDeclarationStatement(continueLabel);
+        BoundLabelDeclarationStatement check = new BoundLabelDeclarationStatement(checkLabel);
+        BoundLabelDeclarationStatement bodyS = new BoundLabelDeclarationStatement(bodyLabel);
         BoundLabelDeclarationStatement end = new BoundLabelDeclarationStatement(endLabel);
 
         BoundBlockStatement result = new BoundBlockStatement(
-                List.of(jumpToCheck, continueS, statement.getThenStatement(), check, jumpToTrue, end)
+                List.of(continueS, jumpToCheck, bodyS, statement.getThenStatement(), check, jumpToTrue, end)
         );
         return rewriteStatement(result);
     }
@@ -157,11 +231,15 @@ public final class Lowerer extends BoundTreeRewriter {
             statements.add(variableDeclaration);
         }
         BoundExpression condition = clause.getConditionExpression();
+        BoundLabelDeclarationStatement continueLabel = new BoundLabelDeclarationStatement(statement.getContinueLabel());
         BoundStatement increment = new BoundExpressionStatement(clause.getIncrementExpression());
         BoundBlockStatement whileBlock = new BoundBlockStatement(
-                List.of(statement.getThenStatement(), increment)
+                List.of(
+                        statement.getThenStatement(),
+                        continueLabel,
+                        increment)
         );
-        BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock);
+        BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock, statement.getBreakLabel(), genLabel());
         statements.add(whileStatement);
 
         BoundBlockStatement block = new BoundBlockStatement(List.copyOf(statements));

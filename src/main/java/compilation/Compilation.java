@@ -1,13 +1,11 @@
 package compilation;
 
 import codeanalysis.binding.Binder;
+import codeanalysis.binding.BoundProgram;
 import codeanalysis.binding.scopes.BoundGlobalScope;
-import codeanalysis.binding.statement.BoundStatement;
-import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
-import codeanalysis.lowering.Lowerer;
-import codeanalysis.symbol.VariableSymbol;
+import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 
 import java.io.PrintWriter;
@@ -43,7 +41,7 @@ public class Compilation {
     private BoundGlobalScope getGlobalScope() throws Exception {
         if (this.globalScope.get() == null) {
             BoundGlobalScope previousScope = this.previous == null ? null : previous.getGlobalScope();
-            BoundGlobalScope globalScope = Binder.boundGlobalScope(this.tree.getRoot(), previousScope);
+            BoundGlobalScope globalScope = Binder.bindGlobalScope(this.tree.getRoot(), previousScope);
             this.globalScope.compareAndSet(null, globalScope);
         }
         return this.globalScope.get();
@@ -62,18 +60,17 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        BoundBlockStatement statement = getStatement();
-        Evaluator evaluator = new Evaluator(statement, variables);
+        BoundProgram program = Binder.bindProgram(getGlobalScope());
+        if (!program.getDiagnostics().isEmpty())
+            return new EvaluationResult(program.getDiagnostics().getDiagnostics(), null);
+
+        Evaluator evaluator = new Evaluator(program, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
     }
 
     public void emitTree(PrintWriter printWriter) throws Exception {
-        BoundStatement statement = getStatement();
-        statement.printTree(printWriter);
-    }
-
-    private BoundBlockStatement getStatement() throws Exception {
-        return Lowerer.lower(getGlobalScope().getStatement());
+        BoundProgram program = Binder.bindProgram(getGlobalScope());
+        program.getStatement().printTree(printWriter);
     }
 }

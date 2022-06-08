@@ -17,7 +17,7 @@ public final class SyntaxFacts {
 
     public static int getBinaryOperatorPrecedence(SyntaxKind kind) {
         return switch (kind) {
-            case STAR_TOKEN, SLASH_TOKEN -> 5;
+            case STAR_TOKEN, SLASH_TOKEN, PERCENTAGE_TOKEN -> 5;
             case PLUS_TOKEN, MINUS_TOKEN -> 4;
             case EQUAL_EQUAL_TOKEN, EXCLAMATION_EQUAL_TOKEN, LESS_TOKEN, LESS_EQUAL_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN ->
                     3;
@@ -37,6 +37,9 @@ public final class SyntaxFacts {
             case "else" -> SyntaxKind.ELSE_KEYWORD;
             case "while" -> SyntaxKind.WHILE_KEYWORD;
             case "for" -> SyntaxKind.FOR_KEYWORD;
+            case "function" -> SyntaxKind.FUNCTION_KEYWORD;
+            case "continue" -> SyntaxKind.CONTINUE_KEYWORD;
+            case "break" -> SyntaxKind.BREAK_KEYWORD;
             default -> SyntaxKind.IDENTIFIER_TOKEN;
         };
     }
@@ -45,7 +48,11 @@ public final class SyntaxFacts {
         return switch (kind) {
             case SEMICOLON_TOKEN -> ";";
             case PLUS_TOKEN -> "+";
+            case PLUS_PLUS_TOKEN -> "++";
+            case PLUS_EQUALS_TOKEN -> "+=";
             case MINUS_TOKEN -> "-";
+            case MINUS_MINUS_TOKEN -> "--";
+            case MINUS_EQUALS_TOKEN -> "-=";
             case SLASH_TOKEN -> "/";
             case STAR_TOKEN -> "*";
             case OPEN_PARENTHESIS_TOKEN -> "(";
@@ -74,6 +81,12 @@ public final class SyntaxFacts {
             case ELSE_KEYWORD -> "else";
             case WHILE_KEYWORD -> "while";
             case FOR_KEYWORD -> "for";
+            case COMMA_TOKEN -> ",";
+            case COLON_TOKEN -> ":";
+            case FUNCTION_KEYWORD -> "function";
+            case PERCENTAGE_TOKEN -> "%";
+            case BREAK_KEYWORD -> "break";
+            case CONTINUE_KEYWORD -> "continue";
             default -> null;
         };
     }

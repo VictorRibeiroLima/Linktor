@@ -85,7 +85,7 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportCannotConvert(TextSpan span, TypeSymbol expectedType, TypeSymbol actualType) {
-        String message = "ERROR: Cannot convert '" + expectedType + "' into '" + actualType + "'.";
+        String message = "ERROR: Cannot convert '" + actualType + "' into '" + expectedType + "'.";
         report(span, message);
     }
 
@@ -95,7 +95,56 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
     }
 
     public void reportUnterminatedString(TextSpan span) {
-        String message = "ERROR: Unterminated string literal";
+        String message = "ERROR: Unterminated string literal.";
         report(span, message);
+    }
+
+    public void reportUndefinedFunction(TextSpan span, String name, List<TypeSymbol> types) {
+        String usedTypes = parseTypesList(types);
+        String message = "ERROR: Undefined function '" + name + "' with parameters" + usedTypes + ".";
+        report(span, message);
+    }
+
+    public void reportUndefinedOperator(TextSpan span, String name, TypeSymbol type) {
+        String message = "ERROR: Undefined operator '" + name + "' for type '" + type + "'.";
+        report(span, message);
+    }
+
+    public void reportExpressionMustHaveValue(TextSpan span) {
+        String message = "ERROR: Expression must have a value.";
+        report(span, message);
+    }
+
+    public void reportUndefinedType(TextSpan span, String text) {
+        String message = "ERROR: Undefined type '" + text + "'.";
+        report(span, message);
+    }
+
+    public void reportDuplicatedParam(TextSpan span, String name) {
+        String message = "ERROR: duplicated param name '" + name + "'.";
+        report(span, message);
+    }
+
+    public void reportFunctionAlreadyDeclared(TextSpan span, String name, List<TypeSymbol> paramTypes) {
+        String usedTypes = parseTypesList(paramTypes);
+
+        String message = "ERROR: Function '" + name + "' with parameters" + usedTypes + " already declared.";
+        report(span, message);
+    }
+
+    public void reportInvalidBreakOrContinue(TextSpan span, String text) {
+        String message = "ERROR: Keyword '" + text + "' outside loop.";
+        report(span, message);
+    }
+
+    private String parseTypesList(List<TypeSymbol> paramTypes) {
+        StringBuilder usedTypes = new StringBuilder("[");
+        for (int i = 0; i < paramTypes.size(); i++) {
+            if (i > 0)
+                usedTypes.append(",");
+            usedTypes.append(paramTypes.get(i));
+        }
+        usedTypes.append("]");
+        return usedTypes.toString();
     }
 }
