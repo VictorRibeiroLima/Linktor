@@ -6,8 +6,9 @@ import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
-import codeanalysis.binding.expression.preffix.BoundSuffixExpression;
-import codeanalysis.binding.expression.preffix.BoundSuffixOperatorKind;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixSuffixOperatorKind;
+import codeanalysis.binding.expression.sufixpreffix.BoundSuffixExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.rewriter.BoundTreeRewriter;
 import codeanalysis.binding.statement.BoundStatement;
@@ -67,17 +68,38 @@ public final class Lowerer extends BoundTreeRewriter {
          */
         var left = new BoundVariableExpression(expression.getLeft());
         BoundBinaryOperator operator;
+        BoundBinaryOperator returnOperator;
         var right = new BoundLiteralExpression(1);
-        if (expression.getOperator().getKind() == BoundSuffixOperatorKind.INCREMENT)
+        if (expression.getOperator().getKind() == BoundPrefixSuffixOperatorKind.INCREMENT) {
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+            returnOperator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        } else {
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+            returnOperator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        }
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(expression.getLeft(), binary);
+        return new BoundBinaryExpression(assignment, returnOperator, right);
+    }
+
+    @Override
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) {
+        /*
+            i++
+            --------
+            i=i+1
+         */
+        var left = new BoundVariableExpression(expression.getRight());
+        BoundBinaryOperator operator;
+        var right = new BoundLiteralExpression(1);
+        if (expression.getOperator().getKind() == BoundPrefixSuffixOperatorKind.INCREMENT)
             operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
         else
             operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
         var binary = new BoundBinaryExpression(left, operator, right);
 
-        var assignment = new BoundAssignmentExpression(expression.getLeft(), binary);
-        var minusOperator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, assignment.getType(), right.getType());
-        var subtraction = new BoundBinaryExpression(assignment, minusOperator, right);
-        return subtraction;
+        return new BoundAssignmentExpression(expression.getRight(), binary);
     }
 
     @Override

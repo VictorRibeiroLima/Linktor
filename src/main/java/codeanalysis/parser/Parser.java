@@ -303,8 +303,8 @@ public final class Parser {
             return parseCallExpression();
         else if (
                 getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN
-                        && peek(1).getKind() == SyntaxKind.PLUS_PLUS_TOKEN
-                        || peek(1).getKind() == SyntaxKind.MINUS_TOKEN
+                        && (peek(1).getKind() == SyntaxKind.PLUS_PLUS_TOKEN
+                        || peek(1).getKind() == SyntaxKind.MINUS_MINUS_TOKEN)
         )
             return parseSuffixExpression();
         return parseNameExpression();

@@ -1,4 +1,4 @@
-package codeanalysis.binding.expression.preffix;
+package codeanalysis.binding.expression.sufixpreffix;
 
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
@@ -8,18 +8,18 @@ import codeanalysis.symbol.variable.VariableSymbol;
 
 import java.util.List;
 
-public class BoundSuffixExpression extends BoundExpression {
-    private final BoundSuffixOperator operator;
-    private final VariableSymbol left;
+public class BoundPrefixExpression extends BoundExpression {
+    private final BoundPrefixSuffixOperator operator;
+    private final VariableSymbol right;
     private final BoundNodeKind kind;
 
     private final List<BoundNode> children;
     private final TypeSymbol type;
 
-    public BoundSuffixExpression(VariableSymbol left, BoundSuffixOperator operator) {
-        this.left = left;
+    public BoundPrefixExpression(BoundPrefixSuffixOperator operator, VariableSymbol right) {
+        this.right = right;
         this.operator = operator;
-        this.kind = BoundNodeKind.SUFFIX_EXPRESSION;
+        this.kind = BoundNodeKind.PREFIX_EXPRESSION;
         this.type = this.operator.getResultType();
         this.children = List.of();
     }
@@ -29,12 +29,12 @@ public class BoundSuffixExpression extends BoundExpression {
         return children;
     }
 
-    public BoundSuffixOperator getOperator() {
+    public BoundPrefixSuffixOperator getOperator() {
         return operator;
     }
 
-    public VariableSymbol getLeft() {
-        return left;
+    public VariableSymbol getRight() {
+        return right;
     }
 
     @Override

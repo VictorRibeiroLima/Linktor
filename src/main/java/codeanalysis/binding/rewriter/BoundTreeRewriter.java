@@ -9,7 +9,8 @@ import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
-import codeanalysis.binding.expression.preffix.BoundSuffixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundSuffixExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.statement.BoundStatement;
@@ -160,9 +161,14 @@ public abstract class BoundTreeRewriter {
             case CALL_EXPRESSION -> rewriteCallExpression((BoundCallExpression) expression);
             case ERROR_EXPRESSION -> rewriteErrorExpression((BoundErrorExpression) expression);
             case CONVERSION_EXPRESSION -> rewriteConversionExpression((BoundConversionExpression) expression);
+            case PREFIX_EXPRESSION -> rewritePrefixExpression((BoundPrefixExpression) expression);
             case SUFFIX_EXPRESSION -> rewriteSuffixExpression((BoundSuffixExpression) expression);
             default -> throw new Exception("Unexpected expression " + expression.getKind());
         };
+    }
+
+    protected BoundExpression rewritePrefixExpression(BoundPrefixExpression expression) {
+        return expression;
     }
 
     protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) {

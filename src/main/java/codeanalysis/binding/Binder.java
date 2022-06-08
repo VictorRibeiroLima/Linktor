@@ -9,8 +9,9 @@ import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
-import codeanalysis.binding.expression.preffix.BoundSuffixExpression;
-import codeanalysis.binding.expression.preffix.BoundSuffixOperator;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixExpression;
+import codeanalysis.binding.expression.sufixpreffix.BoundPrefixSuffixOperator;
+import codeanalysis.binding.expression.sufixpreffix.BoundSuffixExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
@@ -376,6 +377,7 @@ public class Binder {
             case UNARY_EXPRESSION -> bindUnaryExpression((UnaryExpressionSyntax) syntax);
             case BINARY_EXPRESSION -> bindBinaryExpression((BinaryExpressionSyntax) syntax);
             case CALL_EXPRESSION -> bindCallExpression((CallExpressionSyntax) syntax);
+            case PREFIX_EXPRESSION -> bindPrefixExpression((PrefixExpressionSyntax) syntax);
             case SUFFIX_EXPRESSION -> bindSuffixExpression((SuffixExpressionSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
@@ -440,10 +442,22 @@ public class Binder {
         return new BoundVariableExpression(variable);
     }
 
+    private BoundExpression bindPrefixExpression(PrefixExpressionSyntax syntax) {
+        var variable = getVariable(syntax.getIdentifier());
+        var token = syntax.getToken();
+        var operator = BoundPrefixSuffixOperator.bind(token.getKind(), variable.getType());
+        if (variable == null)
+            return new BoundErrorExpression();
+        if (variable.isReadOnly()) {
+            diagnostics.reportReadOnly(token.getSpan(), syntax.getIdentifier().getText());
+        }
+        return new BoundPrefixExpression(operator, variable);
+    }
+
     private BoundExpression bindSuffixExpression(SuffixExpressionSyntax syntax) {
         var variable = getVariable(syntax.getIdentifier());
         var token = syntax.getToken();
-        var operator = BoundSuffixOperator.bind(token.getKind(), variable.getType());
+        var operator = BoundPrefixSuffixOperator.bind(token.getKind(), variable.getType());
         if (variable == null)
             return new BoundErrorExpression();
         if (variable.isReadOnly()) {
