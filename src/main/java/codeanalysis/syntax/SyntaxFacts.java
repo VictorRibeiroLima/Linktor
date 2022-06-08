@@ -48,7 +48,9 @@ public final class SyntaxFacts {
         return switch (kind) {
             case SEMICOLON_TOKEN -> ";";
             case PLUS_TOKEN -> "+";
+            case PLUS_PLUS_TOKEN -> "++";
             case MINUS_TOKEN -> "-";
+            case MINUS_MINUS_TOKEN -> "--";
             case SLASH_TOKEN -> "/";
             case STAR_TOKEN -> "*";
             case OPEN_PARENTHESIS_TOKEN -> "(";

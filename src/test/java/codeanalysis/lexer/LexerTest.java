@@ -178,7 +178,9 @@ class LexerTest {
             return true;
         if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_TOKEN)
             return true;
-        if (k1 == SyntaxKind.PIPE_TOKEN && k2 == SyntaxKind.PIPE_PIPE_TOKEN)
+        if (k1 == SyntaxKind.MINUS_TOKEN && k2 == SyntaxKind.MINUS_MINUS_TOKEN)
+            return true;
+        if (k1 == SyntaxKind.PLUS_TOKEN && k2 == SyntaxKind.PLUS_PLUS_TOKEN)
             return true;
         return k1 == SyntaxKind.EXCLAMATION_TOKEN && k2 == SyntaxKind.EQUAL_EQUAL_TOKEN;
     }

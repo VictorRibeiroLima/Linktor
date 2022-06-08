@@ -267,9 +267,16 @@ public final class Parser {
             case TRUE_KEYWORD, FALSE_KEYWORD -> parseBooleanLiteralExpression();
             case NUMBER_TOKEN -> parseNumberLiteralExpression();
             case STRING_TOKEN -> parseStringLiteralExpression();
+            case PLUS_PLUS_TOKEN, MINUS_MINUS_TOKEN -> parsePrefixExpression();
             default -> parseIdentifierToken();
         };
 
+    }
+
+    private ExpressionSyntax parsePrefixExpression() {
+        var token = matchToken(getCurrent().getKind());
+        var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        return new PrefixExpressionSyntax(token, identifier);
     }
 
     private ParenthesizedExpressionSyntax parseParenthesizedExpression() {
@@ -294,7 +301,19 @@ public final class Parser {
     private ExpressionSyntax parseIdentifierToken() {
         if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN && peek(1).getKind() == SyntaxKind.OPEN_PARENTHESIS_TOKEN)
             return parseCallExpression();
+        else if (
+                getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN
+                        && peek(1).getKind() == SyntaxKind.PLUS_PLUS_TOKEN
+                        || peek(1).getKind() == SyntaxKind.MINUS_TOKEN
+        )
+            return parseSuffixExpression();
         return parseNameExpression();
+    }
+
+    private ExpressionSyntax parseSuffixExpression() {
+        var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+        var token = matchToken(getCurrent().getKind());
+        return new SuffixExpressionSyntax(identifier, token);
     }
 
     private ExpressionSyntax parseCallExpression() {

@@ -2,6 +2,13 @@ package codeanalysis.lowering;
 
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryOperator;
+import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.preffix.BoundSuffixExpression;
+import codeanalysis.binding.expression.preffix.BoundSuffixOperatorKind;
+import codeanalysis.binding.expression.variable.BoundVariableExpression;
 import codeanalysis.binding.rewriter.BoundTreeRewriter;
 import codeanalysis.binding.statement.BoundStatement;
 import codeanalysis.binding.statement.block.BoundBlockStatement;
@@ -15,6 +22,7 @@ import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
+import codeanalysis.syntax.SyntaxKind;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +57,27 @@ public final class Lowerer extends BoundTreeRewriter {
             }
         }
         return new BoundBlockStatement(List.copyOf(statements));
+    }
+
+    protected BoundExpression rewriteSuffixExpression(BoundSuffixExpression expression) {
+        /*
+            i++
+            --------
+            (i=i+1)-1
+         */
+        var left = new BoundVariableExpression(expression.getLeft());
+        BoundBinaryOperator operator;
+        var right = new BoundLiteralExpression(1);
+        if (expression.getOperator().getKind() == BoundSuffixOperatorKind.INCREMENT)
+            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
+        else
+            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
+        var binary = new BoundBinaryExpression(left, operator, right);
+
+        var assignment = new BoundAssignmentExpression(expression.getLeft(), binary);
+        var minusOperator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, assignment.getType(), right.getType());
+        var subtraction = new BoundBinaryExpression(assignment, minusOperator, right);
+        return subtraction;
     }
 
     @Override

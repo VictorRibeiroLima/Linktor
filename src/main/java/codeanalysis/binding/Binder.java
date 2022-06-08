@@ -9,6 +9,8 @@ import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.error.BoundErrorExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
+import codeanalysis.binding.expression.preffix.BoundSuffixExpression;
+import codeanalysis.binding.expression.preffix.BoundSuffixOperator;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryOperator;
 import codeanalysis.binding.expression.variable.BoundVariableExpression;
@@ -36,6 +38,7 @@ import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
 import codeanalysis.syntax.clause.ParameterClauseSyntax;
@@ -373,6 +376,7 @@ public class Binder {
             case UNARY_EXPRESSION -> bindUnaryExpression((UnaryExpressionSyntax) syntax);
             case BINARY_EXPRESSION -> bindBinaryExpression((BinaryExpressionSyntax) syntax);
             case CALL_EXPRESSION -> bindCallExpression((CallExpressionSyntax) syntax);
+            case SUFFIX_EXPRESSION -> bindSuffixExpression((SuffixExpressionSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
         if (!canBeVoid && result.getType() == TypeSymbol.VOID) {
@@ -428,30 +432,45 @@ public class Binder {
     }
 
     private BoundExpression bindNameExpression(NameExpressionSyntax syntax) {
-        String name = syntax.getIdentifierToken().getText();
         if (syntax.getIdentifierToken().isMissing())
             return new BoundErrorExpression();
-        VariableSymbol variable = scope.getVariableByIdentifier(name);
-        if (variable == null) {
-            diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
+        VariableSymbol variable = getVariable(syntax.getIdentifierToken());
+        if (variable == null)
             return new BoundErrorExpression();
-        }
         return new BoundVariableExpression(variable);
+    }
+
+    private BoundExpression bindSuffixExpression(SuffixExpressionSyntax syntax) {
+        var variable = getVariable(syntax.getIdentifier());
+        var token = syntax.getToken();
+        var operator = BoundSuffixOperator.bind(token.getKind(), variable.getType());
+        if (variable == null)
+            return new BoundErrorExpression();
+        if (variable.isReadOnly()) {
+            diagnostics.reportReadOnly(token.getSpan(), syntax.getIdentifier().getText());
+        }
+        return new BoundSuffixExpression(variable, operator);
     }
 
     private BoundExpression bindAssignmentExpression(AssignmentExpressionSyntax syntax) throws Exception {
         String name = syntax.getIdentifierToken().getText();
-        if (!scope.isVariablePresent(name)) {
-            diagnostics.reportUndefinedNameExpression(syntax.getIdentifierToken().getSpan(), name);
+        VariableSymbol variable = getVariable(syntax.getIdentifierToken());
+        if (variable == null)
             return new BoundErrorExpression();
-
-        }
-        VariableSymbol variable = scope.getVariableByIdentifier(name);
         if (variable.isReadOnly()) {
             diagnostics.reportReadOnly(syntax.getEqualsToken().getSpan(), name);
         }
         BoundExpression boundExpression = bindExpression(syntax.getExpression(), variable.getType());
         return new BoundAssignmentExpression(variable, boundExpression);
+    }
+
+    private VariableSymbol getVariable(SyntaxToken identifier) {
+        var name = identifier.getText();
+        if (!scope.isVariablePresent(name)) {
+            diagnostics.reportUndefinedNameExpression(identifier.getSpan(), name);
+            return null;
+        }
+        return scope.getVariableByIdentifier(name);
     }
 
 

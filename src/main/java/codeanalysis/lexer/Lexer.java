@@ -43,14 +43,26 @@ public final class Lexer {
                 kind = SyntaxKind.SEMICOLON_TOKEN;
                 next();
                 break;
-            case '+':
-                kind = SyntaxKind.PLUS_TOKEN;
+            case '+': {
+                if (lookahead() == '+') {
+                    kind = SyntaxKind.PLUS_PLUS_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.PLUS_TOKEN;
+                }
                 next();
                 break;
-            case '-':
-                kind = SyntaxKind.MINUS_TOKEN;
+            }
+            case '-': {
+                if (lookahead() == '-') {
+                    kind = SyntaxKind.MINUS_MINUS_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.MINUS_TOKEN;
+                }
                 next();
                 break;
+            }
             case '/':
                 kind = SyntaxKind.SLASH_TOKEN;
                 next();
