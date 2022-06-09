@@ -4,8 +4,7 @@ import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.conversion.Conversion;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
-import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
-import codeanalysis.binding.expression.assignment.BoundOperatorAssignmentOperator;
+import codeanalysis.binding.expression.assignment.BoundCompoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.call.BoundCallExpression;
@@ -40,6 +39,7 @@ import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.CompilationUnitSyntax;
+import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
@@ -376,8 +376,6 @@ public class Binder {
             case LITERAL_EXPRESSION -> bindLiteralExpression((LiteralExpressionSyntax) syntax);
             case NAME_EXPRESSION -> bindNameExpression((NameExpressionSyntax) syntax);
             case ASSIGNMENT_EXPRESSION -> bindAssignmentExpression((AssignmentExpressionSyntax) syntax);
-            case OPERATION_ASSIGNMENT_EXPRESSION ->
-                    bindOperationAssignmentExpression((OperationAssignmentExpressionSyntax) syntax);
             case UNARY_EXPRESSION -> bindUnaryExpression((UnaryExpressionSyntax) syntax);
             case BINARY_EXPRESSION -> bindBinaryExpression((BinaryExpressionSyntax) syntax);
             case CALL_EXPRESSION -> bindCallExpression((CallExpressionSyntax) syntax);
@@ -486,28 +484,23 @@ public class Binder {
         if (variable == null)
             return new BoundErrorExpression();
         if (variable.isReadOnly()) {
-            diagnostics.reportReadOnly(syntax.getEqualsToken().getSpan(), name);
-        }
-        BoundExpression boundExpression = bindExpression(syntax.getExpression(), variable.getType());
-        return new BoundAssignmentExpression(variable, boundExpression);
-    }
-
-    private BoundExpression bindOperationAssignmentExpression(OperationAssignmentExpressionSyntax syntax) throws Exception {
-        var name = syntax.getIdentifierToken().getText();
-        var variable = getVariable(syntax.getIdentifierToken());
-        if (variable == null)
-            return new BoundErrorExpression();
-        if (variable.isReadOnly()) {
-            diagnostics.reportReadOnly(syntax.getOperationToken().getSpan(), name);
+            diagnostics.reportReadOnly(syntax.getOperatorToken().getSpan(), name);
         }
         var boundExpression = bindExpression(syntax.getExpression(), variable.getType());
-        var operation = BoundOperatorAssignmentOperator.bind(syntax.getOperationToken().getKind(), boundExpression.getType());
-        if (operation == null) {
-            diagnostics.reportUndefinedOperator(syntax.getOperationToken().getSpan(),
-                    syntax.getOperationToken().getText(), boundExpression.getType());
+        if (boundExpression.getKind() == BoundNodeKind.ERROR_EXPRESSION) {
             return new BoundErrorExpression();
         }
-        return new BoundOperationAssignmentExpression(variable, operation, boundExpression);
+        if (syntax.getOperatorToken().getKind() != SyntaxKind.EQUAL_TOKEN) {
+            var equivalentOperatorTokenKind = SyntaxFacts.getBinaryOperatorOfAssignmentOperator(syntax.getOperatorToken().getKind());
+            var operation = BoundBinaryOperator.bind(equivalentOperatorTokenKind, variable.getType(), boundExpression.getType());
+            if (operation == null) {
+                diagnostics.reportUndefinedOperator(syntax.getOperatorToken().getSpan(),
+                        syntax.getOperatorToken().getText(), boundExpression.getType());
+                return new BoundErrorExpression();
+            }
+            return new BoundCompoundAssignmentExpression(variable, operation, boundExpression);
+        }
+        return new BoundAssignmentExpression(variable, boundExpression);
     }
 
     private VariableSymbol getVariable(SyntaxToken identifier) {

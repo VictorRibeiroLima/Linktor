@@ -217,16 +217,14 @@ public final class Parser {
 
     private ExpressionSyntax parseAssignmentExpression() {
         if (getCurrent().getKind() == SyntaxKind.IDENTIFIER_TOKEN) {
-            if (peek(1).getKind() == SyntaxKind.EQUAL_TOKEN) {
-                var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
-                var equals = matchToken(SyntaxKind.EQUAL_TOKEN);
-                var right = parseAssignmentExpression();
-                return new AssignmentExpressionSyntax(identifier, equals, right);
-            } else if (peek(1).getKind() == SyntaxKind.PLUS_EQUALS_TOKEN || peek(1).getKind() == SyntaxKind.MINUS_EQUALS_TOKEN) {
-                var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
-                var operation = matchToken(getCurrent().getKind());
-                var right = parseAssignmentExpression();
-                return new OperationAssignmentExpressionSyntax(identifier, operation, right);
+            switch (peek(1).getKind()) {
+                case PLUS_EQUALS_TOKEN, MINUS_EQUALS_TOKEN, SLASH_EQUALS_TOKEN, STAR_EQUALS_TOKEN,
+                        AMPERSAND_EQUALS_TOKEN, PIPE_EQUALS_TOKEN, HAT_EQUALS_TOKEN, EQUAL_TOKEN -> {
+                    var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
+                    var operator = matchToken(getCurrent().getKind());
+                    var right = parseAssignmentExpression();
+                    return new AssignmentExpressionSyntax(identifier, operator, right);
+                }
             }
         }
 
