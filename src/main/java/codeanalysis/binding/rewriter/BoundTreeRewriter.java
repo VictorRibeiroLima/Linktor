@@ -157,7 +157,7 @@ public abstract class BoundTreeRewriter {
             case LITERAL_EXPRESSION -> rewriteLiteralExpression((BoundLiteralExpression) expression);
             case VARIABLE_EXPRESSION -> rewriteVariableExpression((BoundVariableExpression) expression);
             case ASSIGNMENT_EXPRESSION -> rewriteAssignmentExpression((BoundAssignmentExpression) expression);
-            case OPERATION_ASSIGNMENT_EXPRESSION ->
+            case COMPOUND_ASSIGNMENT_EXPRESSION ->
                     rewriteOperationAssignmentExpression((BoundCompoundAssignmentExpression) expression);
             case UNARY_EXPRESSION -> rewriteUnaryExpression((BoundUnaryExpression) expression);
             case BINARY_EXPRESSION -> rewriteBinaryExpression((BoundBinaryExpression) expression);
