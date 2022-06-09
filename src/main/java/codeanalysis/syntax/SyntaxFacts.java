@@ -87,6 +87,11 @@ public final class SyntaxFacts {
             case PERCENTAGE_TOKEN -> "%";
             case BREAK_KEYWORD -> "break";
             case CONTINUE_KEYWORD -> "continue";
+            case SLASH_EQUALS_TOKEN -> "/=";
+            case STAR_EQUALS_TOKEN -> "*=";
+            case AMPERSAND_EQUALS_TOKEN -> "&=";
+            case PIPE_EQUALS_TOKEN -> "|=";
+            case HAT_EQUALS_TOKEN -> "^=";
             default -> null;
         };
     }
