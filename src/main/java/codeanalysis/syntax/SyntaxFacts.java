@@ -91,6 +91,19 @@ public final class SyntaxFacts {
         };
     }
 
+    public static SyntaxKind getBinaryOperatorOfAssignmentOperator(SyntaxKind kind) {
+        return switch (kind) {
+            case PLUS_EQUALS_TOKEN -> SyntaxKind.PLUS_TOKEN;
+            case MINUS_EQUALS_TOKEN -> SyntaxKind.MINUS_TOKEN;
+            case SLASH_EQUALS_TOKEN -> SyntaxKind.SLASH_TOKEN;
+            case STAR_EQUALS_TOKEN -> SyntaxKind.STAR_TOKEN;
+            case AMPERSAND_EQUALS_TOKEN -> SyntaxKind.AMPERSAND_TOKEN;
+            case PIPE_EQUALS_TOKEN -> SyntaxKind.PIPE_TOKEN;
+            case HAT_EQUALS_TOKEN -> SyntaxKind.HAT_TOKEN;
+            default -> throw new RuntimeException("Unexpected syntax: '+" + kind + "'");
+        };
+    }
+
     public static List<SyntaxKind> getUnaryOperatorKinds() {
         SyntaxKind[] kinds = SyntaxKind.values();
         List<SyntaxKind> unaryKinds = new ArrayList<>();

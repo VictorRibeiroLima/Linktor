@@ -3,8 +3,7 @@ package codeanalysis.lowering;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
-import codeanalysis.binding.expression.assignment.BoundOperationAssignmentExpression;
-import codeanalysis.binding.expression.assignment.BoundOperationAssignmentOperatorKind;
+import codeanalysis.binding.expression.assignment.BoundCompoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
@@ -62,18 +61,14 @@ public final class Lowerer extends BoundTreeRewriter {
         return new BoundBlockStatement(List.copyOf(statements));
     }
 
-    protected BoundExpression rewriteOperationAssignmentExpression(BoundOperationAssignmentExpression node) throws Exception {
+    protected BoundExpression rewriteOperationAssignmentExpression(BoundCompoundAssignmentExpression node) throws Exception {
         /*
             a += 2;
             a=a+2;
          */
         var left = new BoundVariableExpression(node.getVariable());
-        BoundBinaryOperator operator;
+        BoundBinaryOperator operator = node.getOperator();
         var right = node.getBoundExpression();
-        if (node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.INCREMENT || node.getOperator().getKind() == BoundOperationAssignmentOperatorKind.CONCATENATION)
-            operator = BoundBinaryOperator.bind(SyntaxKind.PLUS_TOKEN, left.getType(), right.getType());
-        else
-            operator = BoundBinaryOperator.bind(SyntaxKind.MINUS_TOKEN, left.getType(), right.getType());
         var binary = new BoundBinaryExpression(left, operator, right);
 
         var assignment = new BoundAssignmentExpression(node.getVariable(), binary);

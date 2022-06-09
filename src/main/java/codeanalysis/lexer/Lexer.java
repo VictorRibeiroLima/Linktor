@@ -70,11 +70,21 @@ public final class Lexer {
                 break;
             }
             case '/':
-                kind = SyntaxKind.SLASH_TOKEN;
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.SLASH_EQUALS_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.SLASH_TOKEN;
+                }
                 next();
                 break;
             case '*':
-                kind = SyntaxKind.STAR_TOKEN;
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.STAR_EQUALS_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.STAR_TOKEN;
+                }
                 next();
                 break;
             case '(':
@@ -137,6 +147,9 @@ public final class Lexer {
                 if (lookahead() == '&') {
                     kind = SyntaxKind.AMPERSAND_AMPERSAND_TOKEN;
                     next();
+                } else if (lookahead() == '=') {
+                    kind = SyntaxKind.AMPERSAND_EQUALS_TOKEN;
+                    next();
                 } else {
                     kind = SyntaxKind.AMPERSAND_TOKEN;
                 }
@@ -146,6 +159,9 @@ public final class Lexer {
             case '|': {
                 if (lookahead() == '|') {
                     kind = SyntaxKind.PIPE_PIPE_TOKEN;
+                    next();
+                } else if (lookahead() == '=') {
+                    kind = SyntaxKind.PIPE_EQUALS_TOKEN;
                     next();
                 } else {
                     kind = SyntaxKind.PIPE_TOKEN;
@@ -159,7 +175,12 @@ public final class Lexer {
                 break;
             }
             case '^': {
-                kind = SyntaxKind.HAT_TOKEN;
+                if (lookahead() == '=') {
+                    kind = SyntaxKind.HAT_EQUALS_TOKEN;
+                    next();
+                } else {
+                    kind = SyntaxKind.HAT_TOKEN;
+                }
                 next();
                 break;
             }

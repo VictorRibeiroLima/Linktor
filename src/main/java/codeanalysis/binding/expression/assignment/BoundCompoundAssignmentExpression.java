@@ -3,21 +3,22 @@ package codeanalysis.binding.expression.assignment;
 import codeanalysis.binding.BoundNode;
 import codeanalysis.binding.BoundNodeKind;
 import codeanalysis.binding.expression.BoundExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryOperator;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 
 import java.util.List;
 
-public class BoundOperationAssignmentExpression extends BoundExpression {
+public class BoundCompoundAssignmentExpression extends BoundExpression {
 
     private final VariableSymbol variable;
-    private final BoundOperatorAssignmentOperator operator;
+    private final BoundBinaryOperator operator;
     private final BoundExpression boundExpression;
     private final BoundNodeKind kind;
     private final List<BoundNode> children;
     private final TypeSymbol type;
 
-    public BoundOperationAssignmentExpression(VariableSymbol variable, BoundOperatorAssignmentOperator operator, BoundExpression boundExpression) {
+    public BoundCompoundAssignmentExpression(VariableSymbol variable, BoundBinaryOperator operator, BoundExpression boundExpression) {
         this.variable = variable;
         this.operator = operator;
         this.boundExpression = boundExpression;
@@ -45,7 +46,7 @@ public class BoundOperationAssignmentExpression extends BoundExpression {
         return variable;
     }
 
-    public BoundOperatorAssignmentOperator getOperator() {
+    public BoundBinaryOperator getOperator() {
         return operator;
     }
 

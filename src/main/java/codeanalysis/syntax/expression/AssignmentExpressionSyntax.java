@@ -9,7 +9,7 @@ import java.util.List;
 public class AssignmentExpressionSyntax extends ExpressionSyntax {
     private final SyntaxToken identifierToken;
 
-    private final SyntaxToken equalsToken;
+    private final SyntaxToken operatorToken;
 
     private final ExpressionSyntax expression;
 
@@ -17,20 +17,20 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
 
     private final List<SyntaxNode> children;
 
-    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken equalsToken, ExpressionSyntax expression) {
+    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression) {
         this.identifierToken = identifierToken;
-        this.equalsToken = equalsToken;
+        this.operatorToken = operatorToken;
         this.expression = expression;
         this.kind = SyntaxKind.ASSIGNMENT_EXPRESSION;
-        this.children = List.of(identifierToken, equalsToken, expression);
+        this.children = List.of(identifierToken, operatorToken, expression);
     }
 
     public SyntaxToken getIdentifierToken() {
         return identifierToken;
     }
 
-    public SyntaxToken getEqualsToken() {
-        return equalsToken;
+    public SyntaxToken getOperatorToken() {
+        return operatorToken;
     }
 
     public ExpressionSyntax getExpression() {
