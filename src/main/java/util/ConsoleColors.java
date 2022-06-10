@@ -52,7 +52,12 @@ public class ConsoleColors {
     public static final String BLUE_BRIGHT = "\033[0;94m";   // BLUE
     public static final String PURPLE_BRIGHT = "\033[0;95m"; // PURPLE
     public static final String CYAN_BRIGHT = "\033[0;96m";   // CYAN
-    public static final String WHITE_BRIGHT = "\033[0;97m";  // WHITE
+    public static final String WHITE_BRIGHT = "\033[0;97m";  // WHITEANSI escape code
+
+    public static final String PINK_255 = "\033[38;5;199m";
+    public static final String PURPLE_255 = "\033[38;5;91m";
+    public static final String GREEN_255 = "\033[38;5;46m";
+    public static final String ORANGE_255 = "\033[38;5;202m";
 
     // Bold High Intensity
     public static final String BLACK_BOLD_BRIGHT = "\033[1;90m"; // BLACK

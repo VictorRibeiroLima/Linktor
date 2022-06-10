@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class LinktorRepl extends Repl {
     private boolean showTree;
-    private boolean showProgram;
+    private boolean showProgram = true;
     private Compilation previous;
     private final Map<VariableSymbol, Object> variables = new HashMap<>();
 
@@ -27,9 +27,11 @@ public class LinktorRepl extends Repl {
         Compilation compilation = previous == null ? new Compilation(tree) : previous.continueWith(tree);
         if (showTree) {
             tree.getRoot().writeTo(new PrintWriter(System.out, true));
+            System.out.println();
         }
         if (showProgram) {
             compilation.emitTree(new PrintWriter(System.out, true));
+            System.out.println();
         }
         EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
