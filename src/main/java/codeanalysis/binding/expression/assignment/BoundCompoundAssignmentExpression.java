@@ -22,7 +22,7 @@ public class BoundCompoundAssignmentExpression extends BoundExpression {
         this.variable = variable;
         this.operator = operator;
         this.boundExpression = boundExpression;
-        this.kind = BoundNodeKind.OPERATION_ASSIGNMENT_EXPRESSION;
+        this.kind = BoundNodeKind.COMPOUND_ASSIGNMENT_EXPRESSION;
         this.type = boundExpression.getType();
         this.children = List.of(boundExpression);
     }

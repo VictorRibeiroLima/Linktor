@@ -7,6 +7,7 @@ import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
+import io.BoundNodeWriter;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -71,6 +72,7 @@ public class Compilation {
 
     public void emitTree(PrintWriter printWriter) throws Exception {
         BoundProgram program = Binder.bindProgram(getGlobalScope());
-        program.getStatement().printTree(printWriter);
+        var node = program.getStatement();
+        BoundNodeWriter.writeTo(printWriter, node);
     }
 }
