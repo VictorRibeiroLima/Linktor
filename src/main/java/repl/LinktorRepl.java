@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class LinktorRepl extends Repl {
     private boolean showTree;
-    private boolean showProgram = true;
+    private boolean showProgram;
     private Compilation previous;
     private final Map<VariableSymbol, Object> variables = new HashMap<>();
 

@@ -282,22 +282,14 @@ public class Binder {
 
     private BoundStatement bindIfStatement(IfStatementSyntax syntax) throws Exception {
         BoundExpression condition = bindExpression(syntax.getCondition(), TypeSymbol.BOOLEAN);
-        if (syntax.getThenStatement().getKind() != SyntaxKind.BLOCK_STATEMENT)
-            scope = new BoundScope(scope);
         BoundStatement thenStatement = bindStatement(syntax.getThenStatement());
-        if (syntax.getThenStatement().getKind() != SyntaxKind.BLOCK_STATEMENT)
-            scope = scope.getParent();
         BoundElseClause elseClause = bindElseClause(syntax.getElseClause());
         return new BoundIfStatement(condition, thenStatement, elseClause);
     }
 
     private BoundElseClause bindElseClause(ElseClauseSyntax elseClause) throws Exception {
         if (elseClause != null) {
-            if (elseClause.getThenStatement().getKind() != SyntaxKind.BLOCK_STATEMENT)
-                scope = new BoundScope(scope);
             BoundStatement thenStatement = bindStatement(elseClause.getThenStatement());
-            if (elseClause.getThenStatement().getKind() != SyntaxKind.BLOCK_STATEMENT)
-                scope = scope.getParent();
             return new BoundElseClause(thenStatement);
         }
         return null;
