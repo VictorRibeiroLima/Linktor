@@ -152,6 +152,11 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
+    public void reportAllPathMustReturn(TextSpan span) {
+        String message = "ERROR: All paths must return a value on non void functions .";
+        report(span, message);
+    }
+
     private String parseTypesList(List<TypeSymbol> paramTypes) {
         StringBuilder usedTypes = new StringBuilder("[");
         for (int i = 0; i < paramTypes.size(); i++) {

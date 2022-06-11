@@ -31,6 +31,7 @@ import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
+import codeanalysis.controlflow.ControlFlowGraph;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.TextSpan;
@@ -120,6 +121,9 @@ public class Binder {
                 Binder binder = new Binder(parent, function);
                 BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
                 BoundBlockStatement loweredBody = Lowerer.lower(body);
+                if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
+                    diagnostics.reportAllPathMustReturn(function.getDeclaration().getSpan());
+
                 functionsBodies.put(function, loweredBody);
                 diagnostics.addAll(binder.getDiagnostics());
             }
@@ -377,6 +381,9 @@ public class Binder {
     private BoundExpression bindExpression(ExpressionSyntax syntax, TypeSymbol expectedType) throws Exception {
         BoundExpression result = bindExpression(syntax);
         Conversion conversion = Conversion.classify(result.getType(), expectedType);
+        if (conversion.isIdentity()) {
+            return result;
+        }
         if (conversion.isImplicit())
             return new BoundConversionExpression(expectedType, result);
         if (

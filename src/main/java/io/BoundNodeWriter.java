@@ -18,6 +18,7 @@ import codeanalysis.binding.statement.conditional.BoundIfStatement;
 import codeanalysis.binding.statement.declaration.BoundLabelDeclarationStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
@@ -56,6 +57,7 @@ public class BoundNodeWriter {
             case LABEL_DECLARATION_STATEMENT -> writeLabelDeclarationStatement((BoundLabelDeclarationStatement) node);
             case CONDITIONAL_JUMP_TO_STATEMENT ->
                     writeConditionalJumpToStatement((BoundConditionalJumpToStatement) node);
+            case RETURN_STATEMENT -> writeReturnStatement((BoundReturnStatement) node);
             case LITERAL_EXPRESSION -> writeLiteralExpression((BoundLiteralExpression) node);
             case UNARY_EXPRESSION -> writeUnaryExpression((BoundUnaryExpression) node);
             case VARIABLE_EXPRESSION -> writeVariableExpression((BoundVariableExpression) node);
@@ -70,6 +72,7 @@ public class BoundNodeWriter {
             case BINARY_EXPRESSION -> writeBinaryExpression((BoundBinaryExpression) node);
         }
     }
+
 
     private void writeBlockStatement(BoundBlockStatement node) {
         writePunctuation("{");
@@ -166,6 +169,14 @@ public class BoundNodeWriter {
         writeTo(node.getCondition());
     }
 
+    private void writeReturnStatement(BoundReturnStatement node) {
+        writeLine();
+        writeKeyword("return");
+        if (node.getExpression() != null) {
+            writeTo(node.getExpression());
+        }
+    }
+
     private void writeNestedStatement(BoundNode node) {
         var needIndentation = !(node instanceof BoundBlockStatement);
         if (needIndentation)
@@ -247,7 +258,8 @@ public class BoundNodeWriter {
 
     private void writeLine() {
         String indent = "";
-        indent = indent + "    ".repeat(indentation);
+        if (indentation > 0)
+            indent = indent + "    ".repeat(indentation);
         out.println("");
         out.print(indent);
     }
