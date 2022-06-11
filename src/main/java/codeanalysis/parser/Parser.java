@@ -22,9 +22,12 @@ public final class Parser {
     private final List<SyntaxToken> tokens;
     private int position;
 
+    private final SourceText text;
+
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
     public Parser(SourceText text) {
+        this.text = text;
         position = 0;
         SyntaxToken token;
         List<SyntaxToken> tokens = new ArrayList<>();
@@ -110,11 +113,23 @@ public final class Parser {
             case FOR_KEYWORD -> parseForStatement();
             case BREAK_KEYWORD -> parseBreakStatement();
             case CONTINUE_KEYWORD -> parseContinueStatement();
+            case RETURN_KEYWORD -> parseReturnStatement();
             default -> parseExpressionStatement();
         };
         if (getCurrent().getKind() == SyntaxKind.SEMICOLON_TOKEN)
             nextToken();
         return statement;
+    }
+
+    private StatementSyntax parseReturnStatement() {
+        var keyword = matchToken(SyntaxKind.RETURN_KEYWORD);
+        var keywordLine = text.getLineIndex(keyword.getSpan().start());
+        var currentLine = text.getLineIndex(getCurrent().getSpan().start());
+        var sameLine = keywordLine == currentLine;
+        var isEoF = getCurrent().getKind() == SyntaxKind.END_OF_FILE_TOKEN;
+        var needsExpression = !isEoF && sameLine;
+        var expression = needsExpression ? parseExpression() : null;
+        return new ReturnStatementSyntax(keyword, expression);
     }
 
     private StatementSyntax parseForStatement() {

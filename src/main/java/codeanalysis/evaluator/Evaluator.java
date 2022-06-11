@@ -14,6 +14,7 @@ import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.binding.statement.declaration.BoundLabelDeclarationStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
@@ -71,11 +72,20 @@ public final class Evaluator {
                     else
                         index++;
                 }
+                case RETURN_STATEMENT -> {
+                    evaluateReturnStatement((BoundReturnStatement) statement);
+                    index++;
+                }
                 case LABEL_DECLARATION_STATEMENT -> index++;
                 default -> throw new Exception("Unexpected node " + statement.getKind());
             }
         }
         return lastValue;
+    }
+
+    private void evaluateReturnStatement(BoundReturnStatement statement) throws Exception {
+        if (statement.getExpression() != null)
+            lastValue = evaluateExpression(statement.getExpression());
     }
 
     private Map<BoundLabel, Integer> mapLabels(BoundBlockStatement body) {

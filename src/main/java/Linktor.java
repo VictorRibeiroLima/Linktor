@@ -15,7 +15,6 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Linktor {
     public static void main(String[] args) {
@@ -38,15 +37,19 @@ public class Linktor {
         BufferedReader br
                 = new BufferedReader(new FileReader(file));
 
-        String input = br.lines().collect(Collectors.joining());
+        var builder = new StringBuilder();
+        br.lines().forEach(line -> {
+            builder.append(line);
+            builder.append("\n");
+        });
 
+        String input = builder.toString();
 
         final Map<VariableSymbol, Object> variables = new HashMap<>();
         SyntaxTree tree = SyntaxTree.parse(input);
         Compilation compilation = new Compilation(tree);
         EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
-        Object result = evaluationResult.result();
         if (!diagnostics.isEmpty()) {
             SourceText text = tree.getText();
             for (Diagnostic diagnostic : diagnostics) {

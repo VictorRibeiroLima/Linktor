@@ -3,12 +3,15 @@ package compilation;
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.BoundProgram;
 import codeanalysis.binding.scopes.BoundGlobalScope;
+import codeanalysis.binding.statement.block.BoundBlockStatement;
+import codeanalysis.controlflow.ControlFlowGraph;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import io.BoundNodeWriter;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -62,9 +65,18 @@ public class Compilation {
             return new EvaluationResult(diagnostics, null);
 
         BoundProgram program = Binder.bindProgram(getGlobalScope());
+        var cfgStatements = program.getStatement().getStatements().isEmpty() && !program.getFunctionsBodies().isEmpty()
+                ? (BoundBlockStatement) program.getFunctionsBodies().values().toArray()[program.getFunctionsBodies().size() - 1]
+                : program.getStatement();
+
+        var cfg = ControlFlowGraph.create(cfgStatements);
+
+        var root = new File(".").getCanonicalPath();
+        var file = new File(root + "/cfg.dot");
+        cfg.writeTo(new PrintWriter(file));
+
         if (!program.getDiagnostics().isEmpty())
             return new EvaluationResult(program.getDiagnostics().getDiagnostics(), null);
-
         Evaluator evaluator = new Evaluator(program, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
