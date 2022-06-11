@@ -21,6 +21,7 @@ import codeanalysis.binding.statement.conditional.BoundIfStatement;
 import codeanalysis.binding.statement.declaration.BoundLabelDeclarationStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
@@ -45,8 +46,19 @@ public abstract class BoundTreeRewriter {
             case JUMP_TO_STATEMENT -> rewriteJumpToStatement((BoundJumpToStatement) statement);
             case CONDITIONAL_JUMP_TO_STATEMENT ->
                     rewriteConditionalJumpToStatement((BoundConditionalJumpToStatement) statement);
+            case RETURN_STATEMENT -> rewriteReturnStatement((BoundReturnStatement) statement);
             default -> throw new Exception("Unexpected statement " + statement.getKind());
         };
+    }
+
+    private BoundStatement rewriteReturnStatement(BoundReturnStatement statement) throws Exception {
+        if (statement.getExpression() != null) {
+            BoundExpression expression = rewriteExpression(statement.getExpression());
+            if (expression.equals(statement.getExpression()))
+                return statement;
+            return new BoundReturnStatement(expression);
+        }
+        return statement;
     }
 
     protected BoundStatement rewriteConditionalJumpToStatement(BoundConditionalJumpToStatement statement) throws Exception {

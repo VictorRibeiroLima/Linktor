@@ -25,6 +25,7 @@ import codeanalysis.binding.statement.conditional.BoundElseClause;
 import codeanalysis.binding.statement.conditional.BoundIfStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
@@ -32,6 +33,7 @@ import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
+import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.lowering.Lowerer;
 import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.FunctionSymbol;
@@ -60,6 +62,7 @@ public class Binder {
     private final Stack<LoopStack> loopStack = new Stack<>();
     private int labelCount = 0;
     private final DiagnosticBag diagnostics = new DiagnosticBag();
+    private final FunctionSymbol function;
 
     private BoundScope scope;
 
@@ -69,6 +72,7 @@ public class Binder {
     }
 
     private Binder(BoundScope parent, FunctionSymbol function) {
+        this.function = function;
         scope = new BoundScope(parent);
         if (function != null) {
             for (ParameterSymbol p : function.getParameters())
@@ -213,8 +217,28 @@ public class Binder {
             case FOR_STATEMENT -> bindForStatement((ForStatementSyntax) syntax);
             case CONTINUE_STATEMENT -> bindContinueStatement((ContinueStatementSyntax) syntax);
             case BREAK_STATEMENT -> bindBreakStatement((BreakStatementSyntax) syntax);
+            case RETURN_STATEMENT -> bindReturnStatement((ReturnStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+    }
+
+    private BoundStatement bindReturnStatement(ReturnStatementSyntax syntax) throws Exception {
+        var hasExpression = syntax.getExpression() != null;
+        var expression = hasExpression ? bindExpression(syntax.getExpression()) : null;
+        if (this.function == null) {
+            diagnostics.reportReturnOutsideFunction(syntax.getKeyword().getSpan());
+        } else {
+            if (function.getType() == TypeSymbol.VOID) {
+                if (hasExpression)
+                    diagnostics.reportReturnOnVoid(syntax.getExpression().getSpan());
+            } else {
+                if (!hasExpression)
+                    diagnostics.reportMissingReturnExpression(syntax.getExpression().getSpan(), function.getType());
+                else
+                    expression = bindConversion(function.getType(), expression, syntax.getExpression().getSpan());
+            }
+        }
+        return new BoundReturnStatement(expression);
     }
 
     private BoundStatement bindForStatement(ForStatementSyntax syntax) throws Exception {
@@ -424,6 +448,21 @@ public class Binder {
             if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
                 diagnostics.reportCannotConvert(syntax.getSpan(), expression.getType(), type);
             return new BoundErrorExpression();
+        }
+        if (conversion.isIdentity())
+            return expression;
+        return new BoundConversionExpression(type, expression);
+    }
+
+    private BoundExpression bindConversion(TypeSymbol type, BoundExpression expression, TextSpan span) {
+        Conversion conversion = Conversion.classify(expression.getType(), type);
+        if (!conversion.isExists()) {
+            if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
+                diagnostics.reportCannotConvert(span, expression.getType(), type);
+            return new BoundErrorExpression();
+        }
+        if (conversion.isExplicit()) {
+            diagnostics.reportCannotConvert(span, expression.getType(), type);
         }
         if (conversion.isIdentity())
             return expression;

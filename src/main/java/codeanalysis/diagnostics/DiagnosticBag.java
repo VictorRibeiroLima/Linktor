@@ -137,6 +137,21 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(span, message);
     }
 
+    public void reportReturnOutsideFunction(TextSpan span) {
+        String message = "ERROR: Return statement outside function.";
+        report(span, message);
+    }
+
+    public void reportReturnOnVoid(TextSpan span) {
+        String message = "ERROR: Return statement on void function.";
+        report(span, message);
+    }
+
+    public void reportMissingReturnExpression(TextSpan span, TypeSymbol type) {
+        String message = "ERROR: Return statement is returning void on function of type '" + type.getName() + "'.";
+        report(span, message);
+    }
+
     private String parseTypesList(List<TypeSymbol> paramTypes) {
         StringBuilder usedTypes = new StringBuilder("[");
         for (int i = 0; i < paramTypes.size(); i++) {

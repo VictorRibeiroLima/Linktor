@@ -40,6 +40,7 @@ public final class SyntaxFacts {
             case "function" -> SyntaxKind.FUNCTION_KEYWORD;
             case "continue" -> SyntaxKind.CONTINUE_KEYWORD;
             case "break" -> SyntaxKind.BREAK_KEYWORD;
+            case "return" -> SyntaxKind.RETURN_KEYWORD;
             default -> SyntaxKind.IDENTIFIER_TOKEN;
         };
     }
@@ -92,6 +93,7 @@ public final class SyntaxFacts {
             case AMPERSAND_EQUALS_TOKEN -> "&=";
             case PIPE_EQUALS_TOKEN -> "|=";
             case HAT_EQUALS_TOKEN -> "^=";
+            case RETURN_KEYWORD -> "return";
             default -> null;
         };
     }
