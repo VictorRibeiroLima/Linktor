@@ -2,6 +2,7 @@ package codeanalysis.syntax;
 
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.lexer.Lexer;
 import codeanalysis.parser.Parser;
 
@@ -55,5 +56,10 @@ public class SyntaxTree {
 
     public SourceText getText() {
         return text;
+    }
+
+    public String toString(TextSpan span) {
+        var text = this.text.toString();
+        return text.substring(span.start(), span.length());
     }
 }

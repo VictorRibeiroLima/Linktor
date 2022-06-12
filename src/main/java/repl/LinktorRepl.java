@@ -1,12 +1,11 @@
 package repl;
 
 import codeanalysis.diagnostics.Diagnostic;
-import codeanalysis.diagnostics.text.SourceText;
-import codeanalysis.diagnostics.text.TextLine;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
 import compilation.EvaluationResult;
+import io.DiagnosticsWriter;
 import util.ConsoleColors;
 
 import java.io.PrintWriter;
@@ -41,23 +40,7 @@ public class LinktorRepl extends Repl {
                 System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
             previous = compilation;
         } else {
-            SourceText text = tree.getText();
-            for (Diagnostic diagnostic : diagnostics) {
-                int lineIndex = text.getLineIndex(diagnostic.span().start());
-                TextLine line = text.getLines().get(lineIndex);
-                int lineNumber = lineIndex + 1;
-                int character = diagnostic.span().start() - line.getStart() + 1;
-
-                System.out.println(ConsoleColors.RED);
-                System.out.println(diagnostic);
-
-                String prefix = input.substring(line.getStart(), diagnostic.span().start());
-                String error = tree.getText().toString(diagnostic.span());
-                String suffix = input.substring(diagnostic.span().end());
-
-                System.out.print("At Line(" + lineNumber + "," + character + "): ");
-                System.out.println(ConsoleColors.WHITE + prefix + ConsoleColors.RED + error + ConsoleColors.WHITE + suffix);
-            }
+            DiagnosticsWriter.writeTo(new PrintWriter(System.out), diagnostics, tree, true);
         }
     }
 
