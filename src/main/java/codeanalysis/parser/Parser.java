@@ -131,7 +131,7 @@ public final class Parser {
         var currentLine = text.getLineIndex(getCurrent().getSpan().start());
         var sameLine = keywordLine == currentLine;
         var isEoF = getCurrent().getKind() == SyntaxKind.END_OF_FILE_TOKEN;
-        var needsExpression = !isEoF && sameLine;
+        var needsExpression = !isEoF && sameLine && getCurrent().getKind() != SyntaxKind.SEMICOLON_TOKEN;
         var expression = needsExpression ? parseExpression() : null;
         return new ReturnStatementSyntax(syntaxTree, keyword, expression);
     }
@@ -388,7 +388,7 @@ public final class Parser {
         if (getCurrent().getKind() == type)
             return nextToken();
 
-        diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
+        diagnostics.reportUnexpectedToken(getCurrent().getLocation(), getCurrent().getKind(), type);
         nextToken();
         return new SyntaxToken(syntaxTree, type, getCurrent().getPosition(), null, null);
     }

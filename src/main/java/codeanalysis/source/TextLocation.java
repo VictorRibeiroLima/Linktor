@@ -2,6 +2,10 @@ package codeanalysis.source;
 
 public record TextLocation(SourceText text, TextSpan span) {
 
+    public String fileName() {
+        return text.getFileName();
+    }
+
     public int startLine() {
         return text.getLineIndex(span.start());
     }

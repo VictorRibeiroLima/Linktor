@@ -1,8 +1,8 @@
 package codeanalysis.diagnostics;
 
-import codeanalysis.source.TextSpan;
+import codeanalysis.source.TextLocation;
 
-public record Diagnostic(TextSpan span, String message) {
+public record Diagnostic(TextLocation location, String message) {
 
     @Override
     public String toString() {

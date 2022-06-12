@@ -28,16 +28,19 @@ public class SyntaxTree {
 
     public static SyntaxTree load(String fileName) throws FileNotFoundException {
         var file = new File(fileName);
-        var br = new BufferedReader(new FileReader(file));
+        if (file.exists()) {
+            var br = new BufferedReader(new FileReader(file));
 
-        var builder = new StringBuilder();
-        br.lines().forEach(line -> {
-            builder.append(line);
-            builder.append("\n");
-        });
-        var text = builder.toString();
-        var sourceText = SourceText.from(text, fileName);
-        return parse(sourceText);
+            var builder = new StringBuilder();
+            br.lines().forEach(line -> {
+                builder.append(line);
+                builder.append("\n");
+            });
+            var text = builder.toString();
+            var sourceText = SourceText.from(text, fileName);
+            return parse(sourceText);
+        }
+        return null;
     }
 
     public static SyntaxTree parse(String input) {

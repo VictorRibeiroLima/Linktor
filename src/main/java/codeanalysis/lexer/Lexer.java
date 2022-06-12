@@ -2,6 +2,7 @@ package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.source.SourceText;
+import codeanalysis.source.TextLocation;
 import codeanalysis.source.TextSpan;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
@@ -227,7 +228,9 @@ public final class Lexer {
                 else if (Character.isWhitespace(getCurrent()))
                     readWhitespace();
                 else {
-                    diagnostics.reportBadChar(position, getCurrent());
+                    var span = new TextSpan(position, 1);
+                    var location = new TextLocation(text, span);
+                    diagnostics.reportBadChar(location, getCurrent());
                     next();
                 }
                 break;
@@ -252,8 +255,9 @@ public final class Lexer {
                 next();
             } else if (getCurrent() == '\0' || getCurrent() == '\n' || getCurrent() == '\r') {
                 TextSpan span = new TextSpan(start, 1);
+                var location = new TextLocation(text, span);
                 done = true;
-                diagnostics.reportUnterminatedString(span);
+                diagnostics.reportUnterminatedString(location);
             } else if (getCurrent() == stringStarter) {
                 done = true;
                 next();

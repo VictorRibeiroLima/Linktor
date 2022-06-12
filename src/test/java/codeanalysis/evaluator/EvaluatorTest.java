@@ -53,7 +53,7 @@ class EvaluatorTest {
         TextSpan expectedSpan = input.getSpans().get(0);
 
         assertEquals(expectedDiagnostic, diagnostic.message());
-        assertEquals(expectedSpan, diagnostic.span());
+        assertEquals(expectedSpan, diagnostic.location().span());
 
     }
 

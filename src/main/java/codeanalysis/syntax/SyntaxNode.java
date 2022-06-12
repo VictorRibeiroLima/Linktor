@@ -1,5 +1,6 @@
 package codeanalysis.syntax;
 
+import codeanalysis.source.TextLocation;
 import codeanalysis.source.TextSpan;
 import util.ConsoleColors;
 
@@ -31,6 +32,10 @@ public abstract class SyntaxNode {
             last = this.getChildren().get(this.getChildren().size() - 1).getSpan();
         }
         return TextSpan.fromBounds(first.start(), last.end());
+    }
+
+    public TextLocation getLocation() {
+        return new TextLocation(tree.getText(), getSpan());
     }
 
     public SyntaxToken getLastToken() {

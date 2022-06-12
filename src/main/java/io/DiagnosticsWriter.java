@@ -22,20 +22,22 @@ public class DiagnosticsWriter {
         if (!diagnostics.isEmpty()) {
             SourceText text = tree.getText();
             for (Diagnostic diagnostic : diagnostics) {
-                int lineIndex = text.getLineIndex(diagnostic.span().start());
+                var filePath = diagnostic.location().fileName();
+                var span = diagnostic.location().span();
+                int lineIndex = text.getLineIndex(span.start());
                 TextLine line = text.getLines().get(lineIndex);
                 int lineNumber = lineIndex + 1;
-                int character = diagnostic.span().start() - line.getStart() + 1;
+                int character = span.start() - line.getStart() + 1;
 
                 if (paint)
                     out.println(ConsoleColors.RED);
                 out.println(diagnostic);
 
-                String prefix = text.toString().substring(line.getStart(), diagnostic.span().start());
-                String error = tree.getText().toString(diagnostic.span());
-                String suffix = text.toString().substring(diagnostic.span().end());
+                String prefix = text.toString().substring(line.getStart(), span.start());
+                String error = tree.getText().toString(span);
+                String suffix = text.toString().substring(span.end());
 
-                out.print("At Line(" + lineNumber + "," + character + "): ");
+                out.println(filePath + ":" + lineNumber + ":" + character);
                 if (paint)
                     out.println(ConsoleColors.WHITE + prefix + ConsoleColors.RED + error + ConsoleColors.WHITE + suffix);
                 else
