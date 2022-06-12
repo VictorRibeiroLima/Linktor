@@ -237,7 +237,7 @@ public final class Lexer {
         if (text == null) {
             text = this.text.toString(start, position);
         }
-        return new SyntaxToken(kind, start, text, value);
+        return new SyntaxToken(syntaxTree, kind, start, text, value);
     }
 
     private void readString() {

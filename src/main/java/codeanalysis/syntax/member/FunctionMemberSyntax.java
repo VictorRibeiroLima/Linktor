@@ -3,6 +3,7 @@ package codeanalysis.syntax.member;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.clause.ParameterClauseSyntax;
 import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.SeparatedSyntaxList;
@@ -23,12 +24,14 @@ public class FunctionMemberSyntax extends MemberSyntax {
     private final List<SyntaxNode> children;
 
 
-    public FunctionMemberSyntax(SyntaxToken functionKeyword,
+    public FunctionMemberSyntax(SyntaxTree tree,
+                                SyntaxToken functionKeyword,
                                 SyntaxToken identifier,
                                 SyntaxToken open,
                                 SeparatedSyntaxList<ParameterClauseSyntax> params,
                                 SyntaxToken close,
                                 TypeClauseSyntax type, BlockStatementSyntax body) {
+        super(tree);
         this.functionKeyword = functionKeyword;
         this.identifier = identifier;
         this.open = open;

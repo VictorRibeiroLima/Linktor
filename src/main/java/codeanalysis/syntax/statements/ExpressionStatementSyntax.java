@@ -2,9 +2,9 @@ package codeanalysis.syntax.statements;
 
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class ExpressionStatementSyntax extends StatementSyntax {
@@ -14,10 +14,11 @@ public class ExpressionStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public ExpressionStatementSyntax(ExpressionSyntax expression) {
+    public ExpressionStatementSyntax(SyntaxTree tree, ExpressionSyntax expression) {
+        super(tree);
         this.expression = expression;
         this.kind = SyntaxKind.EXPRESSION_STATEMENT;
-        this.children = Arrays.asList(expression);
+        this.children = List.of(expression);
     }
 
     public ExpressionSyntax getExpression() {

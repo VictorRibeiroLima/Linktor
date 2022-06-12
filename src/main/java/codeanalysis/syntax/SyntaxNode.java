@@ -8,9 +8,20 @@ import java.io.StringWriter;
 import java.util.List;
 
 public abstract class SyntaxNode {
+
+    private final SyntaxTree tree;
+
+    protected SyntaxNode(SyntaxTree tree) {
+        this.tree = tree;
+    }
+
     public abstract SyntaxKind getKind();
 
     public abstract List<SyntaxNode> getChildren();
+
+    public SyntaxTree getTree() {
+        return tree;
+    }
 
     public TextSpan getSpan() {
         TextSpan first = null;

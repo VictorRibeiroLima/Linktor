@@ -12,7 +12,8 @@ public class CompilationUnitSyntax extends SyntaxNode {
 
     private final List<SyntaxNode> children;
 
-    public CompilationUnitSyntax(List<MemberSyntax> members, SyntaxToken endOfFileToken) {
+    public CompilationUnitSyntax(SyntaxTree tree, List<MemberSyntax> members, SyntaxToken endOfFileToken) {
+        super(tree);
         this.kind = SyntaxKind.COMPILATION_UNIT;
         this.members = List.copyOf(members);
         this.endOfFileToken = endOfFileToken;

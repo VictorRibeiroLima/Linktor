@@ -3,6 +3,7 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.List;
 
@@ -17,7 +18,8 @@ public class AssignmentExpressionSyntax extends ExpressionSyntax {
 
     private final List<SyntaxNode> children;
 
-    public AssignmentExpressionSyntax(SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression) {
+    public AssignmentExpressionSyntax(SyntaxTree tree, SyntaxToken identifierToken, SyntaxToken operatorToken, ExpressionSyntax expression) {
+        super(tree);
         this.identifierToken = identifierToken;
         this.operatorToken = operatorToken;
         this.expression = expression;

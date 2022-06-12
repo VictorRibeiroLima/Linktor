@@ -3,8 +3,8 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class UnaryExpressionSyntax extends ExpressionSyntax {
@@ -12,10 +12,15 @@ public class UnaryExpressionSyntax extends ExpressionSyntax {
     private final ExpressionSyntax right;
     private final SyntaxKind kind;
 
-    public UnaryExpressionSyntax(SyntaxToken operatorToken, ExpressionSyntax right) {
+    private final List<SyntaxNode> children;
+
+    public UnaryExpressionSyntax(SyntaxTree tree, SyntaxToken operatorToken, ExpressionSyntax right) {
+        super(tree);
         this.operatorToken = operatorToken;
         this.right = right;
         this.kind = SyntaxKind.UNARY_EXPRESSION;
+        this.children = List.of(operatorToken, right);
+
     }
 
     public SyntaxToken getOperatorToken() {
@@ -33,6 +38,6 @@ public class UnaryExpressionSyntax extends ExpressionSyntax {
 
     @Override
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(operatorToken, right);
+        return children;
     }
 }

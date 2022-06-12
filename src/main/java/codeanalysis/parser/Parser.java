@@ -52,7 +52,7 @@ public final class Parser {
     public CompilationUnitSyntax parseCompilationUnit() {
         List<MemberSyntax> members = parseMembers();
         SyntaxToken endOfFileToken = matchToken(SyntaxKind.END_OF_FILE_TOKEN);
-        return new CompilationUnitSyntax(members, endOfFileToken);
+        return new CompilationUnitSyntax(syntaxTree, members, endOfFileToken);
     }
 
     private List<MemberSyntax> parseMembers() {
@@ -79,7 +79,7 @@ public final class Parser {
         SyntaxToken close = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
         TypeClauseSyntax type = parseOptionalType();
         BlockStatementSyntax body = parseBlockStatement();
-        return new FunctionMemberSyntax(function, identifier, open, params, close, type, body);
+        return new FunctionMemberSyntax(syntaxTree, function, identifier, open, params, close, type, body);
     }
 
     private SeparatedSyntaxList<ParameterClauseSyntax> parseParameterList() {
@@ -99,12 +99,12 @@ public final class Parser {
     private ParameterClauseSyntax parseParameter() {
         SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
         TypeClauseSyntax type = parseType();
-        return new ParameterClauseSyntax(identifier, type);
+        return new ParameterClauseSyntax(syntaxTree, identifier, type);
     }
 
     private MemberSyntax parseGlobalStatement() {
         StatementSyntax statement = parseStatement();
-        return new GlobalMemberSyntax(statement);
+        return new GlobalMemberSyntax(syntaxTree, statement);
     }
 
 
@@ -133,14 +133,14 @@ public final class Parser {
         var isEoF = getCurrent().getKind() == SyntaxKind.END_OF_FILE_TOKEN;
         var needsExpression = !isEoF && sameLine;
         var expression = needsExpression ? parseExpression() : null;
-        return new ReturnStatementSyntax(keyword, expression);
+        return new ReturnStatementSyntax(syntaxTree, keyword, expression);
     }
 
     private StatementSyntax parseForStatement() {
         SyntaxToken forKeyWord = matchToken(SyntaxKind.FOR_KEYWORD);
         ForConditionClauseSyntax condition = parseForConditionClause();
         StatementSyntax thenStatement = parseStatement();
-        return new ForStatementSyntax(forKeyWord, condition, thenStatement);
+        return new ForStatementSyntax(syntaxTree, forKeyWord, condition, thenStatement);
     }
 
     private ForConditionClauseSyntax parseForConditionClause() {
@@ -154,14 +154,14 @@ public final class Parser {
         matchToken(SyntaxKind.SEMICOLON_TOKEN);
         ExpressionSyntax increment = parseExpression();
         matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-        return new ForConditionClauseSyntax(variableExpression, condition, increment);
+        return new ForConditionClauseSyntax(syntaxTree, variableExpression, condition, increment);
     }
 
     private StatementSyntax parseWhileStatement() {
         SyntaxToken whileKeyword = matchToken(SyntaxKind.WHILE_KEYWORD);
         ExpressionSyntax condition = parseParenthesizedExpression();
         StatementSyntax thenStatement = parseStatement();
-        return new WhileStatementSyntax(whileKeyword, condition, thenStatement);
+        return new WhileStatementSyntax(syntaxTree, whileKeyword, condition, thenStatement);
     }
 
     private StatementSyntax parseIfStatement() {
@@ -169,14 +169,14 @@ public final class Parser {
         ExpressionSyntax condition = parseParenthesizedExpression();
         StatementSyntax thenStatement = parseStatement();
         ElseClauseSyntax elseClause = parseElseClause();
-        return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
+        return new IfStatementSyntax(syntaxTree, ifKeyword, condition, thenStatement, elseClause);
     }
 
     private ElseClauseSyntax parseElseClause() {
         if (getCurrent().getKind() == SyntaxKind.ELSE_KEYWORD) {
             SyntaxToken elseKeyword = matchToken(SyntaxKind.ELSE_KEYWORD);
             StatementSyntax thenStatement = parseStatement();
-            return new ElseClauseSyntax(elseKeyword, thenStatement);
+            return new ElseClauseSyntax(syntaxTree, elseKeyword, thenStatement);
         }
         return null;
     }
@@ -187,18 +187,18 @@ public final class Parser {
         TypeClauseSyntax type = parseOptionalType();
         SyntaxToken equals = matchToken(SyntaxKind.EQUAL_TOKEN);
         ExpressionSyntax initializer = parseExpression();
-        return new VariableDeclarationStatementSyntax(keyword, identifier, type, equals, initializer);
+        return new VariableDeclarationStatementSyntax(syntaxTree, keyword, identifier, type, equals, initializer);
 
     }
 
     private StatementSyntax parseBreakStatement() {
         SyntaxToken breakKeyword = matchToken(SyntaxKind.BREAK_KEYWORD);
-        return new BreakStatementSyntax(breakKeyword);
+        return new BreakStatementSyntax(syntaxTree, breakKeyword);
     }
 
     private StatementSyntax parseContinueStatement() {
         SyntaxToken continueKeyword = matchToken(SyntaxKind.CONTINUE_KEYWORD);
-        return new ContinueStatementSyntax(continueKeyword);
+        return new ContinueStatementSyntax(syntaxTree, continueKeyword);
     }
 
     private TypeClauseSyntax parseOptionalType() {
@@ -210,7 +210,7 @@ public final class Parser {
     private TypeClauseSyntax parseType() {
         SyntaxToken colon = matchToken(SyntaxKind.COLON_TOKEN);
         SyntaxToken identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
-        return new TypeClauseSyntax(colon, identifier);
+        return new TypeClauseSyntax(syntaxTree, colon, identifier);
     }
 
     private BlockStatementSyntax parseBlockStatement() {
@@ -222,12 +222,12 @@ public final class Parser {
             statements.add(statement);
         }
         SyntaxToken close = matchToken(SyntaxKind.CLOSE_BRACE_TOKEN);
-        return new BlockStatementSyntax(open, statements, close);
+        return new BlockStatementSyntax(syntaxTree, open, statements, close);
     }
 
     private StatementSyntax parseExpressionStatement() {
         ExpressionSyntax expression = parseExpression();
-        return new ExpressionStatementSyntax(expression);
+        return new ExpressionStatementSyntax(syntaxTree, expression);
     }
 
     private ExpressionSyntax parseExpression() {
@@ -242,7 +242,7 @@ public final class Parser {
                     var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
                     var operator = matchToken(getCurrent().getKind());
                     var right = parseAssignmentExpression();
-                    return new AssignmentExpressionSyntax(identifier, operator, right);
+                    return new AssignmentExpressionSyntax(syntaxTree, identifier, operator, right);
                 }
             }
         }
@@ -264,7 +264,7 @@ public final class Parser {
 
             SyntaxToken operatorToken = nextToken();
             ExpressionSyntax right = parseBinaryExpression(precedence);
-            left = new BinaryExpressionSyntax(left, operatorToken, right);
+            left = new BinaryExpressionSyntax(syntaxTree, left, operatorToken, right);
 
         }
         return left;
@@ -275,7 +275,7 @@ public final class Parser {
         if (unaryPrecedence > 0) {
             SyntaxToken operator = nextToken();
             ExpressionSyntax left = parseUnaryExpression();
-            return new UnaryExpressionSyntax(operator, left);
+            return new UnaryExpressionSyntax(syntaxTree, operator, left);
         }
         return parsePrimaryExpression();
     }
@@ -295,26 +295,26 @@ public final class Parser {
     private ExpressionSyntax parsePrefixExpression() {
         var token = matchToken(getCurrent().getKind());
         var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
-        return new PrefixExpressionSyntax(token, identifier);
+        return new PrefixExpressionSyntax(syntaxTree, token, identifier);
     }
 
     private ParenthesizedExpressionSyntax parseParenthesizedExpression() {
         SyntaxToken left = matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
         ExpressionSyntax expression = parseExpression();
         SyntaxToken right = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-        return new ParenthesizedExpressionSyntax(left, expression, right);
+        return new ParenthesizedExpressionSyntax(syntaxTree, left, expression, right);
     }
 
     private LiteralExpressionSyntax parseBooleanLiteralExpression() {
         boolean isTrue = getCurrent().getKind() == SyntaxKind.TRUE_KEYWORD;
         SyntaxToken token = isTrue ? matchToken(SyntaxKind.TRUE_KEYWORD) :
                 matchToken(SyntaxKind.FALSE_KEYWORD);
-        return new LiteralExpressionSyntax(token, isTrue);
+        return new LiteralExpressionSyntax(syntaxTree, token, isTrue);
     }
 
     private LiteralExpressionSyntax parseStringLiteralExpression() {
         SyntaxToken stringToken = matchToken(SyntaxKind.STRING_TOKEN);
-        return new LiteralExpressionSyntax(stringToken);
+        return new LiteralExpressionSyntax(syntaxTree, stringToken);
     }
 
     private ExpressionSyntax parseIdentifierToken() {
@@ -332,7 +332,7 @@ public final class Parser {
     private ExpressionSyntax parseSuffixExpression() {
         var identifier = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
         var token = matchToken(getCurrent().getKind());
-        return new SuffixExpressionSyntax(identifier, token);
+        return new SuffixExpressionSyntax(syntaxTree, identifier, token);
     }
 
     private ExpressionSyntax parseCallExpression() {
@@ -340,7 +340,7 @@ public final class Parser {
         SyntaxToken open = matchToken(SyntaxKind.OPEN_PARENTHESIS_TOKEN);
         SeparatedSyntaxList<ExpressionSyntax> args = parseArguments();
         SyntaxToken close = matchToken(SyntaxKind.CLOSE_PARENTHESIS_TOKEN);
-        return new CallExpressionSyntax(identifier, open, args, close);
+        return new CallExpressionSyntax(syntaxTree, identifier, open, args, close);
     }
 
     private SeparatedSyntaxList<ExpressionSyntax> parseArguments() {
@@ -359,12 +359,12 @@ public final class Parser {
 
     private NameExpressionSyntax parseNameExpression() {
         SyntaxToken token = matchToken(SyntaxKind.IDENTIFIER_TOKEN);
-        return new NameExpressionSyntax(token);
+        return new NameExpressionSyntax(syntaxTree, token);
     }
 
     private LiteralExpressionSyntax parseNumberLiteralExpression() {
         SyntaxToken token = matchToken(SyntaxKind.NUMBER_TOKEN);
-        return new LiteralExpressionSyntax(token);
+        return new LiteralExpressionSyntax(syntaxTree, token);
     }
 
     private SyntaxToken peek(int offset) {
@@ -390,6 +390,6 @@ public final class Parser {
 
         diagnostics.reportUnexpectedToken(getCurrent().getSpan(), getCurrent().getKind(), type);
         nextToken();
-        return new SyntaxToken(type, getCurrent().getPosition(), null, null);
+        return new SyntaxToken(syntaxTree, type, getCurrent().getPosition(), null, null);
     }
 }

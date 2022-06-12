@@ -3,6 +3,7 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.List;
 
@@ -12,7 +13,8 @@ public class SuffixExpressionSyntax extends ExpressionSyntax {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public SuffixExpressionSyntax(SyntaxToken identifier, SyntaxToken token) {
+    public SuffixExpressionSyntax(SyntaxTree tree, SyntaxToken identifier, SyntaxToken token) {
+        super(tree);
         this.identifier = identifier;
         this.token = token;
         this.kind = SyntaxKind.SUFFIX_EXPRESSION;

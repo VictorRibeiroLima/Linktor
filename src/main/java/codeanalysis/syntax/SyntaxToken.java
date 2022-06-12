@@ -13,7 +13,8 @@ public class SyntaxToken extends SyntaxNode {
     private final TextSpan span;
     private final List<SyntaxNode> children;
 
-    public SyntaxToken(SyntaxKind kind, int position, String text, Object value) {
+    public SyntaxToken(SyntaxTree tree, SyntaxKind kind, int position, String text, Object value) {
+        super(tree);
         this.kind = kind;
         this.position = position;
         this.text = text;

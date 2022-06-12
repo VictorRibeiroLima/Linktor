@@ -23,7 +23,7 @@ public class TokenParserHandler implements IParseHandler {
         while (true) {
             var token = lexer.lex();
             if (token.getKind() == SyntaxKind.END_OF_FILE_TOKEN) {
-                root = new CompilationUnitSyntax(List.of(), token);
+                root = new CompilationUnitSyntax(tree, List.of(), token);
                 break;
             }
             tokens.add(token);
