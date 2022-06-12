@@ -1,6 +1,6 @@
 package codeanalysis.diagnostics;
 
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextSpan;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.syntax.SyntaxKind;
 

@@ -1,8 +1,8 @@
 package codeanalysis.parser;
 
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.text.SourceText;
 import codeanalysis.lexer.Lexer;
+import codeanalysis.source.SourceText;
 import codeanalysis.syntax.*;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
@@ -20,24 +20,28 @@ import java.util.List;
 public final class Parser {
 
     private final List<SyntaxToken> tokens;
-    private int position;
+    private final SyntaxTree syntaxTree;
 
     private final SourceText text;
+    private int position;
+
 
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
-    public Parser(SourceText text) {
-        this.text = text;
+    public Parser(SyntaxTree syntaxTree) {
+
         position = 0;
         SyntaxToken token;
         List<SyntaxToken> tokens = new ArrayList<>();
-        Lexer lexer = new Lexer(text);
+        Lexer lexer = new Lexer(syntaxTree);
         do {
             token = lexer.lex();
             if (token.getKind() != SyntaxKind.WHITESPACE_TOKEN && token.getKind() != SyntaxKind.BAD_TOKEN)
                 tokens.add(token);
         } while (token.getKind() != SyntaxKind.END_OF_FILE_TOKEN);
         this.tokens = tokens;
+        this.syntaxTree = syntaxTree;
+        this.text = syntaxTree.getText();
         diagnostics.addAll(lexer.getDiagnostics());
     }
 

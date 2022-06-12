@@ -1,6 +1,6 @@
 package codeanalysis.evaluator;
 
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextSpan;
 
 import java.io.BufferedReader;
 import java.io.IOException;

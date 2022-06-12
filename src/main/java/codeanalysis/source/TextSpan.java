@@ -1,4 +1,4 @@
-package codeanalysis.diagnostics.text;
+package codeanalysis.source;
 
 public record TextSpan(int start, int length) {
     public static TextSpan fromBounds(int start, int end) {

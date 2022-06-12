@@ -1,9 +1,10 @@
 package codeanalysis.parser;
 
-import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.source.SourceText;
 import codeanalysis.syntax.AssertingList;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
+import codeanalysis.syntax.SyntaxTree;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,7 +27,8 @@ class ParserTest {
         String text = "a " + text1 + " b " + text2 + " c";
 
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
 
         if (precedence1 >= precedence2) {
@@ -85,7 +87,8 @@ class ParserTest {
         String text = "(a " + text1 + " b )" + text2 + " c";
 
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         /*
 
@@ -122,7 +125,8 @@ class ParserTest {
 
         String text = "a " + binaryText + unaryText + " b";
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         /*
 
@@ -154,7 +158,8 @@ class ParserTest {
 
         String text = unaryText + "a " + binaryText + " b";
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         /*
 
@@ -198,7 +203,8 @@ class ParserTest {
         */
 
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
 
         asserting.assertNode(SyntaxKind.GLOBAL_MEMBER);
@@ -223,7 +229,8 @@ class ParserTest {
     void parseAssignmentExpression(SyntaxKind expectedKind, String expectedText) {
         String text = "a=" + expectedText;
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         asserting.assertNode(SyntaxKind.GLOBAL_MEMBER);
         asserting.assertNode(SyntaxKind.EXPRESSION_STATEMENT);
@@ -238,7 +245,8 @@ class ParserTest {
     void parseBadParenthesizedExpression() {
         String text = "(1";
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         asserting.assertNode(SyntaxKind.GLOBAL_MEMBER);
         asserting.assertNode(SyntaxKind.EXPRESSION_STATEMENT);
@@ -257,7 +265,8 @@ class ParserTest {
 
         String text = u1Text + u2Text + "a";
         SourceText input = SourceText.from(text);
-        Parser parser = new Parser(input);
+        var tree = SyntaxTree.parse(input);
+        Parser parser = new Parser(tree);
         AssertingList asserting = new AssertingList(parser.parseCompilationUnit().getMembers().get(0));
         /*
 

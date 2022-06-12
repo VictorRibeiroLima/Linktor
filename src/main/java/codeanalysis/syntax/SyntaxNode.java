@@ -1,6 +1,6 @@
 package codeanalysis.syntax;
 
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextSpan;
 import util.ConsoleColors;
 
 import java.io.PrintWriter;

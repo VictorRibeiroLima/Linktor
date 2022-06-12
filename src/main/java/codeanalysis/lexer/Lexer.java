@@ -1,15 +1,17 @@
 package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.text.SourceText;
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.SourceText;
+import codeanalysis.source.TextSpan;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 
 public final class Lexer {
     private final SourceText text;
+    private final SyntaxTree syntaxTree;
     private int position;
 
     private int start;
@@ -21,8 +23,9 @@ public final class Lexer {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
 
-    public Lexer(SourceText text) {
-        this.text = text;
+    public Lexer(SyntaxTree syntaxTree) {
+        this.text = syntaxTree.getText();
+        this.syntaxTree = syntaxTree;
         this.position = 0;
     }
 

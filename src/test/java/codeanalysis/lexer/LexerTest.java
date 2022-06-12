@@ -1,6 +1,6 @@
 package codeanalysis.lexer;
 
-import codeanalysis.diagnostics.text.SourceText;
+import codeanalysis.source.SourceText;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
@@ -43,7 +43,8 @@ class LexerTest {
     @MethodSource("provideTokens")
     void lexToken(SyntaxKind kind, String text) {
         SourceText input = SourceText.from(text);
-        Lexer lexer = new Lexer(input);
+        var tree = SyntaxTree.parse(input);
+        Lexer lexer = new Lexer(tree);
         SyntaxToken token = lexer.lex();
         assertEquals(kind, token.getKind());
         assertEquals(text, token.getText());

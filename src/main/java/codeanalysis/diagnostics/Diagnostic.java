@@ -1,6 +1,6 @@
 package codeanalysis.diagnostics;
 
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextSpan;
 
 public record Diagnostic(TextSpan span, String message) {
 

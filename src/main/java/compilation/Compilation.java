@@ -58,7 +58,7 @@ public class Compilation {
     public EvaluationResult evaluate(Map<VariableSymbol, Object> variables) throws Exception {
         BoundGlobalScope globalScope = getGlobalScope();
         List<Diagnostic> diagnostics = Stream.concat(globalScope.getDiagnostics().stream(),
-                        tree.getDiagnostics().getDiagnostics().stream())
+                        tree.getDiagnostics().stream())
                 .collect(Collectors.toList());
 
         if (!diagnostics.isEmpty())

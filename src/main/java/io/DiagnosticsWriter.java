@@ -1,8 +1,8 @@
 package io;
 
 import codeanalysis.diagnostics.Diagnostic;
-import codeanalysis.diagnostics.text.SourceText;
-import codeanalysis.diagnostics.text.TextLine;
+import codeanalysis.source.SourceText;
+import codeanalysis.source.TextLine;
 import codeanalysis.syntax.SyntaxTree;
 import util.ConsoleColors;
 
