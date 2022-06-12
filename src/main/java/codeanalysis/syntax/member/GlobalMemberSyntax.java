@@ -2,6 +2,7 @@ package codeanalysis.syntax.member;
 
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.statements.StatementSyntax;
 
 import java.util.List;
@@ -11,7 +12,8 @@ public class GlobalMemberSyntax extends MemberSyntax {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public GlobalMemberSyntax(StatementSyntax statement) {
+    public GlobalMemberSyntax(SyntaxTree tree, StatementSyntax statement) {
+        super(tree);
         this.statement = statement;
         this.kind = SyntaxKind.GLOBAL_MEMBER;
         this.children = List.of(statement);

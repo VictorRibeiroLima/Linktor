@@ -3,6 +3,7 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.ArrayList;
@@ -20,7 +21,8 @@ public class WhileStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public WhileStatementSyntax(SyntaxToken whileKeyword, ExpressionSyntax condition, StatementSyntax thenStatement) {
+    public WhileStatementSyntax(SyntaxTree tree, SyntaxToken whileKeyword, ExpressionSyntax condition, StatementSyntax thenStatement) {
+        super(tree);
         this.whileKeyword = whileKeyword;
         this.condition = condition;
         this.thenStatement = thenStatement;

@@ -3,8 +3,8 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class LiteralExpressionSyntax extends ExpressionSyntax {
@@ -14,16 +14,18 @@ public class LiteralExpressionSyntax extends ExpressionSyntax {
 
     private final Object value;
 
-    public LiteralExpressionSyntax(SyntaxToken token, Object value) {
+    private final List<SyntaxNode> children;
+
+    public LiteralExpressionSyntax(SyntaxTree tree, SyntaxToken token) {
+        this(tree, token, token.getValue());
+    }
+
+    public LiteralExpressionSyntax(SyntaxTree tree, SyntaxToken token, Object value) {
+        super(tree);
         this.token = token;
         this.kind = SyntaxKind.LITERAL_EXPRESSION;
         this.value = value;
-    }
-
-    public LiteralExpressionSyntax(SyntaxToken token) {
-        this.token = token;
-        this.kind = SyntaxKind.LITERAL_EXPRESSION;
-        this.value = this.token.getValue();
+        this.children = List.of(token);
     }
 
     @Override
@@ -41,6 +43,6 @@ public class LiteralExpressionSyntax extends ExpressionSyntax {
     }
 
     public List<SyntaxNode> getChildren() {
-        return Arrays.asList(token);
+        return children;
     }
 }

@@ -1,4 +1,4 @@
-package codeanalysis.diagnostics.text;
+package codeanalysis.source;
 
 public class TextLine {
     private final SourceText text;

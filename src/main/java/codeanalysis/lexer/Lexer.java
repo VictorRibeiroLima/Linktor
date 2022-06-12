@@ -1,15 +1,18 @@
 package codeanalysis.lexer;
 
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.text.SourceText;
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.SourceText;
+import codeanalysis.source.TextLocation;
+import codeanalysis.source.TextSpan;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 
 public final class Lexer {
     private final SourceText text;
+    private final SyntaxTree syntaxTree;
     private int position;
 
     private int start;
@@ -21,8 +24,9 @@ public final class Lexer {
     private final DiagnosticBag diagnostics = new DiagnosticBag();
 
 
-    public Lexer(SourceText text) {
-        this.text = text;
+    public Lexer(SyntaxTree syntaxTree) {
+        this.text = syntaxTree.getText();
+        this.syntaxTree = syntaxTree;
         this.position = 0;
     }
 
@@ -224,7 +228,9 @@ public final class Lexer {
                 else if (Character.isWhitespace(getCurrent()))
                     readWhitespace();
                 else {
-                    diagnostics.reportBadChar(position, getCurrent());
+                    var span = new TextSpan(position, 1);
+                    var location = new TextLocation(text, span);
+                    diagnostics.reportBadChar(location, getCurrent());
                     next();
                 }
                 break;
@@ -234,7 +240,7 @@ public final class Lexer {
         if (text == null) {
             text = this.text.toString(start, position);
         }
-        return new SyntaxToken(kind, start, text, value);
+        return new SyntaxToken(syntaxTree, kind, start, text, value);
     }
 
     private void readString() {
@@ -249,8 +255,9 @@ public final class Lexer {
                 next();
             } else if (getCurrent() == '\0' || getCurrent() == '\n' || getCurrent() == '\r') {
                 TextSpan span = new TextSpan(start, 1);
+                var location = new TextLocation(text, span);
                 done = true;
-                diagnostics.reportUnterminatedString(span);
+                diagnostics.reportUnterminatedString(location);
             } else if (getCurrent() == stringStarter) {
                 done = true;
                 next();

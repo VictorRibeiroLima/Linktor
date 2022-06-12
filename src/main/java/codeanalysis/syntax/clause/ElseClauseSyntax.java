@@ -3,6 +3,7 @@ package codeanalysis.syntax.clause;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.statements.StatementSyntax;
 
 import java.util.Arrays;
@@ -17,7 +18,8 @@ public class ElseClauseSyntax extends SyntaxNode {
 
     private final List<SyntaxNode> children;
 
-    public ElseClauseSyntax(SyntaxToken elseKeyword, StatementSyntax thenStatement) {
+    public ElseClauseSyntax(SyntaxTree tree, SyntaxToken elseKeyword, StatementSyntax thenStatement) {
+        super(tree);
         this.elseKeyword = elseKeyword;
         this.thenStatement = thenStatement;
         this.kind = SyntaxKind.ElSE_CLAUSE;

@@ -3,6 +3,7 @@ package codeanalysis.syntax.clause;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.List;
 
@@ -12,7 +13,8 @@ public class ParameterClauseSyntax extends SyntaxNode {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public ParameterClauseSyntax(SyntaxToken identifier, TypeClauseSyntax type) {
+    public ParameterClauseSyntax(SyntaxTree tree, SyntaxToken identifier, TypeClauseSyntax type) {
+        super(tree);
         this.identifier = identifier;
         this.type = type;
         this.kind = SyntaxKind.PARAMETER_CLAUSE;

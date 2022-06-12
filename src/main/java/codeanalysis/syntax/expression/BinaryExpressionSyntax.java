@@ -3,6 +3,7 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +15,8 @@ public class BinaryExpressionSyntax extends ExpressionSyntax {
 
     private final SyntaxKind kind;
 
-    public BinaryExpressionSyntax(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right) {
+    public BinaryExpressionSyntax(SyntaxTree tree, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right) {
+        super(tree);
         this.left = left;
         this.operatorToken = operatorToken;
         this.right = right;

@@ -1,6 +1,7 @@
 package codeanalysis.syntax;
 
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextLocation;
+import codeanalysis.source.TextSpan;
 import util.ConsoleColors;
 
 import java.io.PrintWriter;
@@ -8,9 +9,20 @@ import java.io.StringWriter;
 import java.util.List;
 
 public abstract class SyntaxNode {
+
+    private final SyntaxTree tree;
+
+    protected SyntaxNode(SyntaxTree tree) {
+        this.tree = tree;
+    }
+
     public abstract SyntaxKind getKind();
 
     public abstract List<SyntaxNode> getChildren();
+
+    public SyntaxTree getTree() {
+        return tree;
+    }
 
     public TextSpan getSpan() {
         TextSpan first = null;
@@ -20,6 +32,10 @@ public abstract class SyntaxNode {
             last = this.getChildren().get(this.getChildren().size() - 1).getSpan();
         }
         return TextSpan.fromBounds(first.start(), last.end());
+    }
+
+    public TextLocation getLocation() {
+        return new TextLocation(tree.getText(), getSpan());
     }
 
     public SyntaxToken getLastToken() {

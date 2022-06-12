@@ -3,6 +3,7 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.List;
@@ -14,7 +15,8 @@ public class ReturnStatementSyntax extends StatementSyntax {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public ReturnStatementSyntax(SyntaxToken keyword, ExpressionSyntax expression) {
+    public ReturnStatementSyntax(SyntaxTree tree, SyntaxToken keyword, ExpressionSyntax expression) {
+        super(tree);
         this.keyword = keyword;
         this.expression = expression;
         this.kind = SyntaxKind.RETURN_STATEMENT;

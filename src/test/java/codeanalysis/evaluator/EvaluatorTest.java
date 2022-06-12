@@ -2,7 +2,7 @@ package codeanalysis.evaluator;
 
 import codeanalysis.binding.scopes.BoundGlobalScope;
 import codeanalysis.diagnostics.Diagnostic;
-import codeanalysis.diagnostics.text.TextSpan;
+import codeanalysis.source.TextSpan;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
@@ -53,7 +53,7 @@ class EvaluatorTest {
         TextSpan expectedSpan = input.getSpans().get(0);
 
         assertEquals(expectedDiagnostic, diagnostic.message());
-        assertEquals(expectedSpan, diagnostic.span());
+        assertEquals(expectedSpan, diagnostic.location().span());
 
     }
 

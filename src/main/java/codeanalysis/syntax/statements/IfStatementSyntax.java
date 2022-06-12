@@ -3,6 +3,7 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
@@ -22,8 +23,11 @@ public class IfStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public IfStatementSyntax(SyntaxToken ifKeyword, ExpressionSyntax condition, StatementSyntax thenStatement,
+    public IfStatementSyntax(SyntaxTree tree, SyntaxToken ifKeyword,
+                             ExpressionSyntax condition,
+                             StatementSyntax thenStatement,
                              ElseClauseSyntax elseClause) {
+        super(tree);
         this.ifKeyword = ifKeyword;
         this.condition = condition;
         this.thenStatement = thenStatement;

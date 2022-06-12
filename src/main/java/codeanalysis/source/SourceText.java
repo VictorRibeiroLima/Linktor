@@ -1,4 +1,4 @@
-package codeanalysis.diagnostics.text;
+package codeanalysis.source;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,9 +7,11 @@ import java.util.List;
 public class SourceText {
 
     private final List<TextLine> lines;
+    private final String fileName;
     private final String text;
 
-    private SourceText(String text) {
+    private SourceText(String text, String fileName) {
+        this.fileName = fileName;
         this.text = text;
         List<TextLine> lines = SourceText.parseLines(this, text);
         this.lines = Collections.unmodifiableList(lines);
@@ -21,6 +23,14 @@ public class SourceText {
 
     public List<TextLine> getLines() {
         return lines;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public char charAt(int index) {
@@ -45,7 +55,11 @@ public class SourceText {
     }
 
     public static SourceText from(String text) {
-        return new SourceText(text);
+        return new SourceText(text, "");
+    }
+
+    public static SourceText from(String text, String fileName) {
+        return new SourceText(text, fileName);
     }
 
     private static List<TextLine> parseLines(SourceText source, String text) {
@@ -62,9 +76,7 @@ public class SourceText {
                 lineStartingPosition = position;
             }
         }
-        if (position >= lineStartingPosition) {
-            addLine(source, lineStartingPosition, position, 0, lines);
-        }
+        addLine(source, lineStartingPosition, position, 0, lines);
         return lines;
     }
 

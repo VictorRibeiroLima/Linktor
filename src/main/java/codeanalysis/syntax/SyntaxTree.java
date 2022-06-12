@@ -1,26 +1,46 @@
 package codeanalysis.syntax;
 
-import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.text.SourceText;
-import codeanalysis.lexer.Lexer;
-import codeanalysis.parser.Parser;
+import codeanalysis.diagnostics.Diagnostic;
+import codeanalysis.source.SourceText;
+import codeanalysis.source.TextSpan;
+import codeanalysis.source.handler.IParseHandler;
+import codeanalysis.source.handler.ParserHandler;
+import codeanalysis.source.handler.TokenParserHandler;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.List;
 
 public class SyntaxTree {
-    private final DiagnosticBag diagnostics = new DiagnosticBag();
+    private final List<Diagnostic> diagnostics;
     private final CompilationUnitSyntax root;
 
     private final SourceText text;
 
-    private SyntaxTree(SourceText text) {
-        Parser parser = new Parser(text);
-        CompilationUnitSyntax root = parser.parseCompilationUnit();
-
-        this.root = root;
-        this.diagnostics.addAll(parser.getDiagnostics());
+    private SyntaxTree(SourceText text, IParseHandler handler) {
         this.text = text;
+        handler.handle(this);
+        this.root = handler.getRoot();
+        this.diagnostics = List.copyOf(handler.getDiagnostics());
+    }
+
+    public static SyntaxTree load(String fileName) throws FileNotFoundException {
+        var file = new File(fileName);
+        if (file.exists()) {
+            var br = new BufferedReader(new FileReader(file));
+
+            var builder = new StringBuilder();
+            br.lines().forEach(line -> {
+                builder.append(line);
+                builder.append("\n");
+            });
+            var text = builder.toString();
+            var sourceText = SourceText.from(text, fileName);
+            return parse(sourceText);
+        }
+        return null;
     }
 
     public static SyntaxTree parse(String input) {
@@ -29,23 +49,17 @@ public class SyntaxTree {
     }
 
     public static SyntaxTree parse(SourceText text) {
-        return new SyntaxTree(text);
+        return new SyntaxTree(text, new ParserHandler());
     }
 
     public static List<SyntaxToken> parseTokens(String input) {
-        SourceText text = SourceText.from(input);
-        final Lexer lexer = new Lexer(text);
-        final List<SyntaxToken> tokens = new ArrayList<>();
-        while (true) {
-            SyntaxToken token = lexer.lex();
-            if (token.getKind() == SyntaxKind.END_OF_FILE_TOKEN)
-                break;
-            tokens.add(token);
-        }
-        return tokens;
+        var handler = new TokenParserHandler();
+        var text = SourceText.from(input);
+        new SyntaxTree(text, handler);
+        return handler.getTokens();
     }
 
-    public DiagnosticBag getDiagnostics() {
+    public List<Diagnostic> getDiagnostics() {
         return diagnostics;
     }
 
@@ -55,5 +69,10 @@ public class SyntaxTree {
 
     public SourceText getText() {
         return text;
+    }
+
+    public String toString(TextSpan span) {
+        var text = this.text.toString();
+        return text.substring(span.start(), span.length());
     }
 }

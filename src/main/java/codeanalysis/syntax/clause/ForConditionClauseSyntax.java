@@ -2,6 +2,7 @@ package codeanalysis.syntax.clause;
 
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
 import java.util.List;
@@ -14,7 +15,8 @@ public class ForConditionClauseSyntax extends SyntaxNode {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public ForConditionClauseSyntax(SyntaxNode variableNode, ExpressionSyntax conditionExpression, ExpressionSyntax incrementExpression) {
+    public ForConditionClauseSyntax(SyntaxTree tree, SyntaxNode variableNode, ExpressionSyntax conditionExpression, ExpressionSyntax incrementExpression) {
+        super(tree);
         this.variableNode = variableNode;
         this.conditionExpression = conditionExpression;
         this.incrementExpression = incrementExpression;

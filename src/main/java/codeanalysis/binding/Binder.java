@@ -34,17 +34,17 @@ import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.controlflow.ControlFlowGraph;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
-import codeanalysis.diagnostics.text.TextSpan;
 import codeanalysis.lowering.Lowerer;
+import codeanalysis.source.TextLocation;
 import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
-import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
 import codeanalysis.syntax.clause.ParameterClauseSyntax;
@@ -85,11 +85,11 @@ public class Binder {
         return diagnostics;
     }
 
-    public static BoundGlobalScope bindGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
+    public static BoundGlobalScope bindGlobalScope(List<SyntaxTree> trees, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
-        List<FunctionSymbol> functionSymbols = getBoundFunctions(unit, binder);
-        List<BoundStatement> statements = getBoundStatements(unit, binder);
+        List<FunctionSymbol> functionSymbols = getBoundFunctions(trees, binder);
+        List<BoundStatement> statements = getBoundStatements(trees, binder);
         List<BoundStatement> statement = List.copyOf(statements);
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
@@ -97,11 +97,13 @@ public class Binder {
         return new BoundGlobalScope(previous, diagnostics, variables, functionSymbols, statement);
     }
 
-    private static List<FunctionSymbol> getBoundFunctions(CompilationUnitSyntax unit, Binder binder) {
+    private static List<FunctionSymbol> getBoundFunctions(List<SyntaxTree> trees, Binder binder) {
         List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
-        unit.getMembers().forEach(memberSyntax -> {
-            if (memberSyntax instanceof FunctionMemberSyntax f)
-                functionMembers.add(f);
+        trees.forEach(tree -> {
+            tree.getRoot().getMembers().forEach(memberSyntax -> {
+                if (memberSyntax instanceof FunctionMemberSyntax f)
+                    functionMembers.add(f);
+            });
         });
         for (FunctionMemberSyntax f : functionMembers)
             binder.bindFunctionDeclaration(f);
@@ -122,7 +124,7 @@ public class Binder {
                 BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
                 BoundBlockStatement loweredBody = Lowerer.lower(body);
                 if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
-                    diagnostics.reportAllPathMustReturn(function.getDeclaration().getSpan());
+                    diagnostics.reportAllPathMustReturn(function.getDeclaration().getLocation());
 
                 functionsBodies.put(function, loweredBody);
                 diagnostics.addAll(binder.getDiagnostics());
@@ -133,12 +135,14 @@ public class Binder {
         return new BoundProgram(statement, diagnostics, functionsBodies);
     }
 
-    private static List<BoundStatement> getBoundStatements(CompilationUnitSyntax unit, Binder binder) throws Exception {
+    private static List<BoundStatement> getBoundStatements(List<SyntaxTree> trees, Binder binder) throws Exception {
         List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
         List<BoundStatement> statements = new ArrayList<>();
-        unit.getMembers().forEach(memberSyntax -> {
-            if (memberSyntax instanceof GlobalMemberSyntax g)
-                globalMembers.add(g);
+        trees.forEach(tree -> {
+            tree.getRoot().getMembers().forEach(memberSyntax -> {
+                if (memberSyntax instanceof GlobalMemberSyntax g)
+                    globalMembers.add(g);
+            });
         });
 
         for (GlobalMemberSyntax g : globalMembers) {
@@ -186,7 +190,7 @@ public class Binder {
             String name = param.getIdentifier().getText();
             TypeSymbol type = bindTypeClause(param.getType());
             if (!seeParamNames.add(name)) {
-                diagnostics.reportDuplicatedParam(param.getSpan(), name);
+                diagnostics.reportDuplicatedParam(param.getLocation(), name);
             } else {
                 ParameterSymbol parameter = new ParameterSymbol(name, type);
                 paramsTypes.add(type);
@@ -199,7 +203,7 @@ public class Binder {
         FunctionIdentifier identifier = new FunctionIdentifier(f.getIdentifier().getText(), paramsTypes);
         FunctionSymbol function = new FunctionSymbol(f.getIdentifier().getText(), params, funcType, f);
         if (scope.isFunctionPresent(identifier)) {
-            diagnostics.reportFunctionAlreadyDeclared(f.getIdentifier().getSpan(), f.getIdentifier().getText(), paramsTypes);
+            diagnostics.reportFunctionAlreadyDeclared(f.getIdentifier().getLocation(), f.getIdentifier().getText(), paramsTypes);
         } else {
             scope.declareFunction(function);
         }
@@ -230,16 +234,16 @@ public class Binder {
         var hasExpression = syntax.getExpression() != null;
         var expression = hasExpression ? bindExpression(syntax.getExpression()) : null;
         if (this.function == null) {
-            diagnostics.reportReturnOutsideFunction(syntax.getKeyword().getSpan());
+            diagnostics.reportReturnOutsideFunction(syntax.getKeyword().getLocation());
         } else {
             if (function.getType() == TypeSymbol.VOID) {
                 if (hasExpression)
-                    diagnostics.reportReturnOnVoid(syntax.getExpression().getSpan());
+                    diagnostics.reportReturnOnVoid(syntax.getExpression().getLocation());
             } else {
                 if (!hasExpression)
-                    diagnostics.reportMissingReturnExpression(syntax.getExpression().getSpan(), function.getType());
+                    diagnostics.reportMissingReturnExpression(syntax.getExpression().getLocation(), function.getType());
                 else
-                    expression = bindConversion(function.getType(), expression, syntax.getExpression().getSpan());
+                    expression = bindConversion(function.getType(), expression, syntax.getExpression().getLocation());
             }
         }
         return new BoundReturnStatement(expression);
@@ -293,7 +297,7 @@ public class Binder {
 
     private BoundStatement bindBreakStatement(BreakStatementSyntax syntax) {
         if (loopStack.isEmpty()) {
-            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getSpan(), syntax.getKeyword().getText());
+            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getLocation(), syntax.getKeyword().getText());
             return bindErrorStatement();
         }
         return new BoundJumpToStatement(loopStack.peek().breakLabel());
@@ -301,7 +305,7 @@ public class Binder {
 
     private BoundStatement bindContinueStatement(ContinueStatementSyntax syntax) {
         if (loopStack.isEmpty()) {
-            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getSpan(), syntax.getKeyword().getText());
+            diagnostics.reportInvalidBreakOrContinue(syntax.getKeyword().getLocation(), syntax.getKeyword().getText());
             return bindErrorStatement();
         }
         return new BoundJumpToStatement(loopStack.peek().continueLabel());
@@ -337,7 +341,7 @@ public class Binder {
 
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (declare && !scope.declareVariable(variableSymbol))
-            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getSpan());
+            diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getLocation());
         return variableSymbol;
     }
 
@@ -356,7 +360,7 @@ public class Binder {
             return null;
         TypeSymbol type = lookupType(clause.getIdentifierToken().getText());
         if (type == TypeSymbol.ERROR)
-            diagnostics.reportUndefinedType(clause.getSpan(), clause.getIdentifierToken().getText());
+            diagnostics.reportUndefinedType(clause.getLocation(), clause.getIdentifierToken().getText());
 
         return type;
     }
@@ -391,7 +395,7 @@ public class Binder {
                         !result.getType().equals(TypeSymbol.ERROR) &&
                         !expectedType.equals(TypeSymbol.ERROR)
         ) {
-            diagnostics.reportCannotConvert(syntax.getSpan(), expectedType, result.getType());
+            diagnostics.reportCannotConvert(syntax.getLocation(), expectedType, result.getType());
         }
 
         return result;
@@ -415,7 +419,7 @@ public class Binder {
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
         if (!canBeVoid && result.getType() == TypeSymbol.VOID) {
-            diagnostics.reportExpressionMustHaveValue(syntax.getSpan());
+            diagnostics.reportExpressionMustHaveValue(syntax.getLocation());
             return new BoundErrorExpression();
         }
         return result;
@@ -441,7 +445,7 @@ public class Binder {
         }
         FunctionIdentifier identifier = new FunctionIdentifier(syntax.getIdentifier().getText(), usedTypes);
         if (!scope.isFunctionPresent(identifier)) {
-            diagnostics.reportUndefinedFunction(syntax.getSpan(), syntax.getIdentifier().getText(), usedTypes);
+            diagnostics.reportUndefinedFunction(syntax.getLocation(), syntax.getIdentifier().getText(), usedTypes);
             return new BoundErrorExpression();
         }
         FunctionSymbol function = scope.getFunctionsByIdentifier(identifier);
@@ -453,7 +457,7 @@ public class Binder {
         Conversion conversion = Conversion.classify(expression.getType(), type);
         if (!conversion.isExists()) {
             if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
-                diagnostics.reportCannotConvert(syntax.getSpan(), expression.getType(), type);
+                diagnostics.reportCannotConvert(syntax.getLocation(), expression.getType(), type);
             return new BoundErrorExpression();
         }
         if (conversion.isIdentity())
@@ -461,15 +465,15 @@ public class Binder {
         return new BoundConversionExpression(type, expression);
     }
 
-    private BoundExpression bindConversion(TypeSymbol type, BoundExpression expression, TextSpan span) {
+    private BoundExpression bindConversion(TypeSymbol type, BoundExpression expression, TextLocation location) {
         Conversion conversion = Conversion.classify(expression.getType(), type);
         if (!conversion.isExists()) {
             if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
-                diagnostics.reportCannotConvert(span, expression.getType(), type);
+                diagnostics.reportCannotConvert(location, expression.getType(), type);
             return new BoundErrorExpression();
         }
         if (conversion.isExplicit()) {
-            diagnostics.reportCannotConvert(span, expression.getType(), type);
+            diagnostics.reportCannotConvert(location, expression.getType(), type);
         }
         if (conversion.isIdentity())
             return expression;
@@ -497,10 +501,10 @@ public class Binder {
             return new BoundErrorExpression();
         var operator = BoundPrefixSuffixOperator.bind(token.getKind(), variable.getType());
         if (variable.isReadOnly()) {
-            diagnostics.reportReadOnly(token.getSpan(), syntax.getIdentifier().getText());
+            diagnostics.reportReadOnly(token.getLocation(), syntax.getIdentifier().getText());
         }
         if (operator == null) {
-            diagnostics.reportUndefinedOperator(syntax.getToken().getSpan(),
+            diagnostics.reportUndefinedOperator(syntax.getToken().getLocation(),
                     syntax.getToken().getText(), variable.getType());
             return new BoundErrorExpression();
         }
@@ -514,10 +518,10 @@ public class Binder {
             return new BoundErrorExpression();
         var operator = BoundPrefixSuffixOperator.bind(token.getKind(), variable.getType());
         if (variable.isReadOnly()) {
-            diagnostics.reportReadOnly(token.getSpan(), syntax.getIdentifier().getText());
+            diagnostics.reportReadOnly(token.getLocation(), syntax.getIdentifier().getText());
         }
         if (operator == null) {
-            diagnostics.reportUndefinedOperator(syntax.getToken().getSpan(),
+            diagnostics.reportUndefinedOperator(syntax.getToken().getLocation(),
                     syntax.getToken().getText(), variable.getType());
             return new BoundErrorExpression();
         }
@@ -530,7 +534,7 @@ public class Binder {
         if (variable == null)
             return new BoundErrorExpression();
         if (variable.isReadOnly()) {
-            diagnostics.reportReadOnly(syntax.getOperatorToken().getSpan(), name);
+            diagnostics.reportReadOnly(syntax.getOperatorToken().getLocation(), name);
         }
         var boundExpression = bindExpression(syntax.getExpression(), variable.getType());
         if (boundExpression.getKind() == BoundNodeKind.ERROR_EXPRESSION) {
@@ -540,7 +544,7 @@ public class Binder {
             var equivalentOperatorTokenKind = SyntaxFacts.getBinaryOperatorOfAssignmentOperator(syntax.getOperatorToken().getKind());
             var operation = BoundBinaryOperator.bind(equivalentOperatorTokenKind, variable.getType(), boundExpression.getType());
             if (operation == null) {
-                diagnostics.reportUndefinedOperator(syntax.getOperatorToken().getSpan(),
+                diagnostics.reportUndefinedOperator(syntax.getOperatorToken().getLocation(),
                         syntax.getOperatorToken().getText(), boundExpression.getType());
                 return new BoundErrorExpression();
             }
@@ -552,7 +556,7 @@ public class Binder {
     private VariableSymbol getVariable(SyntaxToken identifier) {
         var name = identifier.getText();
         if (!scope.isVariablePresent(name)) {
-            diagnostics.reportUndefinedNameExpression(identifier.getSpan(), name);
+            diagnostics.reportUndefinedNameExpression(identifier.getLocation(), name);
             return null;
         }
         return scope.getVariableByIdentifier(name);
@@ -570,7 +574,7 @@ public class Binder {
             return new BoundErrorExpression();
         BoundUnaryOperator operator = BoundUnaryOperator.bind(syntax.getOperatorToken().getKind(), right.getType());
         if (operator == null) {
-            diagnostics.reportUndefinedUnaryOperator(syntax.getOperatorToken().getSpan(),
+            diagnostics.reportUndefinedUnaryOperator(syntax.getOperatorToken().getLocation(),
                     syntax.getOperatorToken().getText(), right.getType());
             return new BoundErrorExpression();
         }
@@ -584,7 +588,7 @@ public class Binder {
             return new BoundErrorExpression();
         BoundBinaryOperator operator = BoundBinaryOperator.bind(syntax.getOperatorToken().getKind(), left.getType(), right.getType());
         if (operator == null) {
-            diagnostics.reportUndefinedBinaryOperator(syntax.getOperatorToken().getSpan(),
+            diagnostics.reportUndefinedBinaryOperator(syntax.getOperatorToken().getLocation(),
                     syntax.getOperatorToken().getText(), left.getType(), right.getType());
 
             return new BoundErrorExpression();

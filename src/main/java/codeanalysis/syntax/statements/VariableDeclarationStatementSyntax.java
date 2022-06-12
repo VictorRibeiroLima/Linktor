@@ -3,6 +3,7 @@ package codeanalysis.syntax.statements;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.ExpressionSyntax;
 
@@ -24,7 +25,8 @@ public class VariableDeclarationStatementSyntax extends StatementSyntax {
 
     private final List<SyntaxNode> children;
 
-    public VariableDeclarationStatementSyntax(SyntaxToken keyword, SyntaxToken identifier, TypeClauseSyntax type, SyntaxToken equals, ExpressionSyntax initializer) {
+    public VariableDeclarationStatementSyntax(SyntaxTree tree, SyntaxToken keyword, SyntaxToken identifier, TypeClauseSyntax type, SyntaxToken equals, ExpressionSyntax initializer) {
+        super(tree);
         this.keyword = keyword;
         this.identifier = identifier;
         this.type = type;

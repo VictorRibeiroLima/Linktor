@@ -3,6 +3,7 @@ package codeanalysis.syntax.expression;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxNode;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,8 @@ public class CallExpressionSyntax extends ExpressionSyntax {
     private final SyntaxKind kind;
     private final List<SyntaxNode> children;
 
-    public CallExpressionSyntax(SyntaxToken identifier, SyntaxToken open, SeparatedSyntaxList<ExpressionSyntax> args, SyntaxToken close) {
+    public CallExpressionSyntax(SyntaxTree tree, SyntaxToken identifier, SyntaxToken open, SeparatedSyntaxList<ExpressionSyntax> args, SyntaxToken close) {
+        super(tree);
         this.identifier = identifier;
         this.open = open;
         this.args = args;
