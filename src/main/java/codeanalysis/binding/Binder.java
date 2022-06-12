@@ -41,10 +41,10 @@ import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
-import codeanalysis.syntax.CompilationUnitSyntax;
 import codeanalysis.syntax.SyntaxFacts;
 import codeanalysis.syntax.SyntaxKind;
 import codeanalysis.syntax.SyntaxToken;
+import codeanalysis.syntax.SyntaxTree;
 import codeanalysis.syntax.clause.ElseClauseSyntax;
 import codeanalysis.syntax.clause.ForConditionClauseSyntax;
 import codeanalysis.syntax.clause.ParameterClauseSyntax;
@@ -85,11 +85,11 @@ public class Binder {
         return diagnostics;
     }
 
-    public static BoundGlobalScope bindGlobalScope(CompilationUnitSyntax unit, BoundGlobalScope previous) throws Exception {
+    public static BoundGlobalScope bindGlobalScope(List<SyntaxTree> trees, BoundGlobalScope previous) throws Exception {
         BoundScope parent = createParentScope(previous);
         Binder binder = new Binder(parent);
-        List<FunctionSymbol> functionSymbols = getBoundFunctions(unit, binder);
-        List<BoundStatement> statements = getBoundStatements(unit, binder);
+        List<FunctionSymbol> functionSymbols = getBoundFunctions(trees, binder);
+        List<BoundStatement> statements = getBoundStatements(trees, binder);
         List<BoundStatement> statement = List.copyOf(statements);
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
         List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
@@ -97,11 +97,13 @@ public class Binder {
         return new BoundGlobalScope(previous, diagnostics, variables, functionSymbols, statement);
     }
 
-    private static List<FunctionSymbol> getBoundFunctions(CompilationUnitSyntax unit, Binder binder) {
+    private static List<FunctionSymbol> getBoundFunctions(List<SyntaxTree> trees, Binder binder) {
         List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
-        unit.getMembers().forEach(memberSyntax -> {
-            if (memberSyntax instanceof FunctionMemberSyntax f)
-                functionMembers.add(f);
+        trees.forEach(tree -> {
+            tree.getRoot().getMembers().forEach(memberSyntax -> {
+                if (memberSyntax instanceof FunctionMemberSyntax f)
+                    functionMembers.add(f);
+            });
         });
         for (FunctionMemberSyntax f : functionMembers)
             binder.bindFunctionDeclaration(f);
@@ -133,12 +135,14 @@ public class Binder {
         return new BoundProgram(statement, diagnostics, functionsBodies);
     }
 
-    private static List<BoundStatement> getBoundStatements(CompilationUnitSyntax unit, Binder binder) throws Exception {
+    private static List<BoundStatement> getBoundStatements(List<SyntaxTree> trees, Binder binder) throws Exception {
         List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
         List<BoundStatement> statements = new ArrayList<>();
-        unit.getMembers().forEach(memberSyntax -> {
-            if (memberSyntax instanceof GlobalMemberSyntax g)
-                globalMembers.add(g);
+        trees.forEach(tree -> {
+            tree.getRoot().getMembers().forEach(memberSyntax -> {
+                if (memberSyntax instanceof GlobalMemberSyntax g)
+                    globalMembers.add(g);
+            });
         });
 
         for (GlobalMemberSyntax g : globalMembers) {

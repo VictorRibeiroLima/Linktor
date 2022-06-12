@@ -40,7 +40,7 @@ public class LinktorRepl extends Repl {
                 System.out.println(ConsoleColors.YELLOW_BRIGHT + "Result: " + result);
             previous = compilation;
         } else {
-            DiagnosticsWriter.write(diagnostics, tree);
+            DiagnosticsWriter.write(diagnostics);
         }
     }
 

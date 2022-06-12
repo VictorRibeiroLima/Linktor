@@ -3,7 +3,6 @@ package io;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.source.SourceText;
 import codeanalysis.source.TextLine;
-import codeanalysis.syntax.SyntaxTree;
 import util.ConsoleColors;
 
 import java.util.List;
@@ -13,10 +12,10 @@ public class DiagnosticsWriter {
     }
 
 
-    public static void write(List<Diagnostic> diagnostics, SyntaxTree tree) {
+    public static void write(List<Diagnostic> diagnostics) {
         if (!diagnostics.isEmpty()) {
-            SourceText text = tree.getText();
             for (Diagnostic diagnostic : diagnostics) {
+                SourceText text = diagnostic.location().text();
                 var filePath = diagnostic.location().fileName();
                 var span = diagnostic.location().span();
                 int lineIndex = text.getLineIndex(span.start());
@@ -28,7 +27,7 @@ public class DiagnosticsWriter {
                 System.out.println(diagnostic);
 
                 String prefix = text.toString().substring(line.getStart(), span.start());
-                String error = tree.getText().toString(span);
+                String error = text.toString(span);
                 String suffix = text.toString().substring(span.end());
 
                 System.out.println(filePath + ":" + lineNumber + ":" + character);
