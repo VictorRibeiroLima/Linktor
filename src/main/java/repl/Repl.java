@@ -14,7 +14,8 @@ public abstract class Repl {
                 if (submission == null)
                     break;
                 evaluate(submission);
-                System.out.println(ConsoleColors.WHITE + "-------");
+                System.out.println(ConsoleColors.RESET);
+                System.out.println("-------");
             }
         } catch (Exception e) {
             e.printStackTrace();

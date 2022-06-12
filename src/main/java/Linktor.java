@@ -8,7 +8,6 @@ import repl.LinktorRepl;
 import repl.Repl;
 import util.ConsoleColors;
 
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class Linktor {
             Compilation compilation = new Compilation(tree);
             EvaluationResult evaluationResult = compilation.evaluate(variables);
             List<Diagnostic> diagnostics = evaluationResult.diagnostics();
-            DiagnosticsWriter.writeTo(new PrintWriter(System.out), diagnostics, tree, true);
+            DiagnosticsWriter.write(diagnostics, tree);
         } else {
             System.out.print(ConsoleColors.RED_BRIGHT + "Error: " + filePath + " doesn't exists");
         }

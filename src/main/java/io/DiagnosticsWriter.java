@@ -6,7 +6,6 @@ import codeanalysis.source.TextLine;
 import codeanalysis.syntax.SyntaxTree;
 import util.ConsoleColors;
 
-import java.io.PrintWriter;
 import java.util.List;
 
 public class DiagnosticsWriter {
@@ -14,11 +13,7 @@ public class DiagnosticsWriter {
     }
 
 
-    public static void writeTo(PrintWriter out, List<Diagnostic> diagnostics, SyntaxTree tree) {
-        writeTo(out, diagnostics, tree, false);
-    }
-
-    public static void writeTo(PrintWriter out, List<Diagnostic> diagnostics, SyntaxTree tree, boolean paint) {
+    public static void write(List<Diagnostic> diagnostics, SyntaxTree tree) {
         if (!diagnostics.isEmpty()) {
             SourceText text = tree.getText();
             for (Diagnostic diagnostic : diagnostics) {
@@ -29,21 +24,15 @@ public class DiagnosticsWriter {
                 int lineNumber = lineIndex + 1;
                 int character = span.start() - line.getStart() + 1;
 
-                if (paint)
-                    out.println(ConsoleColors.RED);
-                out.println(diagnostic);
+                System.out.println(ConsoleColors.RED);
+                System.out.println(diagnostic);
 
                 String prefix = text.toString().substring(line.getStart(), span.start());
                 String error = tree.getText().toString(span);
                 String suffix = text.toString().substring(span.end());
 
-                out.println(filePath + ":" + lineNumber + ":" + character);
-                if (paint)
-                    out.println(ConsoleColors.WHITE + prefix + ConsoleColors.RED + error + ConsoleColors.WHITE + suffix);
-                else
-                    out.println(prefix + error + suffix);
-                out.flush();
-                out.close();
+                System.out.println(filePath + ":" + lineNumber + ":" + character);
+                System.out.println(ConsoleColors.WHITE + prefix + ConsoleColors.RED + error + ConsoleColors.WHITE + suffix);
             }
         }
     }
