@@ -74,7 +74,7 @@ public final class Evaluator {
                 }
                 case RETURN_STATEMENT -> {
                     evaluateReturnStatement((BoundReturnStatement) statement);
-                    index++;
+                    return lastValue;
                 }
                 case LABEL_DECLARATION_STATEMENT -> index++;
                 default -> throw new Exception("Unexpected node " + statement.getKind());
