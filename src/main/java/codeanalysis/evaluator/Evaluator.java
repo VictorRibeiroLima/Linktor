@@ -134,7 +134,9 @@ public final class Evaluator {
     private Object evaluateConversionExpression(BoundConversionExpression node) throws Exception {
         Object result = evaluateExpression(node.getExpression());
         TypeSymbol type = node.getType();
-        if (type == TypeSymbol.BOOLEAN) {
+        if (type == TypeSymbol.ANY) {
+            return result;
+        } else if (type == TypeSymbol.BOOLEAN) {
             return Boolean.parseBoolean(result.toString());
         } else if (type == TypeSymbol.INTEGER) {
             return Integer.parseInt(result.toString());

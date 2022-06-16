@@ -436,6 +436,7 @@ public class Binder {
 
         List<BoundExpression> boundArgs = new ArrayList<>();
         List<TypeSymbol> usedTypes = new ArrayList<>();
+        List<TypeSymbol> anyTypes = new ArrayList<>();
 
         for (ExpressionSyntax arg : syntax.getArgs()) {
             BoundExpression expression = bindExpression(arg);
@@ -443,11 +444,18 @@ public class Binder {
                 return new BoundErrorExpression();
             boundArgs.add(expression);
             usedTypes.add(expression.getType());
+            anyTypes.add(TypeSymbol.ANY);
         }
         FunctionIdentifier identifier = new FunctionIdentifier(syntax.getIdentifier().getText(), usedTypes);
+        FunctionIdentifier anyIdentifier = new FunctionIdentifier(syntax.getIdentifier().getText(), anyTypes);
         if (!scope.isFunctionPresent(identifier)) {
-            diagnostics.reportUndefinedFunction(syntax.getLocation(), syntax.getIdentifier().getText(), usedTypes);
-            return new BoundErrorExpression();
+            if (!scope.isFunctionPresent(anyIdentifier)) {
+                diagnostics.reportUndefinedFunction(syntax.getLocation(), syntax.getIdentifier().getText(), usedTypes);
+                return new BoundErrorExpression();
+            } else {
+                FunctionSymbol function = scope.getFunctionsByIdentifier(anyIdentifier);
+                return new BoundCallExpression(function, boundArgs);
+            }
         }
         FunctionSymbol function = scope.getFunctionsByIdentifier(identifier);
         return new BoundCallExpression(function, boundArgs);
@@ -604,6 +612,7 @@ public class Binder {
             case "boolean" -> TypeSymbol.BOOLEAN;
             case "int" -> TypeSymbol.INTEGER;
             case "string" -> TypeSymbol.STRING;
+            case "any" -> TypeSymbol.ANY;
             default -> TypeSymbol.ERROR;
         };
     }
