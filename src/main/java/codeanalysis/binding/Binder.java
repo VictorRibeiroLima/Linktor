@@ -208,7 +208,7 @@ public class Binder {
     }
 
     public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
-        return switch (syntax.getKind()) {
+        var result = switch (syntax.getKind()) {
             case BLOCK_STATEMENT -> bindBlockStatement((BlockStatementSyntax) syntax);
             case EXPRESSION_STATEMENT -> bindExpressionStatement((ExpressionStatementSyntax) syntax);
             case VARIABLE_DECLARATION_STATEMENT ->
@@ -221,6 +221,15 @@ public class Binder {
             case RETURN_STATEMENT -> bindReturnStatement((ReturnStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+        if (result instanceof BoundExpressionStatement b) {
+            switch (b.getExpression().getKind()) {
+                case ERROR_EXPRESSION, ASSIGNMENT_EXPRESSION, VARIABLE_DECLARATION_STATEMENT, CALL_EXPRESSION, PREFIX_EXPRESSION, SUFFIX_EXPRESSION -> {
+                }
+                default -> diagnostics.reportInvalidExpressionStatement(syntax.getLocation());
+            }
+        }
+
+        return result;
     }
 
     private BoundStatement bindReturnStatement(ReturnStatementSyntax syntax) throws Exception {

@@ -26,13 +26,17 @@ public class Compilation {
 
     private final AtomicReference<BoundGlobalScope> globalScope = new AtomicReference<>();
 
-    public Compilation(SyntaxTree... trees) {
-        this(null, trees);
-    }
-
     private Compilation(Compilation previous, SyntaxTree... trees) {
         this.trees = List.of(trees);
         this.previous = previous;
+    }
+
+    public static Compilation create(SyntaxTree... trees) {
+        return new Compilation(null, trees);
+    }
+
+    public static Compilation createScript(Compilation previous, SyntaxTree... trees) {
+        return new Compilation(previous, trees);
     }
 
     public List<SyntaxTree> getTrees() {

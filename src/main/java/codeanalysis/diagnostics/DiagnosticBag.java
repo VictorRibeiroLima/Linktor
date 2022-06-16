@@ -156,6 +156,11 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(location, message);
     }
 
+    public void reportInvalidExpressionStatement(TextLocation location) {
+        String message = "ERROR:Not a statement.";
+        report(location, message);
+    }
+
     private String parseTypesList(List<TypeSymbol> paramTypes) {
         StringBuilder usedTypes = new StringBuilder("[");
         for (int i = 0; i < paramTypes.size(); i++) {

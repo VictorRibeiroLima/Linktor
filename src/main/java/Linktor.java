@@ -39,7 +39,7 @@ public class Linktor {
                 System.out.println(ConsoleColors.RED_BRIGHT + "Error: " + path + " doesn't exists");
             }
         }
-        Compilation compilation = new Compilation(trees.toArray(new SyntaxTree[]{}));
+        Compilation compilation = Compilation.create(trees.toArray(new SyntaxTree[]{}));
         EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
         DiagnosticsWriter.write(diagnostics);

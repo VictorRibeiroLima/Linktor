@@ -23,7 +23,7 @@ public class LinktorRepl extends Repl {
         SyntaxTree tree = SyntaxTree.parse(input);
 
 
-        Compilation compilation = previous == null ? new Compilation(tree) : previous.continueWith(tree);
+        Compilation compilation = Compilation.createScript(previous, tree);
         if (showTree) {
             tree.getRoot().writeTo(new PrintWriter(System.out, true));
             System.out.println();
