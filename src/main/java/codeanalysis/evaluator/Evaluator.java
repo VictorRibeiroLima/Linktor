@@ -83,7 +83,7 @@ public final class Evaluator {
         return lastValue;
     }
 
-    private void evaluateReturnStatement(BoundReturnStatement statement) throws Exception {
+    private void sevaluateReturnStatement(BoundReturnStatement statement) throws Exception {
         if (statement.getExpression() != null)
             lastValue = evaluateExpression(statement.getExpression());
     }
