@@ -43,6 +43,11 @@ public class Compilation {
         return previous;
     }
 
+    private BoundProgram getProgram() throws Exception {
+        var previous = getPrevious() == null ? null : getPrevious().getProgram();
+        return Binder.bindProgram(previous, getGlobalScope());
+    }
+
     private BoundGlobalScope getGlobalScope() throws Exception {
         if (this.globalScope.get() == null) {
             BoundGlobalScope previousScope = this.previous == null ? null : previous.getGlobalScope();
@@ -59,9 +64,7 @@ public class Compilation {
     public EvaluationResult evaluate(Map<VariableSymbol, Object> variables) throws Exception {
         BoundGlobalScope globalScope = getGlobalScope();
         var treesDiagnostics = new ArrayList<Diagnostic>();
-        trees.forEach(tree -> {
-            treesDiagnostics.addAll(tree.getDiagnostics());
-        });
+        trees.forEach(tree -> treesDiagnostics.addAll(tree.getDiagnostics()));
         List<Diagnostic> diagnostics = Stream.concat(globalScope.getDiagnostics().stream(),
                         treesDiagnostics.stream())
                 .collect(Collectors.toList());
@@ -69,7 +72,7 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        BoundProgram program = Binder.bindProgram(getGlobalScope());
+        BoundProgram program = getProgram();
         var cfgStatements = program.getStatement().getStatements().isEmpty() && !program.getFunctionsBodies().isEmpty()
                 ? (BoundBlockStatement) program.getFunctionsBodies().values().toArray()[program.getFunctionsBodies().size() - 1]
                 : program.getStatement();
@@ -88,7 +91,7 @@ public class Compilation {
     }
 
     public void emitTree(PrintWriter printWriter) throws Exception {
-        BoundProgram program = Binder.bindProgram(getGlobalScope());
+        BoundProgram program = getProgram();
         var node = program.getStatement();
         BoundNodeWriter.writeTo(printWriter, node);
     }

@@ -19,6 +19,7 @@ import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.symbol.BuildInFunctions;
+import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.ParameterSymbol;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
@@ -31,15 +32,24 @@ import java.util.Stack;
 public final class Evaluator {
     private final BoundProgram root;
 
-    private Scanner scanner;
-
     private Object lastValue;
+
+    private final Map<FunctionSymbol, BoundBlockStatement> functions = new HashMap<>();
 
     private final Stack<Map<VariableSymbol, Object>> callStack = new Stack<>();
 
     public Evaluator(BoundProgram root, Map<VariableSymbol, Object> variables) {
         this.root = root;
         callStack.add(variables);
+        var current = root;
+        while (current != null) {
+            for (var fb : current.getFunctionsBodies().entrySet()) {
+                var function = fb.getKey();
+                var body = fb.getValue();
+                functions.put(function, body);
+            }
+            current = current.getPrevious();
+        }
     }
 
     public Object evaluate() throws Exception {
@@ -137,7 +147,7 @@ public final class Evaluator {
 
     private Object evaluateCallExpression(BoundCallExpression node) throws Exception {
         if (node.getFunction().equals(BuildInFunctions.READ)) {
-            scanner = new Scanner(System.in);
+            Scanner scanner = new Scanner(System.in);
             return scanner.nextLine();
         } else if (node.getFunction().equals(BuildInFunctions.PRINT)) {
             String message = String.valueOf(evaluateExpression(node.getArgs().get(0)));
@@ -158,7 +168,7 @@ public final class Evaluator {
                 variables.put(param, value);
             }
             callStack.add(variables);
-            BoundBlockStatement statement = root.getFunctionsBodies().get(node.getFunction());
+            BoundBlockStatement statement = functions.get(node.getFunction());
             Object result = evaluateBlockStatement(statement);
             callStack.pop();
             return result;

@@ -99,12 +99,10 @@ public class Binder {
 
     private static List<FunctionSymbol> getBoundFunctions(List<SyntaxTree> trees, Binder binder) {
         List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
-        trees.forEach(tree -> {
-            tree.getRoot().getMembers().forEach(memberSyntax -> {
-                if (memberSyntax instanceof FunctionMemberSyntax f)
-                    functionMembers.add(f);
-            });
-        });
+        trees.forEach(tree -> tree.getRoot().getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof FunctionMemberSyntax f)
+                functionMembers.add(f);
+        }));
         for (FunctionMemberSyntax f : functionMembers)
             binder.bindFunctionDeclaration(f);
 
@@ -112,38 +110,33 @@ public class Binder {
 
     }
 
-    public static BoundProgram bindProgram(BoundGlobalScope global) throws Exception {
+    public static BoundProgram bindProgram(BoundProgram previous, BoundGlobalScope global) throws Exception {
         BoundScope parent = createParentScope(global);
         Map<FunctionSymbol, BoundBlockStatement> functionsBodies = new HashMap<>();
         DiagnosticBag diagnostics = new DiagnosticBag();
 
-        BoundGlobalScope scope = global;
-        while (scope != null) {
-            for (FunctionSymbol function : scope.getFunctions()) {
-                Binder binder = new Binder(parent, function);
-                BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
-                BoundBlockStatement loweredBody = Lowerer.lower(body);
-                if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
-                    diagnostics.reportAllPathMustReturn(function.getDeclaration().getLocation());
+        for (FunctionSymbol function : global.getFunctions()) {
+            Binder binder = new Binder(parent, function);
+            BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
+            BoundBlockStatement loweredBody = Lowerer.lower(body);
+            if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
+                diagnostics.reportAllPathMustReturn(function.getDeclaration().getLocation());
 
-                functionsBodies.put(function, loweredBody);
-                diagnostics.addAll(binder.getDiagnostics());
-            }
-            scope = scope.getPrevious();
+            functionsBodies.put(function, loweredBody);
+            diagnostics.addAll(binder.getDiagnostics());
         }
+
         BoundBlockStatement statement = Lowerer.lower(new BoundBlockStatement(global.getStatements()));
-        return new BoundProgram(statement, diagnostics, functionsBodies);
+        return new BoundProgram(previous, statement, diagnostics, functionsBodies);
     }
 
     private static List<BoundStatement> getBoundStatements(List<SyntaxTree> trees, Binder binder) throws Exception {
         List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
         List<BoundStatement> statements = new ArrayList<>();
-        trees.forEach(tree -> {
-            tree.getRoot().getMembers().forEach(memberSyntax -> {
-                if (memberSyntax instanceof GlobalMemberSyntax g)
-                    globalMembers.add(g);
-            });
-        });
+        trees.forEach(tree -> tree.getRoot().getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof GlobalMemberSyntax g)
+                globalMembers.add(g);
+        }));
 
         for (GlobalMemberSyntax g : globalMembers) {
             BoundStatement s = binder.bindStatement(g.getStatement());
@@ -338,7 +331,6 @@ public class Binder {
         boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
         boolean declare = !syntax.getIdentifier().isMissing();
         String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
-
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (declare && !scope.declareVariable(variableSymbol))
             diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getLocation());
