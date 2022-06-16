@@ -28,7 +28,7 @@ public class DiagnosticsWriter {
 
                 String prefix = text.toString().substring(line.getStart(), span.start());
                 String error = text.toString(span);
-                String suffix = text.toString().substring(span.end());
+                String suffix = text.toString().substring(span.end(), line.getEnd());
 
                 System.out.println(filePath + ":" + lineNumber + ":" + character);
                 System.out.println(ConsoleColors.WHITE + prefix + ConsoleColors.RED + error + ConsoleColors.WHITE + suffix);

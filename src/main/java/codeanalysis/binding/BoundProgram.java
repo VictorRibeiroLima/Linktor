@@ -8,19 +8,15 @@ import java.util.Map;
 
 public class BoundProgram {
     private final BoundProgram previous;
-    private final BoundBlockStatement statement;
     private final DiagnosticBag diagnostics;
     private final Map<FunctionSymbol, BoundBlockStatement> functionsBodies;
+    private final FunctionSymbol mainFunction;
 
-    public BoundProgram(BoundProgram previous, BoundBlockStatement global, DiagnosticBag diagnostics, Map<FunctionSymbol, BoundBlockStatement> functionsBodies) {
+    public BoundProgram(BoundProgram previous, DiagnosticBag diagnostics, Map<FunctionSymbol, BoundBlockStatement> functionsBodies, FunctionSymbol mainFunction) {
         this.previous = previous;
-        this.statement = global;
         this.diagnostics = diagnostics;
         this.functionsBodies = Map.copyOf(functionsBodies);
-    }
-
-    public BoundBlockStatement getStatement() {
-        return statement;
+        this.mainFunction = mainFunction;
     }
 
     public DiagnosticBag getDiagnostics() {
@@ -29,6 +25,10 @@ public class BoundProgram {
 
     public BoundProgram getPrevious() {
         return previous;
+    }
+
+    public FunctionSymbol getMainFunction() {
+        return mainFunction;
     }
 
     public Map<FunctionSymbol, BoundBlockStatement> getFunctionsBodies() {

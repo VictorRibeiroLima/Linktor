@@ -16,13 +16,20 @@ public class BoundGlobalScope {
     private final List<FunctionSymbol> functions;
 
     private final List<BoundStatement> statements;
+    private final FunctionSymbol mainFunction;
 
-    public BoundGlobalScope(BoundGlobalScope previous, List<Diagnostic> diagnostics, List<VariableSymbol> variables, List<FunctionSymbol> functions, List<BoundStatement> statement) {
+    public BoundGlobalScope(BoundGlobalScope previous,
+                            List<Diagnostic> diagnostics,
+                            List<VariableSymbol> variables,
+                            List<FunctionSymbol> functions,
+                            List<BoundStatement> statement,
+                            FunctionSymbol mainFunction) {
         this.previous = previous;
         this.diagnostics = List.copyOf(diagnostics);
         this.variables = List.copyOf(variables);
         this.functions = List.copyOf(functions);
         this.statements = List.copyOf(statement);
+        this.mainFunction = mainFunction;
     }
 
     public BoundGlobalScope getPrevious() {
@@ -43,5 +50,9 @@ public class BoundGlobalScope {
 
     public List<BoundStatement> getStatements() {
         return statements;
+    }
+
+    public FunctionSymbol getMainFunction() {
+        return mainFunction;
     }
 }

@@ -53,7 +53,11 @@ public final class Evaluator {
     }
 
     public Object evaluate() throws Exception {
-        return evaluateBlockStatement(root.getStatement());
+        var main = root.getMainFunction();
+        if (main == null)
+            return null;
+        var body = functions.get(main);
+        return evaluateBlockStatement(body);
     }
 
     private Object evaluateBlockStatement(BoundBlockStatement body) throws Exception {
