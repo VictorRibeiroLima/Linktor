@@ -156,6 +156,26 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         report(location, message);
     }
 
+    public void reportInvalidExpressionStatement(TextLocation location) {
+        String message = "ERROR:Not a statement.";
+        report(location, message);
+    }
+
+    public void reportMixMainGlobalStatement(TextLocation location) {
+        String message = "ERROR: you can't write 'main' with global statements.";
+        report(location, message);
+    }
+
+    public void reportWrongMainSignature(TextLocation location) {
+        String message = "ERROR: 'main' method must return void with no params.";
+        report(location, message);
+    }
+
+    public void reportGlobalStatementInMultipleFiles(TextLocation location) {
+        String message = "ERROR: Only one file may declare global statements.";
+        report(location, message);
+    }
+
     private String parseTypesList(List<TypeSymbol> paramTypes) {
         StringBuilder usedTypes = new StringBuilder("[");
         for (int i = 0; i < paramTypes.size(); i++) {

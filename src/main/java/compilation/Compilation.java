@@ -3,13 +3,13 @@ package compilation;
 import codeanalysis.binding.Binder;
 import codeanalysis.binding.BoundProgram;
 import codeanalysis.binding.scopes.BoundGlobalScope;
-import codeanalysis.binding.statement.block.BoundBlockStatement;
 import codeanalysis.controlflow.ControlFlowGraph;
 import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import io.BoundNodeWriter;
+import io.SymbolWriter;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -26,13 +26,17 @@ public class Compilation {
 
     private final AtomicReference<BoundGlobalScope> globalScope = new AtomicReference<>();
 
-    public Compilation(SyntaxTree... trees) {
-        this(null, trees);
-    }
-
     private Compilation(Compilation previous, SyntaxTree... trees) {
         this.trees = List.of(trees);
         this.previous = previous;
+    }
+
+    public static Compilation create(SyntaxTree... trees) {
+        return new Compilation(null, trees);
+    }
+
+    public static Compilation createScript(Compilation previous, SyntaxTree... trees) {
+        return new Compilation(previous, trees);
     }
 
     public List<SyntaxTree> getTrees() {
@@ -41,6 +45,11 @@ public class Compilation {
 
     public Compilation getPrevious() {
         return previous;
+    }
+
+    private BoundProgram getProgram() throws Exception {
+        var previous = getPrevious() == null ? null : getPrevious().getProgram();
+        return Binder.bindProgram(previous, getGlobalScope());
     }
 
     private BoundGlobalScope getGlobalScope() throws Exception {
@@ -59,9 +68,7 @@ public class Compilation {
     public EvaluationResult evaluate(Map<VariableSymbol, Object> variables) throws Exception {
         BoundGlobalScope globalScope = getGlobalScope();
         var treesDiagnostics = new ArrayList<Diagnostic>();
-        trees.forEach(tree -> {
-            treesDiagnostics.addAll(tree.getDiagnostics());
-        });
+        trees.forEach(tree -> treesDiagnostics.addAll(tree.getDiagnostics()));
         List<Diagnostic> diagnostics = Stream.concat(globalScope.getDiagnostics().stream(),
                         treesDiagnostics.stream())
                 .collect(Collectors.toList());
@@ -69,16 +76,7 @@ public class Compilation {
         if (!diagnostics.isEmpty())
             return new EvaluationResult(diagnostics, null);
 
-        BoundProgram program = Binder.bindProgram(getGlobalScope());
-        var cfgStatements = program.getStatement().getStatements().isEmpty() && !program.getFunctionsBodies().isEmpty()
-                ? (BoundBlockStatement) program.getFunctionsBodies().values().toArray()[program.getFunctionsBodies().size() - 1]
-                : program.getStatement();
-
-        var cfg = ControlFlowGraph.create(cfgStatements);
-
-        var root = new File(".").getCanonicalPath();
-        var file = new File(root + "/cfg.dot");
-        cfg.writeTo(new PrintWriter(file));
+        BoundProgram program = getProgram();
 
         if (!program.getDiagnostics().isEmpty())
             return new EvaluationResult(program.getDiagnostics().getDiagnostics(), null);
@@ -88,8 +86,29 @@ public class Compilation {
     }
 
     public void emitTree(PrintWriter printWriter) throws Exception {
-        BoundProgram program = Binder.bindProgram(getGlobalScope());
-        var node = program.getStatement();
-        BoundNodeWriter.writeTo(printWriter, node);
+        BoundProgram program = getProgram();
+        for (var function : program.getFunctionsBodies().entrySet()) {
+            SymbolWriter.writeTo(printWriter, function.getKey());
+            printWriter.println();
+            BoundNodeWriter.writeTo(printWriter, function.getValue());
+            printWriter.println();
+            printWriter.println();
+        }
+
+    }
+
+    public void writeFlowGraph() throws Exception {
+        BoundProgram program = getProgram();
+        var fileName = trees.get(0).getRoot().getLocation().fileName();
+        for (var function : program.getFunctionsBodies().entrySet()) {
+            var cfgStatements = function.getValue();
+
+            var cfg = ControlFlowGraph.create(cfgStatements);
+
+
+            var root = new File(fileName.substring(0, fileName.lastIndexOf('/'))).getCanonicalPath();
+            var file = new File(root + "/" + function.getKey().getName() + ".dot");
+            cfg.writeTo(new PrintWriter(file));
+        }
     }
 }

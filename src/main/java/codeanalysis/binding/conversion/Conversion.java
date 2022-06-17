@@ -37,6 +37,10 @@ public class Conversion {
     public static Conversion classify(TypeSymbol from, TypeSymbol to) {
         if (from == to)
             return Conversion.IDENTITY;
+        if (from != TypeSymbol.VOID && to == TypeSymbol.ANY)
+            return Conversion.IMPLICIT;
+        if (from == TypeSymbol.ANY && to != TypeSymbol.VOID)
+            return EXPLICIT;
         if (from == TypeSymbol.BOOLEAN || from == TypeSymbol.INTEGER) {
             if (to == TypeSymbol.STRING)
                 return Conversion.EXPLICIT;

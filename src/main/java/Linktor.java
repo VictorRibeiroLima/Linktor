@@ -9,6 +9,7 @@ import repl.Repl;
 import util.ConsoleColors;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class Linktor {
@@ -30,16 +31,26 @@ public class Linktor {
     private static void fromFile(String[] args) throws Exception {
         final Map<VariableSymbol, Object> variables = new HashMap<>();
         final List<SyntaxTree> trees = new ArrayList<>();
+        var debug = false;
         var paths = getFilePath(args);
         for (var path : paths) {
+            if (path.equals("_debug")) {
+                debug = true;
+                continue;
+            }
             SyntaxTree tree = SyntaxTree.load(path);
             if (tree != null) {
                 trees.add(tree);
             } else {
                 System.out.println(ConsoleColors.RED_BRIGHT + "Error: " + path + " doesn't exists");
+                System.out.println(ConsoleColors.RESET);
             }
         }
-        Compilation compilation = new Compilation(trees.toArray(new SyntaxTree[]{}));
+        Compilation compilation = Compilation.create(trees.toArray(new SyntaxTree[]{}));
+        if (debug) {
+            compilation.emitTree(new PrintWriter(System.out, true));
+            compilation.writeFlowGraph();
+        }
         EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
         DiagnosticsWriter.write(diagnostics);

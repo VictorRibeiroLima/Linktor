@@ -32,7 +32,6 @@ import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
 import codeanalysis.controlflow.ControlFlowGraph;
-import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.diagnostics.DiagnosticBag;
 import codeanalysis.lowering.Lowerer;
 import codeanalysis.source.TextLocation;
@@ -52,6 +51,7 @@ import codeanalysis.syntax.clause.TypeClauseSyntax;
 import codeanalysis.syntax.expression.*;
 import codeanalysis.syntax.member.FunctionMemberSyntax;
 import codeanalysis.syntax.member.GlobalMemberSyntax;
+import codeanalysis.syntax.member.MemberSyntax;
 import codeanalysis.syntax.statements.*;
 
 import java.util.*;
@@ -92,58 +92,44 @@ public class Binder {
         List<BoundStatement> statements = getBoundStatements(trees, binder);
         List<BoundStatement> statement = List.copyOf(statements);
         List<VariableSymbol> variables = binder.scope.getDeclaredVariables();
-        List<Diagnostic> diagnostics = binder.getDiagnostics().toUnmodifiableList();
+        var diagnostics = binder.getDiagnostics();
+        var mainFunction = getMainFunction(trees, functionSymbols, statements, diagnostics);
 
-        return new BoundGlobalScope(previous, diagnostics, variables, functionSymbols, statement);
+
+        return new BoundGlobalScope(previous, List.copyOf(diagnostics.getDiagnostics()), variables, functionSymbols, statement, mainFunction);
     }
 
-    private static List<FunctionSymbol> getBoundFunctions(List<SyntaxTree> trees, Binder binder) {
-        List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
-        trees.forEach(tree -> {
-            tree.getRoot().getMembers().forEach(memberSyntax -> {
-                if (memberSyntax instanceof FunctionMemberSyntax f)
-                    functionMembers.add(f);
-            });
-        });
-        for (FunctionMemberSyntax f : functionMembers)
-            binder.bindFunctionDeclaration(f);
-
-        return binder.scope.getDeclaredFunctions();
-
-    }
-
-    public static BoundProgram bindProgram(BoundGlobalScope global) throws Exception {
+    public static BoundProgram bindProgram(BoundProgram previous, BoundGlobalScope global) throws Exception {
         BoundScope parent = createParentScope(global);
         Map<FunctionSymbol, BoundBlockStatement> functionsBodies = new HashMap<>();
         DiagnosticBag diagnostics = new DiagnosticBag();
 
-        BoundGlobalScope scope = global;
-        while (scope != null) {
-            for (FunctionSymbol function : scope.getFunctions()) {
-                Binder binder = new Binder(parent, function);
-                BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
-                BoundBlockStatement loweredBody = Lowerer.lower(body);
-                if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
-                    diagnostics.reportAllPathMustReturn(function.getDeclaration().getLocation());
+        for (FunctionSymbol function : global.getFunctions()) {
+            Binder binder = new Binder(parent, function);
+            BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
+            BoundBlockStatement loweredBody = Lowerer.lower(body);
+            if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
+                diagnostics.reportAllPathMustReturn(function.getDeclaration().getIdentifier().getLocation());
 
-                functionsBodies.put(function, loweredBody);
-                diagnostics.addAll(binder.getDiagnostics());
-            }
-            scope = scope.getPrevious();
+            functionsBodies.put(function, loweredBody);
+            diagnostics.addAll(binder.getDiagnostics());
         }
-        BoundBlockStatement statement = Lowerer.lower(new BoundBlockStatement(global.getStatements()));
-        return new BoundProgram(statement, diagnostics, functionsBodies);
+
+        var mainFunction = global.getMainFunction();
+        if (mainFunction != null && !global.getStatements().isEmpty()) {
+            BoundBlockStatement statement = Lowerer.lower(new BoundBlockStatement(global.getStatements()));
+            functionsBodies.put(mainFunction, statement);
+        }
+        return new BoundProgram(previous, diagnostics, functionsBodies, mainFunction);
     }
 
     private static List<BoundStatement> getBoundStatements(List<SyntaxTree> trees, Binder binder) throws Exception {
         List<GlobalMemberSyntax> globalMembers = new ArrayList<>();
         List<BoundStatement> statements = new ArrayList<>();
-        trees.forEach(tree -> {
-            tree.getRoot().getMembers().forEach(memberSyntax -> {
-                if (memberSyntax instanceof GlobalMemberSyntax g)
-                    globalMembers.add(g);
-            });
-        });
+        trees.forEach(tree -> tree.getRoot().getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof GlobalMemberSyntax g)
+                globalMembers.add(g);
+        }));
 
         for (GlobalMemberSyntax g : globalMembers) {
             BoundStatement s = binder.bindStatement(g.getStatement());
@@ -214,8 +200,8 @@ public class Binder {
         return new BoundExpressionStatement(new BoundErrorExpression());
     }
 
-    public BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
-        return switch (syntax.getKind()) {
+    private BoundStatement bindStatement(StatementSyntax syntax) throws Exception {
+        var result = switch (syntax.getKind()) {
             case BLOCK_STATEMENT -> bindBlockStatement((BlockStatementSyntax) syntax);
             case EXPRESSION_STATEMENT -> bindExpressionStatement((ExpressionStatementSyntax) syntax);
             case VARIABLE_DECLARATION_STATEMENT ->
@@ -228,6 +214,21 @@ public class Binder {
             case RETURN_STATEMENT -> bindReturnStatement((ReturnStatementSyntax) syntax);
             default -> throw new Exception("ERROR: unexpected syntax: " + syntax.getKind());
         };
+        if (result instanceof BoundExpressionStatement b) {
+            switch (b.getExpression().getKind()) {
+                case ERROR_EXPRESSION,
+                        ASSIGNMENT_EXPRESSION,
+                        VARIABLE_DECLARATION_STATEMENT,
+                        CALL_EXPRESSION,
+                        PREFIX_EXPRESSION,
+                        SUFFIX_EXPRESSION,
+                        COMPOUND_ASSIGNMENT_EXPRESSION -> {
+                }
+                default -> diagnostics.reportInvalidExpressionStatement(syntax.getLocation());
+            }
+        }
+
+        return result;
     }
 
     private BoundStatement bindReturnStatement(ReturnStatementSyntax syntax) throws Exception {
@@ -338,7 +339,6 @@ public class Binder {
         boolean isReadOnly = syntax.getKeyword().getKind() == SyntaxKind.LET_KEYWORD;
         boolean declare = !syntax.getIdentifier().isMissing();
         String name = syntax.getIdentifier().getText() == null ? "?" : syntax.getIdentifier().getText();
-
         VariableSymbol variableSymbol = new VariableSymbol(name, initializer.getType(), isReadOnly);
         if (declare && !scope.declareVariable(variableSymbol))
             diagnostics.reportVariableAlreadyDeclared(name, syntax.getIdentifier().getLocation());
@@ -435,6 +435,7 @@ public class Binder {
 
         List<BoundExpression> boundArgs = new ArrayList<>();
         List<TypeSymbol> usedTypes = new ArrayList<>();
+        List<TypeSymbol> anyTypes = new ArrayList<>();
 
         for (ExpressionSyntax arg : syntax.getArgs()) {
             BoundExpression expression = bindExpression(arg);
@@ -442,11 +443,18 @@ public class Binder {
                 return new BoundErrorExpression();
             boundArgs.add(expression);
             usedTypes.add(expression.getType());
+            anyTypes.add(TypeSymbol.ANY);
         }
         FunctionIdentifier identifier = new FunctionIdentifier(syntax.getIdentifier().getText(), usedTypes);
+        FunctionIdentifier anyIdentifier = new FunctionIdentifier(syntax.getIdentifier().getText(), anyTypes);
         if (!scope.isFunctionPresent(identifier)) {
-            diagnostics.reportUndefinedFunction(syntax.getLocation(), syntax.getIdentifier().getText(), usedTypes);
-            return new BoundErrorExpression();
+            if (!scope.isFunctionPresent(anyIdentifier)) {
+                diagnostics.reportUndefinedFunction(syntax.getLocation(), syntax.getIdentifier().getText(), usedTypes);
+                return new BoundErrorExpression();
+            } else {
+                FunctionSymbol function = scope.getFunctionsByIdentifier(anyIdentifier);
+                return new BoundCallExpression(function, boundArgs);
+            }
         }
         FunctionSymbol function = scope.getFunctionsByIdentifier(identifier);
         return new BoundCallExpression(function, boundArgs);
@@ -603,7 +611,69 @@ public class Binder {
             case "boolean" -> TypeSymbol.BOOLEAN;
             case "int" -> TypeSymbol.INTEGER;
             case "string" -> TypeSymbol.STRING;
+            case "any" -> TypeSymbol.ANY;
             default -> TypeSymbol.ERROR;
         };
+    }
+
+
+    private static FunctionSymbol getMainFunction(List<SyntaxTree> trees, List<FunctionSymbol> functionSymbols, List<BoundStatement> statements, DiagnosticBag diagnostics) {
+        var firstGSPerTree = getFirstStatementPerTree(trees);
+        var main = functionSymbols.stream().filter(f -> f.getName().equals("main")).findFirst();
+        if (firstGSPerTree.size() > 1) {
+            for (var gS : firstGSPerTree)
+                diagnostics.reportGlobalStatementInMultipleFiles(gS.getLocation());
+        }
+
+        //TODO: Check this latter
+        if (!statements.isEmpty()) {
+            if (main.isPresent()) {
+                checkMainFunction(firstGSPerTree, main.get(), diagnostics);
+                return main.get();
+            }
+            return new FunctionSymbol("main", List.of(), TypeSymbol.VOID, null);
+        } else if (main.isPresent()) {
+            checkMainFunction(firstGSPerTree, main.get(), diagnostics);
+            return main.get();
+        }
+        return null;
+    }
+
+    private static void checkMainFunction(List<MemberSyntax> globalStatements, FunctionSymbol main, DiagnosticBag diagnostics) {
+        if (main.getType() != TypeSymbol.VOID || !main.getParameters().isEmpty())
+            diagnostics.reportWrongMainSignature(main.getDeclaration().getIdentifier().getLocation());
+
+        if (!globalStatements.isEmpty()) {
+            diagnostics.reportMixMainGlobalStatement(main.getDeclaration().getIdentifier().getLocation());
+            for (var gS : globalStatements) {
+                diagnostics.reportMixMainGlobalStatement(gS.getLocation());
+            }
+        }
+        diagnostics.toUnmodifiableList();
+    }
+
+    private static List<MemberSyntax> getFirstStatementPerTree(List<SyntaxTree> trees) {
+        return trees.stream().map(
+                tree -> tree
+                        .getRoot()
+                        .getMembers()
+                        .stream()
+                        .filter(memberSyntax ->
+                                memberSyntax instanceof GlobalMemberSyntax
+                        ).findFirst()
+        ).flatMap(Optional::stream).toList();
+    }
+
+    private static List<FunctionSymbol> getBoundFunctions(List<SyntaxTree> trees, Binder binder) {
+        List<FunctionMemberSyntax> functionMembers = new ArrayList<>();
+        trees.forEach(tree -> tree.getRoot().getMembers().forEach(memberSyntax -> {
+            if (memberSyntax instanceof FunctionMemberSyntax f)
+                functionMembers.add(f);
+        }));
+        for (FunctionMemberSyntax f : functionMembers)
+            binder.bindFunctionDeclaration(f);
+
+        return binder.scope.getDeclaredFunctions();
+
     }
 }

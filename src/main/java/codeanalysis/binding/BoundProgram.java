@@ -7,22 +7,28 @@ import codeanalysis.symbol.FunctionSymbol;
 import java.util.Map;
 
 public class BoundProgram {
-    private final BoundBlockStatement statement;
+    private final BoundProgram previous;
     private final DiagnosticBag diagnostics;
     private final Map<FunctionSymbol, BoundBlockStatement> functionsBodies;
+    private final FunctionSymbol mainFunction;
 
-    public BoundProgram(BoundBlockStatement global, DiagnosticBag diagnostics, Map<FunctionSymbol, BoundBlockStatement> functionsBodies) {
-        this.statement = global;
+    public BoundProgram(BoundProgram previous, DiagnosticBag diagnostics, Map<FunctionSymbol, BoundBlockStatement> functionsBodies, FunctionSymbol mainFunction) {
+        this.previous = previous;
         this.diagnostics = diagnostics;
         this.functionsBodies = Map.copyOf(functionsBodies);
-    }
-
-    public BoundBlockStatement getStatement() {
-        return statement;
+        this.mainFunction = mainFunction;
     }
 
     public DiagnosticBag getDiagnostics() {
         return diagnostics;
+    }
+
+    public BoundProgram getPrevious() {
+        return previous;
+    }
+
+    public FunctionSymbol getMainFunction() {
+        return mainFunction;
     }
 
     public Map<FunctionSymbol, BoundBlockStatement> getFunctionsBodies() {
