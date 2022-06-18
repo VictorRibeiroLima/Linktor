@@ -154,6 +154,27 @@ public class Emitter {
     }
 
     private void emitConversionExpression(BoundConversionExpression node) {
+        emitExpression(node.getExpression());
+        var convertingFrom = typesDescriptor(node.getExpression().getType());
+        var type = node.getType();
+        //TODO: see this later,it's ok for primitive values but with more complex structs it will bug
+        if (type == TypeSymbol.STRING || type == TypeSymbol.ANY) {
+            if (node.getExpression().getType() != TypeSymbol.STRING && node.getExpression().getType() != TypeSymbol.ANY) {
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String",
+                        "valueOf", "(" + convertingFrom + ")Ljava/lang/String;", false);
+            }
+        } else if (type == TypeSymbol.BOOLEAN) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean",
+                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Boolean;", false);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean",
+                    "booleanValue", "()Z", false);
+        } else if (type == TypeSymbol.INTEGER) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer",
+                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Integer;", false);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer",
+                    "intValue", "()I", false);
+        } else
+            throw new RuntimeException("Unexpected type " + type);
     }
 
     private void emitCallExpression(BoundCallExpression node) {
@@ -161,6 +182,8 @@ public class Emitter {
             mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
         } else if (node.getFunction().equals(BuildInFunctions.PRINTF)) {
             mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        } else if (node.getFunction().equals(BuildInFunctions.RANDOM)) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Math", "random", "()D", false);
         }
         var descriptor = descriptorBuilder(node.getFunction());
         for (var argument : node.getArgs())
@@ -174,6 +197,13 @@ public class Emitter {
         } else if (node.getFunction().equals(BuildInFunctions.READ)) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "console", "()Ljava/io/Console;", false);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/Console", "readLine", descriptor, false);
+        } else if (node.getFunction().equals(BuildInFunctions.RANDOM)) {
+            mv.visitInsn(Opcodes.ICONST_1);
+            mv.visitInsn(Opcodes.IADD);
+            mv.visitInsn(Opcodes.I2D);
+            mv.visitInsn(Opcodes.DMUL);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Math", "floor", "(D)D", false);
+            mv.visitInsn(Opcodes.D2I);
         } else {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "GeneratedClass", node.getFunction().getName(), descriptor, false);
         }
@@ -276,8 +306,8 @@ public class Emitter {
             case "void" -> "V";
             case "boolean" -> "Z";
             case "int" -> "I";
-            case "string" -> "Ljava/lang/String;";
-            case "any" -> "Ljava/lang/Object;";
+            case "string", "any" ->
+                    "Ljava/lang/String;"; //TODO: see this later,it's ok for primitive values but with more complex structs it will bug
             default -> throw new RuntimeException("Unexpected type");
         };
     }
