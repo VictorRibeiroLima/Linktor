@@ -8,7 +8,9 @@ import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.evaluator.Evaluator;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
+import emit.Emitter;
 import io.BoundNodeWriter;
+import io.DiagnosticsWriter;
 import io.SymbolWriter;
 
 import java.io.File;
@@ -83,6 +85,26 @@ public class Compilation {
         Evaluator evaluator = new Evaluator(program, variables);
         Object result = evaluator.evaluate();
         return new EvaluationResult(diagnostics, result);
+    }
+
+    public void emmit() throws Exception {
+        BoundGlobalScope globalScope = getGlobalScope();
+        var treesDiagnostics = new ArrayList<Diagnostic>();
+        trees.forEach(tree -> treesDiagnostics.addAll(tree.getDiagnostics()));
+        List<Diagnostic> diagnostics = Stream.concat(globalScope.getDiagnostics().stream(),
+                        treesDiagnostics.stream())
+                .collect(Collectors.toList());
+        if (!diagnostics.isEmpty()) {
+            DiagnosticsWriter.write(diagnostics);
+            return;
+        }
+        var program = getProgram();
+        if (!program.getDiagnostics().isEmpty()) {
+            DiagnosticsWriter.write(program.getDiagnostics().toUnmodifiableList());
+            return;
+        }
+        var emitter = new Emitter(program);
+        emitter.emit();
     }
 
     public void emitTree(PrintWriter printWriter) throws Exception {

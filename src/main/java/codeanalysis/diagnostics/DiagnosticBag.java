@@ -29,6 +29,10 @@ public class DiagnosticBag implements Iterable<Diagnostic> {
         this.diagnostics.addAll(bag.diagnostics);
     }
 
+    public void addAll(List<Diagnostic> diagnostics) {
+        this.diagnostics.addAll(diagnostics);
+    }
+
     public DiagnosticBag concat(DiagnosticBag bag) {
         DiagnosticBag concatenatedBag = new DiagnosticBag();
         concatenatedBag.addAll(this);

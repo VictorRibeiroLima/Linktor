@@ -1,9 +1,6 @@
-import codeanalysis.diagnostics.Diagnostic;
 import codeanalysis.symbol.variable.VariableSymbol;
 import codeanalysis.syntax.SyntaxTree;
 import compilation.Compilation;
-import compilation.EvaluationResult;
-import io.DiagnosticsWriter;
 import repl.LinktorRepl;
 import repl.Repl;
 import util.ConsoleColors;
@@ -51,9 +48,10 @@ public class Linktor {
             compilation.emitTree(new PrintWriter(System.out, true));
             compilation.writeFlowGraph();
         }
-        EvaluationResult evaluationResult = compilation.evaluate(variables);
+        compilation.emmit();
+        /*EvaluationResult evaluationResult = compilation.evaluate(variables);
         List<Diagnostic> diagnostics = evaluationResult.diagnostics();
-        DiagnosticsWriter.write(diagnostics);
+        DiagnosticsWriter.write(diagnostics);*/
 
     }
 
