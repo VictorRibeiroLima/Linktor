@@ -18,12 +18,15 @@ import codeanalysis.binding.statement.conditional.BoundIfStatement;
 import codeanalysis.binding.statement.declaration.BoundLabelDeclarationStatement;
 import codeanalysis.binding.statement.declaration.BoundVariableDeclarationStatement;
 import codeanalysis.binding.statement.expression.BoundExpressionStatement;
+import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.binding.statement.loop.BoundForConditionClause;
 import codeanalysis.binding.statement.loop.BoundForStatement;
 import codeanalysis.binding.statement.loop.BoundWhileStatement;
+import codeanalysis.symbol.FunctionSymbol;
+import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.syntax.SyntaxKind;
 
 import java.util.ArrayList;
@@ -38,13 +41,13 @@ public final class Lowerer extends BoundTreeRewriter {
     private Lowerer() {
     }
 
-    public static BoundBlockStatement lower(BoundStatement statement) throws Exception {
+    public static BoundBlockStatement lower(FunctionSymbol function, BoundStatement statement) throws Exception {
         Lowerer lowerer = new Lowerer();
         BoundStatement result = lowerer.rewriteStatement(statement);
-        return flatten(result);
+        return flatten(function, result);
     }
 
-    private static BoundBlockStatement flatten(BoundStatement statement) {
+    private static BoundBlockStatement flatten(FunctionSymbol function, BoundStatement statement) {
         List<BoundStatement> statements = new ArrayList<>();
         Stack<BoundStatement> stack = new Stack<>();
         stack.push(statement);
@@ -58,7 +61,17 @@ public final class Lowerer extends BoundTreeRewriter {
                 statements.add(current);
             }
         }
+        if (function.getType().equals(TypeSymbol.VOID)) {
+            if (statements.isEmpty() || canFallThrough(statements.get(statements.size() - 1))) {
+                statements.add(new BoundReturnStatement(null));
+            }
+        }
         return new BoundBlockStatement(List.copyOf(statements));
+    }
+
+    private static boolean canFallThrough(BoundStatement statement) {
+        return statement.getKind() != BoundNodeKind.RETURN_STATEMENT &&
+                statement.getKind() != BoundNodeKind.JUMP_TO_STATEMENT;
     }
 
     protected BoundExpression rewriteOperationAssignmentExpression(BoundCompoundAssignmentExpression node) throws Exception {

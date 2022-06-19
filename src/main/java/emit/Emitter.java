@@ -5,6 +5,7 @@ import codeanalysis.binding.conversion.BoundConversionExpression;
 import codeanalysis.binding.expression.BoundExpression;
 import codeanalysis.binding.expression.assignment.BoundAssignmentExpression;
 import codeanalysis.binding.expression.binary.BoundBinaryExpression;
+import codeanalysis.binding.expression.binary.BoundBinaryOperatorKind;
 import codeanalysis.binding.expression.call.BoundCallExpression;
 import codeanalysis.binding.expression.literal.BoundLiteralExpression;
 import codeanalysis.binding.expression.unary.BoundUnaryExpression;
@@ -16,11 +17,13 @@ import codeanalysis.binding.statement.expression.BoundExpressionStatement;
 import codeanalysis.binding.statement.expression.BoundReturnStatement;
 import codeanalysis.binding.statement.jumpto.BoundConditionalJumpToStatement;
 import codeanalysis.binding.statement.jumpto.BoundJumpToStatement;
+import codeanalysis.binding.statement.jumpto.BoundLabel;
 import codeanalysis.symbol.BuildInFunctions;
 import codeanalysis.symbol.FunctionSymbol;
 import codeanalysis.symbol.TypeSymbol;
 import codeanalysis.symbol.variable.VariableSymbol;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -40,8 +43,13 @@ public class Emitter {
     private final Map<FunctionSymbol, BoundBlockStatement> functions = new HashMap<>();
     private int maxLocals;
 
+    private final String className;
+
+    private final Map<BoundLabel, Label> labels = new HashMap<>();
+
     public Emitter(BoundProgram program) {
-        cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        className = "GeneratedClass";
         var current = program;
         while (current != null) {
             for (var fb : current.getFunctionsBodies().entrySet()) {
@@ -54,7 +62,8 @@ public class Emitter {
     }
 
     public void emit() throws Exception {
-        cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "GeneratedClass", null, "java/lang/Object", null);
+        cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, className, null, "java/lang/Object", null);
+        emitConstructor();
         for (var function : functions.entrySet()) {
             maxLocals = 0;
             createFunction(function.getKey(), function.getValue());
@@ -63,13 +72,24 @@ public class Emitter {
 
         // Write the bytes as a class file
         byte[] bytes = cw.toByteArray();
-        try (FileOutputStream stream = new FileOutputStream("GeneratedClass.class")) {
+        try (FileOutputStream stream = new FileOutputStream(className + ".class")) {
             stream.write(bytes);
         }
     }
 
-    private void createFunction(FunctionSymbol function, BoundBlockStatement block) {
+    private void emitConstructor() {
+        MethodVisitor constructor = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.visitCode();
+        constructor.visitVarInsn(Opcodes.ALOAD, 0);
+        constructor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        constructor.visitInsn(Opcodes.RETURN);
+        constructor.visitMaxs(1, 1);
+        constructor.visitEnd();
+    }
 
+    private void createFunction(FunctionSymbol function, BoundBlockStatement block) {
+        labels.clear();
+        mapLabels(block);
         var descriptor = "";
         if (function.getName().equals("main")) {
             variables = new HashMap<>();
@@ -86,8 +106,14 @@ public class Emitter {
         mv.visitEnd();
     }
 
+    private void mapLabels(BoundBlockStatement block) {
+        for (var statement : block.getStatements()) {
+            if (statement instanceof BoundLabelDeclarationStatement b)
+                labels.put(b.getLabel(), new Label());
+        }
+    }
+
     private void emitStatement(BoundBlockStatement block) {
-        var hasReturned = false;
         mv.visitCode();
         for (var statement : block.getStatements()) {
             switch (statement.getKind()) {
@@ -97,16 +123,11 @@ public class Emitter {
                 case JUMP_TO_STATEMENT -> emitJumpToStatement((BoundJumpToStatement) statement);
                 case CONDITIONAL_JUMP_TO_STATEMENT ->
                         emitConditionalJumpToStatement((BoundConditionalJumpToStatement) statement);
-                case RETURN_STATEMENT -> {
-                    hasReturned = true;
-                    emitReturnStatement((BoundReturnStatement) statement);
-                }
+                case RETURN_STATEMENT -> emitReturnStatement((BoundReturnStatement) statement);
                 case LABEL_DECLARATION_STATEMENT -> emitLabel((BoundLabelDeclarationStatement) statement);
                 default -> throw new RuntimeException("Unexpected node " + statement.getKind());
             }
         }
-        if (!hasReturned)
-            mv.visitInsn(Opcodes.RETURN);
     }
 
     private void emitExpressionStatement(BoundExpressionStatement statement) {
@@ -117,19 +138,29 @@ public class Emitter {
 
 
     private void emitReturnStatement(BoundReturnStatement statement) {
-        if (statement.getExpression() != null)
+        if (statement.getExpression() != null) {
             emitExpression(statement.getExpression());
-        mv.visitInsn(typeReturn(statement.getExpression().getType()));
+            mv.visitInsn(typeReturn(statement.getExpression().getType()));
+        } else {
+            mv.visitInsn(Opcodes.RETURN);
+        }
     }
 
     private void emitConditionalJumpToStatement(BoundConditionalJumpToStatement statement) {
-
+        var label = labels.get(statement.getLabel());
+        emitExpression(statement.getCondition());
+        var opcode = statement.isJumpIfTrue() ? Opcodes.IFNE : Opcodes.IFEQ;
+        mv.visitJumpInsn(opcode, label);
     }
 
     private void emitJumpToStatement(BoundJumpToStatement statement) {
+        var label = labels.get(statement.getLabel());
+        mv.visitJumpInsn(Opcodes.GOTO, label);
     }
 
     private void emitLabel(BoundLabelDeclarationStatement statement) {
+        var label = labels.get(statement.getLabel());
+        mv.visitLabel(label);
 
     }
 
@@ -155,25 +186,19 @@ public class Emitter {
 
     private void emitConversionExpression(BoundConversionExpression node) {
         emitExpression(node.getExpression());
-        var convertingFrom = typesDescriptor(node.getExpression().getType());
+        emitConversionToObject(node.getExpression());
+        var convertingFrom = typeDescriptor(node.getExpression().getType());
         var type = node.getType();
-        //TODO: see this later,it's ok for primitive values but with more complex structs it will bug
-        if (type == TypeSymbol.STRING || type == TypeSymbol.ANY) {
-            if (node.getExpression().getType() != TypeSymbol.STRING && node.getExpression().getType() != TypeSymbol.ANY) {
-                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String",
-                        "valueOf", "(" + convertingFrom + ")Ljava/lang/String;", false);
-            }
+        if (type == TypeSymbol.STRING) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String",
+                    "valueOf", "(" + convertingFrom + ")Ljava/lang/String;", false);
         } else if (type == TypeSymbol.BOOLEAN) {
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean",
-                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Boolean;", false);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean",
                     "booleanValue", "()Z", false);
         } else if (type == TypeSymbol.INTEGER) {
-            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer",
-                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Integer;", false);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer",
                     "intValue", "()I", false);
-        } else
+        } else if (type != TypeSymbol.ANY)
             throw new RuntimeException("Unexpected type " + type);
     }
 
@@ -189,10 +214,10 @@ public class Emitter {
         for (var argument : node.getArgs())
             emitExpression(argument);
         if (node.getFunction().equals(BuildInFunctions.PRINT)) {
-            var type = typesDescriptor(node.getArgs().get(0).getType());
+            var type = typeDescriptor(node.getArgs().get(0).getType());
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(" + type + ")V", false);
         } else if (node.getFunction().equals(BuildInFunctions.PRINTF)) {
-            var type = typesDescriptor(node.getArgs().get(0).getType());
+            var type = typeDescriptor(node.getArgs().get(0).getType());
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(" + type + ")V", false);
         } else if (node.getFunction().equals(BuildInFunctions.READ)) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "console", "()Ljava/io/Console;", false);
@@ -252,12 +277,97 @@ public class Emitter {
                 emitExpression(b.getRight());
                 mv.visitInsn(Opcodes.IREM);
             }
+            case GREATER_THAN, GREATER_EQUAL_THAN, LESS_THAN, LESS_EQUAL_THAN -> {
+                int opcode;
+                if (b.getOperator().getKind() == BoundBinaryOperatorKind.GREATER_THAN) {
+                    opcode = Opcodes.IF_ICMPLE;
+                } else if (b.getOperator().getKind() == BoundBinaryOperatorKind.GREATER_EQUAL_THAN) {
+                    opcode = Opcodes.IF_ICMPLT;
+                } else if (b.getOperator().getKind() == BoundBinaryOperatorKind.LESS_THAN) {
+                    opcode = Opcodes.IF_ICMPGE;
+                } else {
+                    opcode = Opcodes.IF_ICMPGT;
+                }
+                var icmLabel = new Label();
+                var gotoLabel = new Label();
+                emitExpression(b.getLeft());
+                emitExpression(b.getRight());
+                mv.visitJumpInsn(opcode, icmLabel);
+                mv.visitInsn(Opcodes.ICONST_1);
+                mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
+                mv.visitLabel(icmLabel);
+                mv.visitInsn(Opcodes.ICONST_0);
+                mv.visitLabel(gotoLabel);
+            }
+            case LOGICAL_EQUALITY, LOGICAL_INEQUALITY -> {
+                emitExpression(b.getLeft());
+                emitConversionToObject(b.getLeft());
+                emitExpression(b.getRight());
+                emitConversionToObject(b.getRight());
+                var owner = typeOwner(b.getLeft().getType());
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner, "equals", "(Ljava/lang/Object;)Z", false);
+                if (b.getOperator().getKind() == BoundBinaryOperatorKind.LOGICAL_INEQUALITY) {
+                    emitNegation();
+                }
+
+            }
+            case LOGICAL_AND -> {
+                var eqLabel = new Label();
+                var gotoLabel = new Label();
+                emitExpression(b.getLeft());
+                mv.visitJumpInsn(Opcodes.IFEQ, eqLabel);
+                emitExpression(b.getRight());
+                mv.visitJumpInsn(Opcodes.IFEQ, eqLabel);
+                mv.visitInsn(Opcodes.ICONST_1);
+                mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
+                mv.visitLabel(eqLabel);
+                mv.visitInsn(Opcodes.ICONST_0);
+                mv.visitLabel(gotoLabel);
+            }
+            case LOGICAL_OR -> {
+                var neLabel = new Label();
+                var eqLabel = new Label();
+                var gotoLabel = new Label();
+                emitExpression(b.getLeft());
+                mv.visitJumpInsn(Opcodes.IFNE, neLabel);
+                emitExpression(b.getRight());
+                mv.visitJumpInsn(Opcodes.IFEQ, eqLabel);
+                mv.visitLabel(neLabel);
+                mv.visitInsn(Opcodes.ICONST_1);
+                mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
+                mv.visitLabel(eqLabel);
+                mv.visitInsn(Opcodes.ICONST_0);
+                mv.visitLabel(gotoLabel);
+            }
             default -> throw new RuntimeException("Unexpected binary operation " + b.getOperator());
         }
 
     }
 
-    private void emitUnaryExpression(BoundUnaryExpression node) {
+    private void emitUnaryExpression(BoundUnaryExpression u) {
+        emitExpression(u.getRight());
+        switch (u.getOperator().getKind()) {
+            case IDENTITY -> {
+            }
+            case NEGATION -> mv.visitInsn(Opcodes.INEG);
+            case LOGICAL_NEGATION -> emitNegation();
+            case ONES_COMPLEMENT -> {
+                mv.visitInsn(Opcodes.ICONST_M1);
+                mv.visitInsn(Opcodes.IXOR);
+            }
+            default -> throw new RuntimeException("Unexpected unary operation " + u.getOperator());
+        }
+    }
+
+    private void emitNegation() {
+        var ifneLabel = new Label();
+        var gotoLabel = new Label();
+        mv.visitJumpInsn(Opcodes.IFNE, ifneLabel);
+        mv.visitInsn(Opcodes.ICONST_1);
+        mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
+        mv.visitLabel(ifneLabel);
+        mv.visitInsn(Opcodes.ICONST_0);
+        mv.visitLabel(gotoLabel);
     }
 
     private void emitAssignmentExpression(BoundAssignmentExpression node) {
@@ -272,7 +382,12 @@ public class Emitter {
     }
 
     private void emitLiteralExpression(BoundLiteralExpression node) {
-        mv.visitLdcInsn(node.getValue());
+        if (node.getType() == TypeSymbol.BOOLEAN) {
+            var opcode = ((boolean) node.getValue()) ? Opcodes.ICONST_1 : Opcodes.ICONST_0;
+            mv.visitInsn(opcode);
+        } else {
+            mv.visitLdcInsn(node.getValue());
+        }
     }
 
 
@@ -280,11 +395,11 @@ public class Emitter {
         var builder = new StringBuilder();
         builder.append("(");
         for (var param : function.getParameters()) {
-            builder.append(typesDescriptor(param.getType()));
+            builder.append(typeDescriptor(param.getType()));
         }
         builder.append(")");
         if (function.getType() != null) {
-            builder.append(typesDescriptor(function.getType()));
+            builder.append(typeDescriptor(function.getType()));
         } else {
             builder.append("V");
         }
@@ -301,13 +416,40 @@ public class Emitter {
         return variables;
     }
 
-    private String typesDescriptor(TypeSymbol type) {
+    private void emitConversionToObject(BoundExpression expression) {
+        var needsToObject = expression.getType().equals(TypeSymbol.INTEGER) || expression.getType().equals(TypeSymbol.BOOLEAN);
+        var convertingTo = typeObjectDescriptor(expression.getType());
+        var convertingFrom = typeDescriptor(expression.getType());
+        if (needsToObject) {
+            var owner = typeOwner(expression.getType());
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner,
+                    "valueOf", "(" + convertingFrom + ")" + convertingTo, false);
+        }
+    }
+
+    private String typeOwner(TypeSymbol type) {
+        var descriptor = typeObjectDescriptor(type);
+        return descriptor.substring(1, descriptor.length() - 1);
+    }
+
+    private String typeDescriptor(TypeSymbol type) {
         return switch (type.getName()) {
             case "void" -> "V";
             case "boolean" -> "Z";
             case "int" -> "I";
-            case "string", "any" ->
-                    "Ljava/lang/String;"; //TODO: see this later,it's ok for primitive values but with more complex structs it will bug
+            case "string" -> "Ljava/lang/String;";
+            case "any" -> "Ljava/lang/Object;";
+            default -> throw new RuntimeException("Unexpected type");
+        };
+    }
+
+    private String typeObjectDescriptor(TypeSymbol type) {
+        return switch (type.getName()) {
+            case "void" -> "V";
+            case "boolean" -> "Ljava/lang/Boolean;";
+            case "int" -> "Ljava/lang/Integer;";
+            case "string" -> "Ljava/lang/String;";
+            case "any" -> "Ljava/lang/Object;";
             default -> throw new RuntimeException("Unexpected type");
         };
     }

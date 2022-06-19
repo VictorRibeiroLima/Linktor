@@ -17,7 +17,7 @@ public final class BoundUnaryOperator {
             new BoundUnaryOperator(SyntaxKind.MINUS_TOKEN, BoundUnaryOperatorKind.NEGATION, TypeSymbol.INTEGER),
             new BoundUnaryOperator(SyntaxKind.PLUS_TOKEN, BoundUnaryOperatorKind.IDENTITY, TypeSymbol.INTEGER),
             new BoundUnaryOperator(SyntaxKind.TILDE_TOKEN, BoundUnaryOperatorKind.ONES_COMPLEMENT, TypeSymbol.INTEGER),
-            new BoundUnaryOperator(SyntaxKind.TILDE_TOKEN, BoundUnaryOperatorKind.ONES_COMPLEMENT, TypeSymbol.BOOLEAN)
+            new BoundUnaryOperator(SyntaxKind.TILDE_TOKEN, BoundUnaryOperatorKind.ONES_COMPLEMENT, TypeSymbol.BOOLEAN, TypeSymbol.INTEGER)
 
     );
 

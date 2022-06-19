@@ -12,9 +12,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm:9.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:9.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-tree:9.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:9.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-engine:5.8.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-engine:1.8.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.2.0" level="project" />
