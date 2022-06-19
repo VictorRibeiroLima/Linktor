@@ -107,7 +107,7 @@ public class Binder {
         for (FunctionSymbol function : global.getFunctions()) {
             Binder binder = new Binder(parent, function);
             BoundBlockStatement body = binder.bindBlockStatement(function.getDeclaration().getBody());
-            BoundBlockStatement loweredBody = Lowerer.lower(body);
+            BoundBlockStatement loweredBody = Lowerer.lower(function, body);
             if (function.getType() != TypeSymbol.VOID && !ControlFlowGraph.allPathsReturn(loweredBody))
                 diagnostics.reportAllPathMustReturn(function.getDeclaration().getIdentifier().getLocation());
 
@@ -117,7 +117,7 @@ public class Binder {
 
         var mainFunction = global.getMainFunction();
         if (mainFunction != null && !global.getStatements().isEmpty()) {
-            BoundBlockStatement statement = Lowerer.lower(new BoundBlockStatement(global.getStatements()));
+            BoundBlockStatement statement = Lowerer.lower(mainFunction, new BoundBlockStatement(global.getStatements()));
             functionsBodies.put(mainFunction, statement);
         }
         return new BoundProgram(previous, diagnostics, functionsBodies, mainFunction);
@@ -464,7 +464,7 @@ public class Binder {
         BoundExpression expression = bindExpression(syntax);
         Conversion conversion = Conversion.classify(expression.getType(), type);
         if (!conversion.isExists()) {
-            if (expression.getType() == TypeSymbol.ERROR && type == TypeSymbol.ERROR)
+            if (expression.getType() != TypeSymbol.ERROR && type != TypeSymbol.ERROR)
                 diagnostics.reportCannotConvert(syntax.getLocation(), expression.getType(), type);
             return new BoundErrorExpression();
         }
