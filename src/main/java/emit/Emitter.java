@@ -33,19 +33,15 @@ import java.util.Map;
 
 
 public class Emitter {
-    private MethodVisitor mv;
-    private Map<VariableSymbol, Integer> variables;
-
-    private int variableIndex;
-
+    private final String className;
     private final ClassWriter cw;
-
+    private MethodVisitor mv;
     private final Map<FunctionSymbol, BoundBlockStatement> functions = new HashMap<>();
+    private final Map<BoundLabel, Label> labels = new HashMap<>();
+    private Map<VariableSymbol, Integer> variables;
+    private int variableIndex;
     private int maxLocals;
 
-    private final String className;
-
-    private final Map<BoundLabel, Label> labels = new HashMap<>();
 
     public Emitter(BoundProgram program) {
         cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -338,6 +334,21 @@ public class Emitter {
                 mv.visitLabel(eqLabel);
                 mv.visitInsn(Opcodes.ICONST_0);
                 mv.visitLabel(gotoLabel);
+            }
+            case BITWISE_AND -> {
+                emitExpression(b.getLeft());
+                emitExpression(b.getRight());
+                mv.visitInsn(Opcodes.IAND);
+            }
+            case BITWISE_OR -> {
+                emitExpression(b.getLeft());
+                emitExpression(b.getRight());
+                mv.visitInsn(Opcodes.IOR);
+            }
+            case BITWISE_XOR -> {
+                emitExpression(b.getLeft());
+                emitExpression(b.getRight());
+                mv.visitInsn(Opcodes.IXOR);
             }
             default -> throw new RuntimeException("Unexpected binary operation " + b.getOperator());
         }
