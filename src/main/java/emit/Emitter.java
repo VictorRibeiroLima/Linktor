@@ -182,16 +182,19 @@ public class Emitter {
 
     private void emitConversionExpression(BoundConversionExpression node) {
         emitExpression(node.getExpression());
-        emitConversionToObject(node.getExpression());
         var convertingFrom = typeDescriptor(node.getExpression().getType());
         var type = node.getType();
         if (type == TypeSymbol.STRING) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String",
                     "valueOf", "(" + convertingFrom + ")Ljava/lang/String;", false);
         } else if (type == TypeSymbol.BOOLEAN) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean",
+                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Boolean;", false);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean",
                     "booleanValue", "()Z", false);
         } else if (type == TypeSymbol.INTEGER) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer",
+                    "valueOf", "(" + convertingFrom + ")Ljava/lang/Integer;", false);
             mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer",
                     "intValue", "()I", false);
         } else if (type != TypeSymbol.ANY)
@@ -373,7 +376,7 @@ public class Emitter {
     private void emitNegation() {
         var ifneLabel = new Label();
         var gotoLabel = new Label();
-        mv.visitJumpInsn(Opcodes.IFNE, ifneLabel);
+        mv.visitJumpInsn(Opcodes.IFNE, ifneLabel);//!true
         mv.visitInsn(Opcodes.ICONST_1);
         mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
         mv.visitLabel(ifneLabel);
