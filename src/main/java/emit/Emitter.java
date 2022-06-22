@@ -162,6 +162,9 @@ public class Emitter {
 
     private void emitVariableDeclarationStatement(BoundVariableDeclarationStatement statement) {
         emitExpression(statement.getInitializer());
+        if (statement.getVariable().getType() == TypeSymbol.ANY && statement.getInitializer() instanceof BoundConversionExpression b) {
+            emitConversionToObject(b.getFrom());
+        }
         variables.put(statement.getVariable(), variableIndex);
         mv.visitVarInsn(typeStore(statement.getVariable().getType()), variableIndex++);
         maxLocals++;
@@ -182,18 +185,23 @@ public class Emitter {
 
     private void emitConversionExpression(BoundConversionExpression node) {
         emitExpression(node.getExpression());
-        emitConversionToObject(node.getExpression());
         var convertingFrom = typeDescriptor(node.getExpression().getType());
         var type = node.getType();
         if (type == TypeSymbol.STRING) {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/String",
                     "valueOf", "(" + convertingFrom + ")Ljava/lang/String;", false);
-        } else if (type == TypeSymbol.BOOLEAN) {
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean",
-                    "booleanValue", "()Z", false);
-        } else if (type == TypeSymbol.INTEGER) {
-            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer",
-                    "intValue", "()I", false);
+        } else if (type == TypeSymbol.BOOLEAN || type == TypeSymbol.INTEGER) {
+            var expressionOwner = typeOwner(node.getExpression().getType());
+            var owner = typeOwner(type);
+            var objectDescriptor = typeObjectDescriptor(type);
+            var descriptor = typeDescriptor(type);
+            var typeCaster = typeValueCaster(type);
+            emitConversionToObject(node.getExpression());
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, expressionOwner, "toString", "()Ljava/lang/String;", false);
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner,
+                    "valueOf", "(Ljava/lang/String;)" + objectDescriptor, false);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, owner,
+                    typeCaster, "()" + descriptor, false);
         } else if (type != TypeSymbol.ANY)
             throw new RuntimeException("Unexpected type " + type);
     }
@@ -373,7 +381,7 @@ public class Emitter {
     private void emitNegation() {
         var ifneLabel = new Label();
         var gotoLabel = new Label();
-        mv.visitJumpInsn(Opcodes.IFNE, ifneLabel);
+        mv.visitJumpInsn(Opcodes.IFNE, ifneLabel);//!true
         mv.visitInsn(Opcodes.ICONST_1);
         mv.visitJumpInsn(Opcodes.GOTO, gotoLabel);
         mv.visitLabel(ifneLabel);
@@ -383,6 +391,9 @@ public class Emitter {
 
     private void emitAssignmentExpression(BoundAssignmentExpression node) {
         emitExpression(node.getBoundExpression());
+        if (node.getVariable().getType() == TypeSymbol.ANY && node.getBoundExpression() instanceof BoundConversionExpression b) {
+            emitConversionToObject(b.getFrom());
+        }
         var index = variables.get(node.getVariable());
         mv.visitInsn(Opcodes.DUP);
         mv.visitVarInsn(typeStore(node.getType()), index);
@@ -428,14 +439,26 @@ public class Emitter {
     }
 
     private void emitConversionToObject(BoundExpression expression) {
-        var needsToObject = expression.getType().equals(TypeSymbol.INTEGER) || expression.getType().equals(TypeSymbol.BOOLEAN);
-        var convertingTo = typeObjectDescriptor(expression.getType());
-        var convertingFrom = typeDescriptor(expression.getType());
+        emitConversionToObject(expression.getType());
+    }
+
+    private void emitConversionToObject(TypeSymbol type) {
+        var needsToObject = type.equals(TypeSymbol.INTEGER) || type.equals(TypeSymbol.BOOLEAN);
+        var convertingTo = typeObjectDescriptor(type);
+        var convertingFrom = typeDescriptor(type);
         if (needsToObject) {
-            var owner = typeOwner(expression.getType());
+            var owner = typeOwner(type);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner,
                     "valueOf", "(" + convertingFrom + ")" + convertingTo, false);
         }
+    }
+
+    private String typeValueCaster(TypeSymbol type) {
+        return switch (type.getName()) {
+            case "boolean" -> "booleanValue";
+            case "int" -> "intValue";
+            default -> throw new RuntimeException("Unexpected type");
+        };
     }
 
     private String typeOwner(TypeSymbol type) {
