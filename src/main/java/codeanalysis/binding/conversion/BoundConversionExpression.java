@@ -13,10 +13,13 @@ public class BoundConversionExpression extends BoundExpression {
 
     private final BoundNodeKind kind;
 
+    private final TypeSymbol from;
+
     private final List<BoundNode> children;
 
     public BoundConversionExpression(TypeSymbol type, BoundExpression expression) {
         this.type = type;
+        this.from = expression.getType();
         this.expression = expression;
         this.kind = BoundNodeKind.CONVERSION_EXPRESSION;
         this.children = List.of(expression);
@@ -25,6 +28,10 @@ public class BoundConversionExpression extends BoundExpression {
     @Override
     public TypeSymbol getType() {
         return type;
+    }
+
+    public TypeSymbol getFrom() {
+        return from;
     }
 
     public BoundExpression getExpression() {
